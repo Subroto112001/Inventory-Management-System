@@ -43,9 +43,7 @@ const Sidebar = () => {
                 <span className="text-[18px] text-[#611F69] font-medium">
                   My Product
                 </span>
-                <p className="text-gray-400 text-[14px]">
-                  Operation
-                </p>
+                <p className="text-gray-400 text-[14px]">Operation</p>
               </div>
             </div>
           </div>
@@ -53,10 +51,10 @@ const Sidebar = () => {
         {menuItems.map((item, index) => (
           <Link href={item.link}>
             <li
-              className="text-gray-700 bg-white p-2 cursor-pointer list-none hover:bg-[#611F69] hover:text-white rounded-md mb-2 flex items-center gap-2 group"
+              className="text-gray-700 bg-white p-2 cursor-pointer list-none hover:bg-[#611F69] transition-all hover:text-white rounded-md mb-2 flex items-center gap-2 group"
               key={index}
             >
-              <span className="text-[#611F69] group-hover:text-white text-xl">
+              <span className="text-[#611F69] transition-all group-hover:text-white text-xl">
                 {item.icon}
               </span>
               <span>{item.name}</span>
