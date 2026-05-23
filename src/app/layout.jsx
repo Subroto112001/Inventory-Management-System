@@ -1,10 +1,11 @@
 import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
-import Header from "./Component/Header";
+import Header from "../Component/Header";
+import Sidebar from "@/Component/Sidebar";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-playfair", 
+  variable: "--font-playfair",
 });
 
 const poppins = Poppins({
@@ -20,14 +21,18 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-   
     <html lang="en" className={`${playfair.variable} ${poppins.variable}`}>
-
       <body className={`${poppins.className} min-h-full flex flex-col`}>
         <div>
-          <Header/>
+          <Header />
         </div>
-        {children}
+
+        <div className="flex flex-row gap-1">
+          <div className="w-[15%]">
+            <Sidebar />
+          </div>
+          <div className="w-[85%]">{children}</div>
+        </div>
       </body>
     </html>
   );

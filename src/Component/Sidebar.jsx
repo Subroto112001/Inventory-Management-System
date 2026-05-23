@@ -12,12 +12,12 @@ import { VscGraph } from "react-icons/vsc";
 
 const Sidebar = () => {
   const menuItems = [
-    { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/dashboard" },
+    { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
     { name: "Users", icon: <FaRegUser />, link: "/users" },
     {
       name: "Products",
       icon: <MdOutlineProductionQuantityLimits />,
-      link: "/settings",
+      link: "/products",
     },
     { name: "Stock", icon: <CgShutterstock />, link: "/settings" },
     { name: "Purchase", icon: <BiPurchaseTagAlt />, link: "/settings" },
