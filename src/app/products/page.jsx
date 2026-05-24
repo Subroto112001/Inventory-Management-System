@@ -2,13 +2,15 @@
 "use client"
 import ProductCard from "@/Component/Product_card/Product_card";
 import { ImageProvider } from "@/Provider/ImgaeProvider";
+import Link from "next/link";
+
 
 import React from "react";
 import { GoPlusCircle } from "react-icons/go";
 import { IoSearchOutline } from "react-icons/io5";
 
 const page = () => {
-  
+
   const products = [
     {
       SKU: "WTCH-001",
@@ -51,12 +53,12 @@ const page = () => {
               <h1 className="text-[24px] font-bold">Products</h1>
               <p>Manage Your Inventory Catalog & Product Information</p>
             </div>
-            <button className="bg-[#611F69] text-white py-2 px-4 border  border-[#611f69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611f69]  transition-all">
+            <Link href="/addnewproduct" className="bg-[#611F69] text-white py-2 px-4 border  border-[#611f69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611f69]  transition-all">
               <span>
                 <GoPlusCircle />
               </span>
               <span>Add Products</span>
-            </button>
+            </Link>
           </div>
 
           <div className=" border border-gray-200 rounded-md p-4 mt-4 flex justify-between items-center">

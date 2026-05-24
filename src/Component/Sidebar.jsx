@@ -31,7 +31,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="bg-white h-screen border-r border-gray-100">
+    <div className="bg-white h-full border-r border-gray-100">
       <div className="p-5">
         <div>
           <div className="border-b border-gray-100">
@@ -49,10 +49,9 @@ const Sidebar = () => {
           </div>
         </div>
         {menuItems.map((item, index) => (
-          <Link href={item.link}>
+          <Link href={item.link} key={index}>
             <li
               className="text-gray-700 bg-white p-2 cursor-pointer list-none hover:bg-[#611F69] transition-all hover:text-white rounded-md mb-2 flex items-center gap-2 group"
-              key={index}
             >
               <span className="text-[#611F69] transition-all group-hover:text-white text-xl">
                 {item.icon}

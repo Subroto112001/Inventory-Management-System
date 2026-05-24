@@ -25,21 +25,22 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${poppins.variable}`}>
       <body
-        className={`${poppins.className} min-h-screen flex flex-col bg-white text-gray-900`}
+        className={`${poppins.className} h-screen overflow-hidden flex flex-col bg-white text-gray-900`}
       >
-        {/* Sticky Header Wrapper */}
-        <header className="w-full sticky top-0 z-50 shadow-md bg-[#611F69]">
+        {/* Header — shrink-0 keeps it from compressing */}
+        <header className="w-full shrink-0 z-50 shadow-md bg-[#611F69]">
           <Header />
         </header>
 
-        <div className="flex flex-row gap-1 flex-1">
-          {/* Semantic aside for Sidebar */}
-          <aside className="w-[15%]" aria-label="Sidebar Navigation">
+        {/* overflow-hidden here prevents the row itself from scrolling */}
+        <div className="flex flex-row gap-1 flex-1 overflow-hidden">
+          {/* Sidebar — no overflow, stays locked in place */}
+          <aside className="w-[15%] h-full" aria-label="Sidebar Navigation">
             <Sidebar />
           </aside>
 
-          {/* Semantic main for page content */}
-          <main className="w-[85%]" id="main-content">
+          {/* Only main scrolls */}
+          <main className="w-[85%] h-full overflow-y-auto" id="main-content">
             {children}
           </main>
         </div>
