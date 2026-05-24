@@ -1,31 +1,44 @@
 
 "use client"
 import ProductCard from "@/Component/Product_card/Product_card";
+import { ImageProvider } from "@/Provider/ImgaeProvider";
 
 import React from "react";
 import { GoPlusCircle } from "react-icons/go";
 import { IoSearchOutline } from "react-icons/io5";
 
 const page = () => {
+  
   const products = [
     {
       SKU: "WTCH-001",
       name: "Minimalist Smart Watch Series 5",
       price: 199.99,
       quantity: 10,
+      image: ImageProvider.Watch,
     },
     {
-      SKU: "PHN-002",
-      name: "Sleek Smartphone Pro Max",
-      price: 999.99,
+      SKU: "AUD-HD-99",
+      name: "Professional Studio Headphones",
+      price: 8900,
       quantity: 5,
+      image: ImageProvider.headphone,
     },
     {
-      SKU: "LPTP-003",
-      name: "Ultra-thin Laptop X200",
-      price: 1499.99,
+      SKU: "FTW-R-42",
+      name: "Performance Running Shoe - Crimson",
+      price: 15200,
       quantity: 3,
-    }]
+      image: ImageProvider.showes,
+    },
+    {
+      SKU: "CAM-VNT-01",
+      name: "Retro Instant Film Camera",
+      price: 1800,
+      quantity: 3,
+      image: ImageProvider.Camera,
+    },
+  ];
   
   return (
     <div className="p-5">
@@ -105,6 +118,7 @@ const page = () => {
               name={product.name}
               price={product.price}
               quantity={product.quantity}
+              image={product.image}
             />
           ))}
         </div>

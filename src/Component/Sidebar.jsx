@@ -41,7 +41,7 @@ const Sidebar = () => {
               </span>
               <div>
                 <span className="text-[18px] text-[#611F69] font-medium">
-                  My Product
+                  Skyirpto Product
                 </span>
                 <p className="text-gray-400 text-[14px]">Operation</p>
               </div>
