@@ -5,7 +5,7 @@ import watch from "../../assets/image/watch.png";
 
 const ProductCard = ({ SKU, name, price, quantity, image }) => {
   return (
-    <article className="border border-gray-200 rounded-md p-4 w-[350px] ">
+    <article className="border border-gray-200 rounded-md p-4 w-87.5 cursor-pointer ">
       <Image
         src={image}
         alt={name}
@@ -18,10 +18,10 @@ const ProductCard = ({ SKU, name, price, quantity, image }) => {
           {/* SKU */}
           <p className="text-gray-400 text-[14px]">{SKU}</p>
           {/* NAME */}
-          <p className="text-[20px] font-bold truncate">{name}</p>
+          <p className="text-[20px] font-bold truncate text-[#611F69]">{name}</p>
         </div>
         <div className=" flex justify-between items-center mt-3">
-          <p className="text-[16px]">${price.toFixed(2)}</p>
+          <p className="text-[16px] font-medium">${price.toFixed(2)}</p>
           <p className="text-[16px]">QTY : {quantity}</p>
         </div>
       </div>
