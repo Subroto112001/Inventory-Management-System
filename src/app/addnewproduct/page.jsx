@@ -6,7 +6,6 @@ import Link from "next/link";
 import React, { useState } from "react";
 
 const Page = () => {
-  // ১. ডাইনামিক স্টেট ম্যানেজমেন্টের জন্য একটি সিঙ্গেল অবজেক্ট
   const [formData, setFormData] = useState({
     productName: "",
     productSKU: "",
@@ -21,16 +20,16 @@ const Page = () => {
     lowStockAlert: "",
   });
 
-  // ২. ডাইনামিক অনচেঞ্জ হ্যান্ডলার
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value, // যে ফিল্ডে টাইপ করা হবে, শুধু তার মান আপডেট হবে
+      [name]: value,
     }));
   };
 
-  // ইনপুট ফিল্ডের কনফিগারেশন অ্যারে (নাম এবং টাইপ সহ)
+  console.log("From data:-", formData);
+
   const input_fields = [
     { label: "Product Name", name: "productName", type: "text" },
     { label: "Product SKU", name: "productSKU", type: "text" },
@@ -42,10 +41,14 @@ const Page = () => {
     { label: "Discount", name: "discount", type: "number" },
     { label: "Initial Stock", name: "initialStock", type: "number" },
     { label: "Low Stock Alert", name: "lowStockAlert", type: "number" },
+    { label: "Upload Product Picture", name: "productPicture", type: "file" },
   ];
 
+  const handlePublish = () => {
+    alert("Product published successfully!");
+  };
+
   return (
-    // SEO এর জন্য main ট্যাগ ব্যবহার
     <main className="p-5" id="main-content">
       <div>
         <Link
@@ -61,7 +64,6 @@ const Page = () => {
 
         <header className="mt-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex flex-col gap-1">
-            {/* পেজে শুধুমাত্র একটি h1 থাকা উচিত (SEO স্ট্যান্ডার্ড) */}
             <h1 className="text-[24px] font-semibold text-gray-900 m-0">
               Add New Product
             </h1>
@@ -73,7 +75,6 @@ const Page = () => {
           <div className="flex flex-wrap gap-3" aria-label="Product actions">
             <TransparentButton value="Cancel" />
             <TransparentButton value="Save As Draft" />
-            <ColorButton value="Publish Product" />
           </div>
         </header>
       </div>
@@ -89,11 +90,9 @@ const Page = () => {
           Product Information
         </h2>
 
-        {/* ফর্ম ফিল্ডগুলোর গ্রিড লেআউট */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {input_fields.map((item, index) => (
             <div key={index} className="flex flex-col gap-1">
-              {/* Accessibility (A11y) এর জন্য htmlFor এবং id যোগ করা হয়েছে */}
               <label
                 htmlFor={item.name}
                 className="text-gray-700 font-medium text-sm"
@@ -104,15 +103,15 @@ const Page = () => {
                 id={item.name}
                 name={item.name}
                 type={item.type}
-                value={formData[item.name]} // ডাইনামিক ভ্যালু
-                onChange={handleChange} // ডাইনামিক ফাংশন
+                value={formData[item.name]}
+                onChange={handleChange}
                 className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all"
                 placeholder={`Enter ${item.label.toLowerCase()}`}
               />
             </div>
           ))}
 
-          {/* Description ফিল্ডের জন্য Textarea (যেহেতু এটি সাধারণত বড় হয়) */}
+          {/* Description */}
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
             <label
               htmlFor="description"
@@ -130,6 +129,12 @@ const Page = () => {
               placeholder="Enter product description"
             />
           </div>
+        </div>
+        <div className="mt-5">
+          <ColorButton
+            value="Publish Product"
+            onClick={() => handlePublish()}
+          />
         </div>
       </section>
     </main>
