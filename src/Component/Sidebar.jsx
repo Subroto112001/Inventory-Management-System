@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React from "react";
 import { BiPurchaseTagAlt } from "react-icons/bi";
 import { CgShutterstock } from "react-icons/cg";
@@ -11,6 +14,8 @@ import { MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { VscGraph } from "react-icons/vsc";
 
 const Sidebar = () => {
+  const pathname = usePathname();
+
   const menuItems = [
     { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
     { name: "Users", icon: <FaRegUser />, link: "/users" },
@@ -19,8 +24,8 @@ const Sidebar = () => {
       icon: <MdOutlineProductionQuantityLimits />,
       link: "/products",
     },
-    { name: "Stock", icon: <CgShutterstock />, link: "/settings" },
-    { name: "Purchase", icon: <BiPurchaseTagAlt />, link: "/settings" },
+    { name: "Stock", icon: <CgShutterstock />, link: "/stock" },
+    { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/order" },
     {
       name: "Sales",
       icon: <VscGraph />,
@@ -31,12 +36,18 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="bg-white h-full border-r border-gray-100 print:hidden">
+    <nav
+      className="bg-white h-full border-r border-gray-100 print:hidden"
+      aria-label="Sidebar Navigation"
+    >
       <div className="p-5">
         <div>
           <div className="border-b border-gray-100">
-            <div className="flex items-center gap-2 p-4 mb-3  text-white rounded-md">
-              <span className="text-xl p-3 bg-white text-[#611F69] rounded-md">
+            <div className="flex items-center gap-2 p-4 mb-3 text-white rounded-md">
+              <span
+                className="text-xl p-3 bg-white text-[#611F69] rounded-md"
+                aria-hidden="true"
+              >
                 <LuBuilding2 />
               </span>
               <div>
@@ -48,18 +59,41 @@ const Sidebar = () => {
             </div>
           </div>
         </div>
-        {menuItems.map((item, index) => (
-          <Link href={item.link} key={index}>
-            <li className="text-gray-700 bg-white p-2 cursor-pointer list-none hover:bg-[#611F69] transition-all hover:text-white rounded-md mb-2 flex items-center gap-2 group">
-              <span className="text-[#611F69] transition-all group-hover:text-white text-xl">
-                {item.icon}
-              </span>
-              <span>{item.name}</span>
-            </li>
-          </Link>
-        ))}
+
+        {/* Semantic list wrapper */}
+        <ul className="mt-4 flex flex-col gap-2">
+          {menuItems.map((item, index) => {
+            const isActive = pathname === item.link;
+
+            return (
+              <li key={index}>
+                <Link
+                  href={item.link}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`p-2 cursor-pointer transition-all rounded-md flex items-center gap-2 group ${
+                    isActive
+                      ? "bg-[#611F69] text-white font-medium shadow-sm"
+                      : "text-gray-700 bg-white hover:bg-[#611F69] hover:text-white"
+                  }`}
+                >
+                  <span
+                    className={`text-xl transition-all ${
+                      isActive
+                        ? "text-white"
+                        : "text-[#611F69] group-hover:text-white"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {item.icon}
+                  </span>
+                  <span>{item.name}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-    </div>
+    </nav>
   );
 };
 

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useState, useMemo } from "react";
 import {
   MdAdd,
   MdReceiptLong,
@@ -62,55 +61,93 @@ const ORDERS_DATA = [
 export default function OrdersDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
 
+  // সার্চ কোয়েরি অনুযায়ী ডেটা ফিল্টার করার লজিক
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery) return ORDERS_DATA;
+
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    return ORDERS_DATA.filter(
+      (order) =>
+        order.id.toLowerCase().includes(lowerCaseQuery) ||
+        order.customerName.toLowerCase().includes(lowerCaseQuery) ||
+        order.customerPhone.toLowerCase().includes(lowerCaseQuery) ||
+        order.status.toLowerCase().includes(lowerCaseQuery),
+    );
+  }, [searchQuery]);
+
+  // নিজস্ব কোডে পিডিএফ/প্রিন্ট কল করার ফাংশন
+  const generateReport = () => {
+    if (filteredOrders.length === 0) {
+      alert("No data available to export/print.");
+      return;
+    }
+    window.print();
+  };
+
   return (
-    <main className="p-5 min-h-[calc(100vh-64px)] bg-surface">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <main className="p-5 min-h-[calc(100vh-64px)] bg-surface print:bg-white print:p-0">
+      {/* শুধু প্রিন্টের সময় দেখানোর জন্য রিপোর্ট হেডার */}
+      <div className="hidden print:block mb-8 border-b border-gray-300 pb-4">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders Report</h1>
+        <p className="text-gray-600">
+          Generated on: {new Date().toLocaleDateString()}
+        </p>
+        {searchQuery && (
+          <p className="text-gray-500 text-sm mt-1">
+            Filtered by: "{searchQuery}"
+          </p>
+        )}
+      </div>
+
+      {/* Header - প্রিন্টের সময় লুকানো থাকবে */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 print:hidden">
         <h1 className="text-2xl font-semibold text-on-background">Orders</h1>
       </div>
 
       {/* KPI Summary Bar */}
       <section
-        className="flex  flex-row gap-4 mb-8"
+        className="flex flex-col md:flex-row gap-4 mb-8 print:hidden"
         aria-label="Key Performance Indicators"
       >
-        <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
+        <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200 ">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="font-label-sm text-label-sm text-secondary uppercase">
+            <h3 className="font-label-sm text-label-sm text-secondary uppercase text-gray-200 print:text-gray-700">
               Total Orders
             </h3>
-            <div className="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center print:hidden">
               <MdReceiptLong
-                className="text-primary text-[18px]"
+                className="text-white text-[18px]"
                 aria-hidden="true"
               />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-h2 text-h2 text-on-background">1,284</span>
-            <span className="font-label-sm text-label-sm text-tertiary-container">
+            <span className="font-h2 text-h2 text-white print:text-gray-900">
+              {filteredOrders.length}
+            </span>
+            <span className="font-label-sm text-label-sm text-gray-300 print:hidden">
               +12% from last month
             </span>
           </div>
         </div>
 
-        <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
+        <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200 ">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="font-label-sm text-label-sm text-secondary uppercase">
+            <h3 className="font-label-sm text-label-sm text-secondary uppercase text-gray-200 print:text-gray-700">
               Revenue This Month
             </h3>
-            <div className="w-8 h-8 rounded-full bg-tertiary-fixed-dim/20 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center print:hidden">
               <MdPayments
-                className="text-tertiary-container text-[18px]"
+                className="text-white text-[18px]"
                 aria-hidden="true"
               />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-h2 text-h2 text-on-background">
+            <span className="font-h2 text-h2 text-white print:text-gray-900">
               $84,520.00
             </span>
-            <span className="font-label-sm text-label-sm text-tertiary-container">
+            <span className="font-label-sm text-label-sm text-gray-300 print:hidden">
               +5.4%
             </span>
           </div>
@@ -118,19 +155,21 @@ export default function OrdersDashboard() {
 
         <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="font-label-sm text-label-sm text-secondary uppercase">
+            <h3 className="font-label-sm text-label-sm text-secondary uppercase text-gray-200 print:text-gray-700">
               Pending Shipments
             </h3>
-            <div className="w-8 h-8 rounded-full bg-surface-tint/10 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center print:hidden">
               <MdLocalShipping
-                className="text-surface-tint text-[18px]"
+                className="text-white text-[18px]"
                 aria-hidden="true"
               />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-h2 text-h2 text-on-background">42</span>
-            <span className="font-label-sm text-label-sm text-secondary">
+            <span className="font-h2 text-h2 text-white print:text-gray-900">
+              42
+            </span>
+            <span className="font-label-sm text-label-sm text-gray-300 print:hidden">
               Requires attention
             </span>
           </div>
@@ -138,165 +177,166 @@ export default function OrdersDashboard() {
       </section>
 
       {/* Table Section */}
-      <section className="bg-surface-container-lowest rounded-xl border border-gray-100 overflow-hidden">
-        {/* Table Toolbar */}
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-surface-bright">
+      <section className="bg-surface-container-lowest rounded-xl border border-gray-100 overflow-hidden shadow-sm print:border-none print:shadow-none">
+        {/* Table Toolbar - প্রিন্টের সময় লুকানো থাকবে */}
+        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white print:hidden">
           <div className="relative w-full sm:w-72">
             <label htmlFor="search-orders" className="sr-only">
-              Search orders
+              Search orders by ID, customer name, phone, or status
             </label>
             <MdSearch
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[20px]"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]"
               aria-hidden="true"
             />
             <input
               id="search-orders"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-surface border border-secondary-container text-on-background rounded-lg pl-10 pr-4 py-2 outline-none font-body text-body"
+              className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-lg pl-10 pr-4 py-2 outline-none focus:ring-2 focus:ring-[#611F69] transition-all font-body text-body"
               placeholder="Search orders..."
               type="search"
             />
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button className="flex items-center gap-2 px-4 py-2 border border-secondary-container rounded-lg font-label-sm text-label-sm text-on-background hover:bg-surface-container-low transition-colors w-full sm:w-auto justify-center">
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg font-label-sm text-label-sm text-gray-700 hover:bg-gray-50 transition-colors w-full sm:w-auto justify-center focus:outline-none focus:ring-2 focus:ring-[#611F69]">
               <MdFilterList className="text-[18px]" aria-hidden="true" />
               Filter
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-secondary-container rounded-lg font-label-sm text-label-sm text-on-background hover:bg-surface-container-low transition-colors w-full sm:w-auto justify-center">
+            <button
+              onClick={generateReport}
+              className="flex items-center gap-2 px-4 py-2 border border-[#611F69] bg-[#611F69] text-white rounded-lg font-label-sm text-label-sm hover:bg-[#4a1752] transition-colors w-full sm:w-auto justify-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+              aria-label="Export or Print orders report to PDF"
+            >
               <MdDownload className="text-[18px]" aria-hidden="true" />
-              Export
+              Export to PDF
             </button>
           </div>
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse bg-white print:border print:border-gray-300">
             <thead>
-              <tr className="bg-surface-container-low border-b border-gray-100">
+              <tr className="bg-gray-50 border-b border-gray-200 print:bg-gray-100">
                 <th
                   scope="col"
-                  className="px-6 py-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider"
+                  className="px-6 py-4 font-semibold text-[13px] text-gray-800 uppercase tracking-wider print:border-b print:border-gray-400"
                 >
                   Order ID
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider"
+                  className="px-6 py-4 font-semibold text-[13px] text-gray-800 uppercase tracking-wider print:border-b print:border-gray-400"
                 >
                   Date
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider"
+                  className="px-6 py-4 font-semibold text-[13px] text-gray-800 uppercase tracking-wider print:border-b print:border-gray-400"
                 >
                   Customer
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider"
+                  className="px-6 py-4 font-semibold text-[13px] text-gray-800 uppercase tracking-wider print:border-b print:border-gray-400"
                 >
                   Total Amount
                 </th>
-
                 <th
                   scope="col"
-                  className="px-6 py-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider text-right"
+                  className="px-6 py-4 font-semibold text-[13px] text-gray-800 uppercase tracking-wider text-right print:hidden"
                 >
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="border-b border-gray-100 font-body text-body text-on-surface-variant">
-              {ORDERS_DATA.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-[#F3EBF4] transition-colors group border-b border-gray-100"
-                >
-                  <td className="px-6 py-4 font-h3 text-h3 text-primary">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4">{order.date}</td>
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-on-background">
-                      {order.customerName}
-                    </div>
-                    <div className="text-secondary text-sm">
-                      {order.customerPhone}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-on-background">
-                    {order.amount}
-                  </td>
-
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-md text-primary hover:bg-primary-container/10 transition-colors font-label-sm text-label-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      aria-label={`View memo for order ${order.id}`}
-                    >
-                      <MdVisibility
-                        className="text-[16px]"
-                        aria-hidden="true"
-                      />
-                      View Memo
-                    </button>
+            <tbody className="divide-y divide-gray-100 text-[14px] text-gray-900 print:divide-gray-300">
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="hover:bg-gray-50 transition-colors group"
+                  >
+                    <td className="px-6 py-4 font-medium text-[#611F69] print:text-gray-900 print:py-2">
+                      {order.id}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 print:text-gray-900 print:py-2">
+                      {order.date}
+                    </td>
+                    <td className="px-6 py-4 print:py-2">
+                      <div className="font-semibold text-gray-900">
+                        {order.customerName}
+                      </div>
+                      <div className="text-gray-500 text-sm print:text-gray-700">
+                        {order.customerPhone}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 print:py-2">
+                      {order.amount}
+                    </td>
+                    <td className="px-6 py-4 text-right print:hidden">
+                      <button
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-md text-[#611F69] hover:bg-[#611F69] hover:text-white transition-colors font-medium text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                        aria-label={`View memo for order ${order.id}`}
+                      >
+                        <MdVisibility
+                          className="text-[16px]"
+                          aria-hidden="true"
+                        />
+                        View Memo
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-6 py-12 text-center text-gray-500 print:hidden"
+                  >
+                    <p className="text-lg font-medium">No results found</p>
+                    <p className="text-sm mt-1">
+                      We couldn't find any orders matching "{searchQuery}"
+                    </p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination Footer */}
+        {/* Pagination Footer - প্রিন্টের সময় লুকানো থাকবে */}
         <nav
-          className="px-6 py-4 border-t border-gray-100 bg-surface-bright flex items-center justify-between"
+          className="px-6 py-4 border-t border-gray-100 bg-white flex items-center justify-between print:hidden"
           aria-label="Pagination Navigation"
         >
-          <span
-            className="font-body text-body text-secondary"
-            aria-live="polite"
-          >
-            Showing 1 to 5 of 1,284 entries
+          <span className="text-[14px] text-gray-600" aria-live="polite">
+            Showing {filteredOrders.length > 0 ? 1 : 0} to{" "}
+            {filteredOrders.length} of {ORDERS_DATA.length} entries
           </span>
           <div className="flex items-center gap-2">
             <button
-              className="w-8 h-8 flex items-center justify-center border border-secondary-container rounded text-secondary hover:bg-surface-container-high disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
               disabled
               aria-label="Previous page"
             >
               <MdChevronLeft className="text-[18px]" aria-hidden="true" />
             </button>
             <button
-              className="w-8 h-8 flex items-center justify-center border border-primary bg-primary-container/10 rounded text-primary font-bold"
+              className="w-8 h-8 flex items-center justify-center border border-[#611F69] bg-[#611F69] text-white rounded font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
               aria-current="page"
               aria-label="Page 1"
             >
               1
             </button>
             <button
-              className="w-8 h-8 flex items-center justify-center border border-secondary-container rounded text-secondary hover:bg-surface-container-high "
+              className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
               aria-label="Page 2"
             >
               2
             </button>
             <button
-              className="w-8 h-8 flex items-center justify-center border border-secondary-container rounded text-secondary hover:bg-surface-container-high "
-              aria-label="Page 3"
-            >
-              3
-            </button>
-            <span className="text-secondary mx-1" aria-hidden="true">
-              ...
-            </span>
-            <button
-              className="w-8 h-8 flex items-center justify-center border border-secondary-container rounded text-secondary hover:bg-surface-container-high"
-              aria-label="Page 257"
-            >
-              257
-            </button>
-            <button
-              className="w-8 h-8 flex items-center justify-center border border-secondary-container rounded text-secondary hover:bg-surface-container-high"
+              className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
               aria-label="Next page"
             >
               <MdChevronRight className="text-[18px]" aria-hidden="true" />
