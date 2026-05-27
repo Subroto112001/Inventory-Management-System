@@ -1,6 +1,50 @@
+"use client"
 import React from "react";
 import Sidebar from "../Component/Sidebar";
 import dashboard from "../css//Dashboard.css";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  MdAdd,
+  MdInventory2,
+  MdTrendingUp,
+  MdWarning,
+  MdAttachMoney,
+  MdArrowUpward,
+  MdArrowDownward,
+  MdMoreVert,
+  MdFilterList,
+  MdArrowForward,
+} from "react-icons/md";
+
+// Accessible mock datasets for the charts
+const salesTrendData = [
+  { name: "Mon", revenue: 4000 },
+  { name: "Tue", revenue: 3000 },
+  { name: "Wed", revenue: 5000 },
+  { name: "Thu", revenue: 2780 },
+  { name: "Fri", revenue: 6890 },
+  { name: "Sat", revenue: 8390 },
+  { name: "Sun", revenue: 9490 },
+];
+
+const topProductsData = [
+  { name: "Bearings", units: 1200 },
+  { name: "Wiring", units: 900 },
+  { name: "Boxes", units: 750 },
+  { name: "Screws", units: 600 },
+  { name: "Motors", units: 450 },
+];
+
 const page = () => {
   return (
     <div>
@@ -18,12 +62,10 @@ const page = () => {
             </div>
             <div>
               <button
-                className="btn-primary text-label-sm"
+                className="btn-primary text-label-sm flex items-center gap-1"
                 aria-label="Add new product to inventory"
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  add
-                </span>
+                <MdAdd size={20} aria-hidden="true" />
                 Add Product
               </button>
             </div>
@@ -41,24 +83,12 @@ const page = () => {
                   <p className="text-h2 text-on-surface">12,450</p>
                 </div>
                 <div className="icon-box icon-box-tertiary" aria-hidden="true">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    package_2
-                  </span>
+                  <MdInventory2 size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "14px" }}
-                    aria-hidden="true"
-                  >
-                    arrow_upward
-                  </span>{" "}
-                  4.2%
+                <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
+                  <MdArrowUpward size={14} aria-hidden="true" /> 4.2%
                 </span>
                 <span className="text-label-sm text-secondary">
                   vs last month
@@ -76,24 +106,12 @@ const page = () => {
                   <p className="text-h2 text-on-surface">$4,280</p>
                 </div>
                 <div className="icon-box icon-box-primary" aria-hidden="true">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    trending_up
-                  </span>
+                  <MdTrendingUp size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "14px" }}
-                    aria-hidden="true"
-                  >
-                    arrow_upward
-                  </span>{" "}
-                  12.5%
+                <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
+                  <MdArrowUpward size={14} aria-hidden="true" /> 12.5%
                 </span>
                 <span className="text-label-sm text-secondary">
                   vs yesterday
@@ -111,24 +129,12 @@ const page = () => {
                   <p className="text-h2 text-on-surface">24</p>
                 </div>
                 <div className="icon-box icon-box-warning" aria-hidden="true">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    warning
-                  </span>
+                  <MdWarning size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-warning">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "14px" }}
-                    aria-hidden="true"
-                  >
-                    arrow_downward
-                  </span>{" "}
-                  2 less
+                <span className="badge-trend text-label-sm trend-warning flex items-center gap-1">
+                  <MdArrowDownward size={14} aria-hidden="true" /> 2 less
                 </span>
                 <span className="text-label-sm text-secondary">
                   needs action
@@ -146,24 +152,12 @@ const page = () => {
                   <p className="text-h2 text-on-surface">$82,400</p>
                 </div>
                 <div className="icon-box icon-box-tertiary" aria-hidden="true">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    attach_money
-                  </span>
+                  <MdAttachMoney size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "14px" }}
-                    aria-hidden="true"
-                  >
-                    arrow_upward
-                  </span>{" "}
-                  8.4%
+                <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
+                  <MdArrowUpward size={14} aria-hidden="true" /> 8.4%
                 </span>
                 <span className="text-label-sm text-secondary">
                   vs last month
@@ -186,16 +180,66 @@ const page = () => {
                   className="btn-icon"
                   aria-label="More options for Sales Trend chart"
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    aria-hidden="true"
-                  >
-                    more_vert
-                  </span>
+                  <MdMoreVert size={24} aria-hidden="true" />
                 </button>
               </div>
-              <div className="chart-placeholder text-body" aria-hidden="true">
-                [Chart Area]
+              <div
+                className="chart-placeholder text-body"
+                role="region"
+                aria-label="Line chart displaying sales trend over the last 7 days"
+                tabIndex={0}
+                style={{ width: "100%", height: "280px" }}
+              >
+                {/* Screen-reader hidden semantic fallback table for full A11y compliance */}
+                <table className="sr-only" aria-hidden="false">
+                  <caption>Sales Revenue for the last 7 days</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Day</th>
+                      <th scope="col">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesTrendData.map((data) => (
+                      <tr key={data.name}>
+                        <td>{data.name}</td>
+                        <td>${data.revenue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                  aria-hidden="true"
+                >
+                  <LineChart
+                    data={salesTrendData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 12, fill: "#4b5563" }}
+                    />
+                    <YAxis tick={{ fontSize: 12, fill: "#4b5563" }} />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#1D4ED8"
+                      strokeWidth={3}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </article>
 
@@ -213,16 +257,61 @@ const page = () => {
                   className="btn-icon"
                   aria-label="Filter Top Selling Products"
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    aria-hidden="true"
-                  >
-                    filter_list
-                  </span>
+                  <MdFilterList size={24} aria-hidden="true" />
                 </button>
               </div>
-              <div className="chart-placeholder text-body" aria-hidden="true">
-                [Chart Area]
+              <div
+                className="chart-placeholder text-body"
+                role="region"
+                aria-label="Bar chart displaying the top selling products this month"
+                tabIndex={0}
+                style={{ width: "100%", height: "280px" }}
+              >
+                {/* Screen-reader hidden semantic fallback table for full A11y compliance */}
+                <table className="sr-only" aria-hidden="false">
+                  <caption>Units sold for top products this month</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Product Name</th>
+                      <th scope="col">Units Sold</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topProductsData.map((data) => (
+                      <tr key={data.name}>
+                        <td>{data.name}</td>
+                        <td>{data.units}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                  aria-hidden="true"
+                >
+                  <BarChart
+                    data={topProductsData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 12, fill: "#4b5563" }}
+                    />
+                    <YAxis tick={{ fontSize: 12, fill: "#4b5563" }} />
+                    <Tooltip
+                      cursor={{ fill: "#f3f4f6" }}
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      }}
+                    />
+                    <Bar dataKey="units" fill="#047857" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </article>
           </section>
@@ -239,17 +328,10 @@ const page = () => {
                 </p>
               </div>
               <button
-                className="btn-link text-label-sm"
+                className="btn-link text-label-sm flex items-center gap-1"
                 aria-label="View all low stock items"
               >
-                View All{" "}
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "16px" }}
-                  aria-hidden="true"
-                >
-                  arrow_forward
-                </span>
+                View All <MdArrowForward size={16} aria-hidden="true" />
               </button>
             </header>
 

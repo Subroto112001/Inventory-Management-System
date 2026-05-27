@@ -32,7 +32,7 @@ const Sidebar = () => {
       link: "/settings",
     },
     { name: "Customers", icon: <FaClipboardUser />, link: "/settings" },
-    { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/settings" },
+    { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
   ];
 
   return (
