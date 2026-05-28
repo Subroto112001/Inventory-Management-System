@@ -29,9 +29,9 @@ const Sidebar = () => {
     {
       name: "Sales",
       icon: <VscGraph />,
-      link: "/settings",
+      link: "/create_neworder",
     },
-    { name: "Customers", icon: <FaClipboardUser />, link: "/settings" },
+    { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
     { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
   ];
 

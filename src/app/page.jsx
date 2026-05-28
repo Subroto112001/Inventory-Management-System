@@ -38,11 +38,11 @@ const salesTrendData = [
 ];
 
 const topProductsData = [
-  { name: "Bearings", units: 1200 },
-  { name: "Wiring", units: 900 },
-  { name: "Boxes", units: 750 },
-  { name: "Screws", units: 600 },
-  { name: "Motors", units: 450 },
+  { name: "Speaker", units: 1200 },
+  { name: "Sneakers", units: 900 },
+  { name: "Headphones", units: 750 },
+  { name: "Camera", units: 600 },
+  { name: "Mobile", units: 450 },
 ];
 
 const page = () => {
