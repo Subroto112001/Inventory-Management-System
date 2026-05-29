@@ -65,7 +65,7 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="p-5 lg:p-8 max-w-7xl mx-auto bg-gray-50 min-h-screen">
+    <div className="p-5 lg:p-8 mx-auto min-h-screen">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="font-bold text-2xl text-gray-900">Profile Settings</h1>

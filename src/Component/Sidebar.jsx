@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { BiPurchaseTagAlt } from "react-icons/bi";
+import { BiPurchaseTagAlt, BiSolidOffer } from "react-icons/bi";
 import { CgShutterstock } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
 import { FcSalesPerformance } from "react-icons/fc";
 import { HiOutlineDocumentReport } from "react-icons/hi";
-import { LuBuilding2, LuLayoutDashboard } from "react-icons/lu";
+import { LuBuilding2, LuCar, LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { VscGraph } from "react-icons/vsc";
 
@@ -18,7 +18,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
-    { name: "Users", icon: <FaRegUser />, link: "/users" },
+    { name: "Users", icon: <FaRegUser />, link: "/user" },
     {
       name: "Products",
       icon: <MdOutlineProductionQuantityLimits />,
@@ -30,6 +30,16 @@ const Sidebar = () => {
       name: "Sales",
       icon: <VscGraph />,
       link: "/create_neworder",
+    },
+    {
+      name: "Procurement (PO)",
+      icon: <LuCar />,
+      link: "/procurement",
+    },
+    {
+      name: "Promotions",
+      icon: <BiSolidOffer />,
+      link: "/promotions",
     },
     { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
     { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
