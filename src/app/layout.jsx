@@ -1,48 +1,60 @@
-import { Playfair_Display, Poppins } from "next/font/google";
-import "./globals.css";
-import Header from "../Component/Header";
+import Header from "@/Component/Header";
 import Sidebar from "@/Component/Sidebar";
+import "./globals.css";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
-});
-
-// SEO-optimized metadata
 export const metadata = {
-  title: "Dashboard | Business Management System",
-  description:
-    "Manage your business operations, orders, and user profiles efficiently.",
+  title: "Dashboard | Skripto",
+  description: "View your business analytics and operations.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${poppins.variable}`}>
-      <body
-        className={`${poppins.className} h-screen overflow-hidden flex flex-col bg-white text-gray-900`}
-      >
-        {/* Header — shrink-0 keeps it from compressing */}
-        <header className="w-full shrink-0 z-50 shadow-md bg-[#611F69]">
-          <Header />
-        </header>
+    <html lang="en">
+      <body className="h-screen overflow-hidden bg-[#F8FAFC]">
+        {/* Main Wrapper */}
+        <div className="flex flex-col h-full w-full">
+          {/* Header */}
+          <header
+            className="h-[70px] w-full shrink-0 z-50 shadow-md bg-[#611F69]"
+            aria-label="Global Header"
+          >
+            <Header />
+          </header>
 
-        {/* overflow-hidden here prevents the row itself from scrolling */}
-        <div className="flex flex-row gap-1 flex-1 overflow-hidden">
-          {/* Sidebar — no overflow, stays locked in place */}
-          <aside className="w-[15%] h-full" aria-label="Sidebar Navigation">
-            <Sidebar />
-          </aside>
+          {/* Dashboard Content */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Sidebar */}
+            <aside
+              className="
+                hidden md:block
+                w-[260px]
+                shrink-0
+                h-full
+                bg-white
+                border-r
+                border-gray-200
+                overflow-y-auto
+              "
+              aria-label="Sidebar Navigation"
+            >
+              <Sidebar />
+            </aside>
 
-          {/* Only main scrolls */}
-          <main className="w-[85%] h-full overflow-y-auto" id="main-content">
-            {children}
-          </main>
+            {/* Main Content */}
+            <main
+              className="
+                flex-1
+                h-full
+                overflow-y-auto
+                p-4
+                md:p-6
+              "
+              id="main-content"
+              tabIndex="-1"
+            >
+              {children}
+            </main>
+          </div>
         </div>
       </body>
     </html>

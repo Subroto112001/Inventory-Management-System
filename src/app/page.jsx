@@ -1,7 +1,6 @@
 "use client"
 import React from "react";
-import Sidebar from "../Component/Sidebar";
-import dashboard from "../css//Dashboard.css";
+import "../css/Dashboard.css";
 import {
   LineChart,
   Line,
