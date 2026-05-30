@@ -9,7 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
     "html5-qrcode": "^2.3.8",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.3",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
