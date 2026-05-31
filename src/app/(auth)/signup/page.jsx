@@ -1,22 +1,50 @@
 "use client";
-import Link from "next/link";
 import { useState } from "react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe });
+    setError("");
+
+    // পাসওয়ার্ড ম্যাচিং ভ্যালিডেশন
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
+    // ব্যাকএন্ডে পাঠানোর জন্য ডাটা অবজেক্ট (মডেল অনুযায়ী)
+    const submitData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      password: formData.password,
+    };
+
+    console.log("Submitting to backend Model:", submitData);
+    // এখানে আপনার API কল (axios/fetch) যুক্ত করবেন
   };
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
         :root {
@@ -74,7 +102,7 @@ export default function LoginPage() {
         }
 
         .login-root {
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           background-color: var(--color-background);
           color: var(--color-on-surface);
           width: 100%;
@@ -202,16 +230,17 @@ export default function LoginPage() {
           align-items: center;
           justify-content: center;
           padding: 1.5rem;
+          overflow-y: auto;
         }
         @media (min-width: 640px) { .right-col { padding: 3rem; } }
         @media (min-width: 1024px) { .right-col { width: 60%; } }
 
         .form-card {
           width: 100%;
-          max-width: 28rem;
+          max-width: 32rem; /* সাইনআপ ফর্মের সুবিধার জন্য সামান্য বড় করা হয়েছে */
         }
 
-        /* Mobile header */
+        /* Headers */
         .mobile-header {
           display: block;
           text-align: center;
@@ -247,10 +276,9 @@ export default function LoginPage() {
           margin-top: 0.5rem;
         }
 
-        /* Desktop header */
         .desktop-header {
           display: none;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
         }
         @media (min-width: 1024px) { .desktop-header { display: block; } }
         .desktop-header h2 {
@@ -267,8 +295,17 @@ export default function LoginPage() {
           margin-top: 0.5rem;
         }
 
-        /* Form */
-        .form { display: flex; flex-direction: column; gap: 1.5rem; }
+        /* Form Layout */
+        .form { display: flex; flex-direction: column; gap: 1.25rem; }
+        
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+        }
+        @media (min-width: 640px) {
+          .form-grid { grid-template-columns: 1fr 1fr; }
+        }
 
         .field-label {
           display: block;
@@ -309,7 +346,7 @@ export default function LoginPage() {
           border: 1px solid var(--color-surface-variant);
           border-radius: 0.5rem;
           background-color: var(--color-surface);
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           font-size: 14px;
           line-height: 20px;
           color: var(--color-on-surface);
@@ -342,44 +379,14 @@ export default function LoginPage() {
           font-size: 1.25rem;
         }
 
-        /* Password label row */
-        .pw-label-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.5rem;
-        }
-        .forgot-link {
-          font-size: 12px;
-          line-height: 16px;
+        /* Error Alert */
+        .error-alert {
+          padding: 0.75rem 1rem;
+          background-color: var(--color-error-container);
+          color: var(--color-on-error-container);
+          border-radius: 0.5rem;
+          font-size: 13px;
           font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-tertiary-container);
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .forgot-link:hover { color: var(--color-tertiary-fixed-dim); }
-
-        /* Checkbox */
-        .checkbox-row {
-          display: flex;
-          align-items: center;
-        }
-        .checkbox-input {
-          width: 1rem;
-          height: 1rem;
-          border-radius: 0.25rem;
-          border: 1px solid var(--color-surface-variant);
-          background-color: var(--color-surface);
-          accent-color: var(--color-primary);
-          cursor: pointer;
-        }
-        .checkbox-label {
-          margin-left: 0.5rem;
-          font-size: 14px;
-          line-height: 20px;
-          color: var(--color-secondary);
-          cursor: pointer;
         }
 
         /* Submit button */
@@ -390,7 +397,7 @@ export default function LoginPage() {
           padding: 0.75rem 1rem;
           border: none;
           border-radius: 0.5rem;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           font-size: 12px;
           line-height: 16px;
           font-weight: 600;
@@ -412,7 +419,7 @@ export default function LoginPage() {
         /* Divider */
         .divider {
           position: relative;
-          margin-top: 2rem;
+          margin-top: 1.5rem;
         }
         .divider-line {
           position: absolute;
@@ -450,7 +457,7 @@ export default function LoginPage() {
           border: 1px solid var(--color-surface-variant);
           border-radius: 0.5rem;
           background-color: var(--color-surface-container-lowest);
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           font-size: 12px;
           line-height: 16px;
           font-weight: 600;
@@ -459,7 +466,7 @@ export default function LoginPage() {
           cursor: pointer;
           box-shadow: 0 1px 2px rgba(0,0,0,0.05);
           transition: background-color 0.2s;
-          margin-top: 1.5rem;
+          margin-top: 1rem;
         }
         .google-btn:hover { background-color: var(--color-surface-container-low); }
         .google-btn:focus {
@@ -468,9 +475,9 @@ export default function LoginPage() {
         }
         .google-btn svg { margin-right: 0.5rem; }
 
-        /* Sign up link */
+        /* Sign up text */
         .signup-text {
-          margin-top: 2rem;
+          margin-top: 1.5rem;
           text-align: center;
           font-size: 14px;
           line-height: 20px;
@@ -499,11 +506,11 @@ export default function LoginPage() {
               <h1>Inventory</h1>
             </div>
             <div className="left-headline">
-              <h2>The Smart Inventory Solution</h2>
+              <h2>Join the Smart Inventory Fleet</h2>
               <p>
-                Streamline your warehouse operations, track stock levels in
-                real-time, and make data-driven decisions with unparalleled
-                precision.
+                Create your manager account today to monitor stock levels,
+                assign warehouse nodes, and streamline supply chains in
+                real-time.
               </p>
             </div>
           </div>
@@ -524,7 +531,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ── Right Column: Form ── */}
+        {/* ── Right Column: Signup Form ── */}
         <div className="right-col">
           <div className="form-card">
             {/* Mobile Header */}
@@ -532,18 +539,69 @@ export default function LoginPage() {
               <div className="mobile-logo-box">
                 <span className="icon">inventory_2</span>
               </div>
-              <h1>Welcome Back</h1>
-              <p>Log in to manage your inventory</p>
+              <h1>Get Started</h1>
+              <p>Create an account to manage assets</p>
             </div>
 
             {/* Desktop Header */}
             <div className="desktop-header">
-              <h2>Log in</h2>
-              <p>Enter your credentials to access your dashboard.</p>
+              <h2>Create an account</h2>
+              <p>Fill in the details to establish your system profile.</p>
             </div>
 
+            {error && <div className="error-alert">{error}</div>}
+
             <form className="form" onSubmit={handleSubmit}>
-              {/* Email */}
+              {/* Row 1: First Name & Last Name */}
+              <div className="form-grid">
+                <div>
+                  <label className="field-label" htmlFor="firstName">
+                    First Name
+                  </label>
+                  <div className="input-wrapper">
+                    <div className="input-icon">
+                      <span className="icon">person</span>
+                    </div>
+                    <input
+                      className="text-input"
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      placeholder="John"
+                      required
+                      minLength={2}
+                      maxLength={50}
+                      pattern="^[a-zA-Z\s]+$"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="lastName">
+                    Last Name
+                  </label>
+                  <div className="input-wrapper">
+                    <div className="input-icon">
+                      <span className="icon">badge</span>
+                    </div>
+                    <input
+                      className="text-input"
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      placeholder="Doe"
+                      maxLength={50}
+                      pattern="^[a-zA-Z\s]+$"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Email */}
               <div>
                 <label className="field-label" htmlFor="email">
                   Email Address
@@ -559,74 +617,99 @@ export default function LoginPage() {
                     type="email"
                     placeholder="name@company.com"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={handleChange}
                   />
                 </div>
               </div>
 
-              {/* Password */}
+              {/* Row 3: Phone Number (BD Validation Matching Schema) */}
               <div>
-                <div className="pw-label-row">
-                  <label
-                    className="field-label"
-                    style={{ marginBottom: 0 }}
-                    htmlFor="password"
-                  >
-                    Password
-                  </label>
-                  <a className="forgot-link" href="#">
-                    Forgot password?
-                  </a>
-                </div>
+                <label className="field-label" htmlFor="phoneNumber">
+                  Phone Number
+                </label>
                 <div className="input-wrapper">
                   <div className="input-icon">
-                    <span className="icon">lock</span>
+                    <span className="icon">call</span>
                   </div>
                   <input
-                    className="text-input has-right-icon"
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    className="text-input"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    placeholder="01XXXXXXXXX"
+                    pattern="^(?:\+88|88)?(01[3-9]\d{8})$"
+                    title="Please provide a valid Bangladeshi phone number"
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
                   />
-                  <button
-                    className="pw-toggle"
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    <span className="icon">
-                      {showPassword ? "visibility" : "visibility_off"}
-                    </span>
-                  </button>
                 </div>
               </div>
 
-              {/* Remember me */}
-              <div className="checkbox-row">
-                <input
-                  className="checkbox-input"
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <label className="checkbox-label" htmlFor="remember-me">
-                  Remember me for 30 days
-                </label>
+              {/* Row 4: Password & Confirm Password */}
+              <div className="form-grid">
+                <div>
+                  <label className="field-label" htmlFor="password">
+                    Password
+                  </label>
+                  <div className="input-wrapper">
+                    <div className="input-icon">
+                      <span className="icon">lock</span>
+                    </div>
+                    <input
+                      className="text-input has-right-icon"
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      required
+                      pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$"
+                      title="Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, and one number"
+                      value={formData.password}
+                      onChange={handleChange}
+                    />
+                    <button
+                      className="pw-toggle"
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      <span className="icon">
+                        {showPassword ? "visibility" : "visibility_off"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="confirmPassword">
+                    Confirm Password
+                  </label>
+                  <div className="input-wrapper">
+                    <div className="input-icon">
+                      <span className="icon">enhanced_encryption</span>
+                    </div>
+                    <input
+                      className="text-input"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Submit */}
+              {/* Submit Button */}
               <div>
                 <button className="submit-btn" type="submit">
-                  Log in
+                  Sign up
                 </button>
               </div>
             </form>
@@ -637,11 +720,11 @@ export default function LoginPage() {
                 <hr />
               </div>
               <div className="divider-label">
-                <span>Or continue with</span>
+                <span>Or sign up with</span>
               </div>
             </div>
 
-            {/* Google */}
+            {/* Google Signup */}
             <button className="google-btn" type="button">
               <svg
                 aria-hidden="true"
@@ -665,13 +748,15 @@ export default function LoginPage() {
                   fill="#34A853"
                 />
               </svg>
-              Log in with Google
+              Sign up with Google
             </button>
 
-            {/* Sign up */}
+            {/* Link back to login */}
             <p className="signup-text">
-              Don't have an account?{" "}
-              <Link href="/signup"> Create an account</Link>
+              Already have an account?{" "}
+              <a className="signup-link" href="#">
+                Log in
+              </a>
             </p>
           </div>
         </div>
