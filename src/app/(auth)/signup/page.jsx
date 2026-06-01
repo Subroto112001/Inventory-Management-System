@@ -1,8 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -18,17 +21,17 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // পাসওয়ার্ড ম্যাচিং ভ্যালিডেশন
+    // পাসওয়ার্ড ম্যাচিং ভ্যালিডেশন
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
-    // ব্যাকএন্ডে পাঠানোর জন্য ডাটা অবজেক্ট (মডেল অনুযায়ী)
+    // ব্যাকএন্ডে পাঠানোর জন্য ডাটা অবজেক্ট (মডেল অনুযায়ী)
     const submitData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -37,8 +40,32 @@ export default function RegisterPage() {
       password: formData.password,
     };
 
-    console.log("Submitting to backend Model:", submitData);
-    // এখানে আপনার API কল (axios/fetch) যুক্ত করবেন
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Something went wrong during registration.",
+        );
+      }
+
+      // Success: Redirect to login page
+      router.push("/login");
+    } catch (err) {
+      setError(err.message || "Failed to connect to the server.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -237,7 +264,7 @@ export default function RegisterPage() {
 
         .form-card {
           width: 100%;
-          max-width: 32rem; /* সাইনআপ ফর্মের সুবিধার জন্য সামান্য বড় করা হয়েছে */
+          max-width: 32rem;
         }
 
         /* Headers */
@@ -623,7 +650,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Row 3: Phone Number (BD Validation Matching Schema) */}
+              {/* Row 3: Phone Number */}
               <div>
                 <label className="field-label" htmlFor="phoneNumber">
                   Phone Number
@@ -708,8 +735,16 @@ export default function RegisterPage() {
 
               {/* Submit Button */}
               <div>
-                <button className="submit-btn" type="submit">
-                  Sign up
+                <button
+                  className="submit-btn"
+                  type="submit"
+                  disabled={isLoading}
+                  style={{
+                    opacity: isLoading ? 0.7 : 1,
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {isLoading ? "Signing up..." : "Sign up"}
                 </button>
               </div>
             </form>

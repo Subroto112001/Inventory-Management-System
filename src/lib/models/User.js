@@ -1,8 +1,8 @@
-require("dotenv").config();
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
 const { Schema, Types } = mongoose;
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 const userSchema = new Schema(
   {
@@ -12,13 +12,16 @@ const userSchema = new Schema(
       required: [true, "First name is required"],
       minlength: [2, "First name must be at least 2 characters long"],
       maxlength: [50, "First name cannot exceed 50 characters"],
-      match: [/^[a-zA-Z\s]+$/, "First name can only contain letters and spaces"]
+      match: [
+        /^[a-zA-Z\s]+$/,
+        "First name can only contain letters and spaces",
+      ],
     },
     lastName: {
       type: String,
       trim: true,
       maxlength: [50, "Last name cannot exceed 50 characters"],
-      match: [/^[a-zA-Z\s]+$/, "Last name can only contain letters and spaces"]
+      match: [/^[a-zA-Z\s]+$/, "Last name can only contain letters and spaces"],
     },
     email: {
       type: String,
@@ -76,14 +79,14 @@ const userSchema = new Schema(
     // --- Location & Contact ---
     phoneNumber: {
       type: String,
-      // বাংলাদেশের ফোন নাম্বার ফরম্যাট ভ্যালিডেশন (+880 বা 01 দিয়ে শুরু)
+      // বাংলাদেশের ফোন নাম্বার ফরম্যাট ভ্যালিডেশন (+880 বা 01 দিয়ে শুরু)
       match: [
         /^(?:\+88|88)?(01[3-9]\d{8})$/,
         "Please provide a valid Bangladeshi phone number",
       ],
     },
-    address: { 
-      type: String, 
+    address: {
+      type: String,
       trim: true,
       maxlength: [250, "Address cannot exceed 250 characters"],
     },
@@ -103,22 +106,19 @@ const userSchema = new Schema(
     // Session tracking for absolute timeout
     sessionCreatedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // --- Middleware & Methods ---
 
-userSchema.pre("save", async function (next) {
+// FIX: Removed 'next' parameter completely.
+// Returning early acts as a successful pass, and errors bubble up naturally.
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
-  try {
-    const SALT_ROUNDS = 12;
-    this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const SALT_ROUNDS = 12;
+  this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
 });
 
 userSchema.methods.compareHashPassword = async function (humanPass) {
@@ -134,7 +134,7 @@ userSchema.methods.generateAccessToken = function () {
       warehouseId: this.assignedWarehouse,
     },
     process.env.ACCESTOKEN_SECRET.trim(),
-    { expiresIn: process.env.ACCESTOKEN_EXPIRE.trim() }
+    { expiresIn: process.env.ACCESTOKEN_EXPIRE.trim() },
   );
 };
 
@@ -142,8 +142,10 @@ userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     { userid: this._id },
     process.env.REFRESHTOKEN_SECRET.trim(),
-    { expiresIn: process.env.REFRESHTOKEN_EXPIRE.trim() }
+    { expiresIn: process.env.REFRESHTOKEN_EXPIRE.trim() },
   );
 };
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+export default User;
