@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [error, setError] = useState("");
+  // সফলভাবে রেজিস্টার্ড ইউজারের নাম রাখার জন্য স্টেট
+  const [registeredUser, setRegisteredUser] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,14 +56,14 @@ export default function RegisterPage() {
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (response.ok) {
+        // ব্যাকএন্ড থেকে আসা userName স্টেটে সেট করা হচ্ছে (অথবা ব্যাকআপ হিসেবে ইনপুটের firstName)
+        setRegisteredUser(data?.userName || formData.firstName);
+      } else {
         throw new Error(
           data.message || "Something went wrong during registration.",
         );
       }
-
-      // Success: Redirect to login page
-      router.push("/login");
     } catch (err) {
       setError(err.message || "Failed to connect to the server.");
     } finally {
@@ -135,9 +138,6 @@ export default function RegisterPage() {
           width: 100%;
           min-height: 100%;
           -webkit-font-smoothing: antialiased;
-        }
-
-        .login-root {
           display: flex;
           min-height: 100vh;
         }
@@ -520,6 +520,78 @@ export default function RegisterPage() {
           transition: color 0.2s;
         }
         .signup-link:hover { color: var(--color-tertiary-fixed-dim); }
+
+        /* ── Popup / Modal Styles ── */
+        .popup-overlay {
+          position: fixed;
+          inset: 0;
+          background-color: rgba(25, 28, 29, 0.6);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 999;
+          padding: 1rem;
+        }
+        .popup-card {
+          background-color: var(--color-surface-container-lowest);
+          padding: 2.5rem 2rem;
+          border-radius: 0.75rem;
+          width: 100%;
+          max-width: 26rem;
+          text-align: center;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          border: 1px solid var(--color-outline-variant);
+          animation: popupReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popupReveal {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .popup-icon-box {
+          width: 3.5rem;
+          height: 3.5rem;
+          background-color: #e6f4ea;
+          color: #137333;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.25rem;
+        }
+        .popup-icon-box .icon {
+          font-family: 'Material Symbols Outlined';
+          font-size: 2.25rem;
+        }
+        .popup-card h3 {
+          font-size: 22px;
+          font-weight: 700;
+          color: var(--color-on-surface);
+          margin-bottom: 0.75rem;
+        }
+        .popup-card p {
+          font-size: 14px;
+          line-height: 22px;
+          color: var(--color-secondary);
+          margin-bottom: 1.75rem;
+        }
+        .popup-btn {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          border: none;
+          border-radius: 0.5rem;
+          font-family: 'Noto Serif', serif;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: var(--color-on-primary);
+          background-color: var(--color-primary-container);
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .popup-btn:hover {
+          background-color: var(--color-on-primary-fixed-variant);
+        }
       `}</style>
 
       <div className="login-root">
@@ -789,13 +861,32 @@ export default function RegisterPage() {
             {/* Link back to login */}
             <p className="signup-text">
               Already have an account?{" "}
-              <a className="signup-link" href="#">
+              <Link className="signup-link" href="#">
                 Log in
-              </a>
+              </Link>
             </p>
           </div>
         </div>
       </div>
+
+      {/* ── Conditional Rendered Popup Modal ── */}
+      {registeredUser && (
+        <div className="popup-overlay">
+          <div className="popup-card">
+            <div className="popup-icon-box">
+              <span className="icon">check_circle</span>
+            </div>
+            <h3>Registration Successful!</h3>
+            <p>
+              Welcome, <strong>{registeredUser}</strong>! Your system profile
+              has been established successfully.
+            </p>
+            <button className="popup-btn" onClick={() => router.push("/login")}>
+              Go to Login
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

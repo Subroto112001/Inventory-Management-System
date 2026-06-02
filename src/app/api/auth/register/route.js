@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import connectMongoDB from "@/lib/databse/mongodb"; 
+import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
 import mongoose from "mongoose";
 
@@ -33,19 +33,23 @@ export async function POST(request) {
     // (পরবর্তীতে আপনি ডাটাবেস থেকে 'Manager' বা 'User' রোলের আসল আইডি এখানে দিবেন)
     const defaultRoleId = new mongoose.Types.ObjectId();
 
-    // ৬. ডাটাবেসে নতুন ইউজার সেভ করা
+    // Save the new user information to the database
     const newUser = await User.create({
       firstName,
       lastName,
       email,
       phoneNumber,
       password,
-      role: [defaultRoleId], // ডিফল্ট রোল যুক্ত করা হলো
+      role: [defaultRoleId],
     });
-
-    // ৭. সফলতার রেসপন্স পাঠানো
+    console.log("New user created:", newUser);
+    // After successful registration, you might want to return the created user data (excluding sensitive info) or just a success message
     return NextResponse.json(
-      { message: "User registered successfully!", success: true },
+      {
+        message: "User registered successfully!",
+        success: true,
+        userName: newUser.firstName,
+      },
       { status: 201 },
     );
   } catch (error) {
