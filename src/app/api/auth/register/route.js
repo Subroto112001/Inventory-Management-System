@@ -5,11 +5,11 @@ import mongoose from "mongoose";
 
 export async function POST(request) {
   try {
-    // ১. ফ্রন্টএন্ড থেকে আসা ডাটা রিসিভ করা
+    // Parse the incoming JSON data from the request body
     const body = await request.json();
     const { firstName, lastName, email, phoneNumber, password } = body;
 
-    // ২. প্রয়োজনীয় ফিল্ডগুলো চেক করা
+    // Check necessary fields
     if (!firstName || !email || !password) {
       return NextResponse.json(
         { message: "First name, email, and password are required!" },
@@ -17,10 +17,10 @@ export async function POST(request) {
       );
     }
 
-    // ৩. ডাটাবেসের সাথে কানেক্ট করা
+    // connect to MongoDB
     await connectMongoDB();
 
-    // ৪. ইমেইলটি আগে থেকে আছে কি না চেক করা
+    // check if a user with the same email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
@@ -29,8 +29,7 @@ export async function POST(request) {
       );
     }
 
-    // ৫. Role ফিল্ডের বাধ্যবাধকতা মেটানোর জন্য একটি ডামি/ডিফল্ট ObjectId তৈরি করা
-    // (পরবর্তীতে আপনি ডাটাবেস থেকে 'Manager' বা 'User' রোলের আসল আইডি এখানে দিবেন)
+    // Assign a default role (you can modify this logic to assign roles based on your requirements)
     const defaultRoleId = new mongoose.Types.ObjectId();
 
     // Save the new user information to the database
@@ -55,7 +54,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Registration API Error:", error);
 
-    // মঙ্গুজ ভ্যালিডেশন এররগুলো ফ্রন্টএন্ডে পাঠানোর জন্য
+    // Validation error handling
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((val) => val.message);
       return NextResponse.json(

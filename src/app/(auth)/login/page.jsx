@@ -1,22 +1,63 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Status states
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe });
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Something went wrong!");
+      }
+
+      setSuccess("Login successful! Redirecting...");
+
+      // Optional: Clear form inputs on success
+      setEmail("");
+      setPassword("");
+
+      // Redirect user to the dashboard after a brief delay
+      setTimeout(() => {
+        router.push("/dashboard");
+        router.refresh();
+      }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
         :root {
@@ -74,15 +115,12 @@ export default function LoginPage() {
         }
 
         .login-root {
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           background-color: var(--color-background);
           color: var(--color-on-surface);
           width: 100%;
           min-height: 100%;
           -webkit-font-smoothing: antialiased;
-        }
-
-        .login-root {
           display: flex;
           min-height: 100vh;
         }
@@ -267,6 +305,26 @@ export default function LoginPage() {
           margin-top: 0.5rem;
         }
 
+        /* Status Banners */
+        .status-banner {
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 14px;
+          line-height: 20px;
+          margin-bottom: 1.25rem;
+          font-weight: 500;
+        }
+        .status-banner.error-msg {
+          background-color: var(--color-error-container);
+          color: var(--color-on-error-container);
+          border: 1px solid rgba(186, 26, 26, 0.2);
+        }
+        .status-banner.success-msg {
+          background-color: #e6f4ea;
+          color: #137333;
+          border: 1px solid rgba(19, 115, 51, 0.2);
+        }
+
         /* Form */
         .form { display: flex; flex-direction: column; gap: 1.5rem; }
 
@@ -309,7 +367,7 @@ export default function LoginPage() {
           border: 1px solid var(--color-surface-variant);
           border-radius: 0.5rem;
           background-color: var(--color-surface);
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           font-size: 14px;
           line-height: 20px;
           color: var(--color-on-surface);
@@ -390,7 +448,7 @@ export default function LoginPage() {
           padding: 0.75rem 1rem;
           border: none;
           border-radius: 0.5rem;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           font-size: 12px;
           line-height: 16px;
           font-weight: 600;
@@ -402,12 +460,16 @@ export default function LoginPage() {
           transition: background-color 0.2s, transform 0.1s;
           margin-top: 0.5rem;
         }
-        .submit-btn:hover { background-color: var(--color-on-primary-fixed-variant); }
+        .submit-btn:hover:not(:disabled) { background-color: var(--color-on-primary-fixed-variant); }
         .submit-btn:focus {
           outline: 2px solid var(--color-primary);
           outline-offset: 2px;
         }
-        .submit-btn:active { transform: scale(0.98); }
+        .submit-btn:active:not(:disabled) { transform: scale(0.98); }
+        .submit-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
 
         /* Divider */
         .divider {
@@ -450,7 +512,7 @@ export default function LoginPage() {
           border: 1px solid var(--color-surface-variant);
           border-radius: 0.5rem;
           background-color: var(--color-surface-container-lowest);
-          font-family: 'Inter', sans-serif;
+          font-family: 'Noto Serif', serif;
           font-size: 12px;
           line-height: 16px;
           font-weight: 600;
@@ -542,6 +604,14 @@ export default function LoginPage() {
               <p>Enter your credentials to access your dashboard.</p>
             </div>
 
+            {/* Error Message Banner */}
+            {error && <div className="status-banner error-msg">{error}</div>}
+
+            {/* Success Message Banner */}
+            {success && (
+              <div className="status-banner success-msg">{success}</div>
+            )}
+
             <form className="form" onSubmit={handleSubmit}>
               {/* Email */}
               <div>
@@ -559,6 +629,7 @@ export default function LoginPage() {
                     type="email"
                     placeholder="name@company.com"
                     required
+                    disabled={loading}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -590,6 +661,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     required
+                    disabled={loading}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -615,6 +687,7 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  disabled={loading}
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
@@ -625,8 +698,12 @@ export default function LoginPage() {
 
               {/* Submit */}
               <div>
-                <button className="submit-btn" type="submit">
-                  Log in
+                <button
+                  className="bg-[#611F69] w-full flex justify-center py-2 px-4 text-white rounded-md cursor-pointer"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? "Logging in..." : "Log in"}
                 </button>
               </div>
             </form>
@@ -642,7 +719,7 @@ export default function LoginPage() {
             </div>
 
             {/* Google */}
-            <button className="google-btn" type="button">
+            <button className="google-btn" type="button" disabled={loading}>
               <svg
                 aria-hidden="true"
                 style={{ width: "1.25rem", height: "1.25rem" }}
@@ -671,7 +748,10 @@ export default function LoginPage() {
             {/* Sign up */}
             <p className="signup-text">
               Don't have an account?{" "}
-              <Link href="/signup"> Create an account</Link>
+              <Link className="signup-link" href="/signup">
+                {" "}
+                Create an account
+              </Link>
             </p>
           </div>
         </div>
