@@ -699,7 +699,7 @@ export default function LoginPage() {
               {/* Submit */}
               <div>
                 <button
-                  className="bg-[#611F69] w-full flex justify-center py-2 px-4 text-white rounded-md cursor-pointer"
+                  className="bg-[#611F69] w-full flex justify-center py-2 px-4 text-white rounded-md cursor-pointer border border-[#611F69] hover:bg-white hover:text-[#611F69] transition-all duration-200"
                   type="submit"
                   disabled={loading}
                 >
@@ -719,7 +719,11 @@ export default function LoginPage() {
             </div>
 
             {/* Google */}
-            <button className="google-btn" type="button" disabled={loading}>
+            <button
+              className="border border-gray-300 w-full flex items-center justify-center py-2 rounded-md cursor-pointer mt-2 gap-2 hover:bg-gray-100 duration-200 transition-all"
+              type="button"
+              disabled={loading}
+            >
               <svg
                 aria-hidden="true"
                 style={{ width: "1.25rem", height: "1.25rem" }}
@@ -749,7 +753,6 @@ export default function LoginPage() {
             <p className="signup-text">
               Don't have an account?{" "}
               <Link className="signup-link" href="/signup">
-                {" "}
                 Create an account
               </Link>
             </p>

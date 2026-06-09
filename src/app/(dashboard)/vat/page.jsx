@@ -48,6 +48,18 @@ const mockOrders = [
       { name: "Wireless Mouse", qty: 1, price: 600, vatRate: 5 },
     ],
   },
+  {
+    id: "ORD-1004",
+    date: "2026-05-28",
+    time: "04:20 PM",
+    customerName: "Sumi Akter",
+    customerAddress: "Mirpur-10, Dhaka",
+    customerBIN: "N/A",
+    items: [
+      { name: "Mechanical Keyboard", qty: 1, price: 1200, vatRate: 5 },
+      { name: "Wireless Mouse", qty: 1, price: 600, vatRate: 5 },
+    ],
+  },
 ];
 
 // ==========================================
