@@ -428,7 +428,7 @@ const UsersPage = () => {
         {/* Dynamic Add/Edit User Modal Overlay */}
         {isModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-50 backdrop-blur-sm p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
@@ -443,7 +443,7 @@ const UsersPage = () => {
                 </h2>
                 <button
                   onClick={handleCloseModal}
-                  className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors "
                   aria-label="Close modal"
                 >
                   <MdClose size={24} aria-hidden="true" />
@@ -467,7 +467,7 @@ const UsersPage = () => {
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm"
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900  shadow-sm"
                       placeholder="e.g. John Doe"
                     />
                   </div>
@@ -487,7 +487,7 @@ const UsersPage = () => {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm"
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900  shadow-sm"
                       placeholder="e.g. j.doe@inventory.com"
                     />
                   </div>
@@ -505,7 +505,7 @@ const UsersPage = () => {
                       name="role"
                       value={formData.role}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm"
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900  shadow-sm"
                     >
                       <option value="System Admin">System Admin</option>
                       <option value="Warehouse Manager">
@@ -532,7 +532,7 @@ const UsersPage = () => {
                       name="department"
                       value={formData.department}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm"
+                      className="w-full border border-gray-300  outline-none rounded-md px-3 py-2 text-gray-900  shadow-sm"
                     >
                       <option value="IT">IT</option>
                       <option value="Logistics">Logistics</option>
@@ -555,7 +555,7 @@ const UsersPage = () => {
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm"
+                      className="w-full border border-gray-300 outline-none rounded-md px-3 py-2 text-gray-900  shadow-sm"
                     >
                       <option value="Active">Active</option>
                       <option value="Offline">Offline</option>
