@@ -16,7 +16,6 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [error, setError] = useState("");
-  // সফলভাবে রেজিস্টার্ড ইউজারের নাম রাখার জন্য স্টেট
   const [registeredUser, setRegisteredUser] = useState("");
 
   const handleChange = (e) => {
@@ -28,13 +27,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
-    // পাসওয়ার্ড ম্যাচিং ভ্যালিডেশন
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
-    // ব্যাকএন্ডে পাঠানোর জন্য ডাটা অবজেক্ট (মডেল অনুযায়ী)
     const submitData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -48,16 +45,13 @@ export default function RegisterPage() {
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // ব্যাকএন্ড থেকে আসা userName স্টেটে সেট করা হচ্ছে (অথবা ব্যাকআপ হিসেবে ইনপুটের firstName)
         setRegisteredUser(data?.userName || formData.firstName);
       } else {
         throw new Error(
@@ -76,537 +70,31 @@ export default function RegisterPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
-        :root {
-          --color-on-secondary-fixed-variant: #454747;
-          --color-inverse-on-surface: #f0f1f2;
-          --color-outline-variant: #d2c2ce;
-          --color-primary: #470151;
-          --color-secondary-fixed: #e2e2e2;
-          --color-error-container: #ffdad6;
-          --color-inverse-primary: #fbabfe;
-          --color-secondary-container: #dfe0e0;
-          --color-secondary: #5d5f5f;
-          --color-on-surface: #191c1d;
-          --color-tertiary-container: #00453e;
-          --color-primary-fixed: #ffd6fc;
-          --color-surface-container-lowest: #ffffff;
-          --color-background: #f8f9fa;
-          --color-on-primary-container: #d98bdc;
-          --color-on-secondary-container: #616363;
-          --color-on-background: #191c1d;
-          --color-surface-dim: #d9dadb;
-          --color-outline: #81737e;
-          --color-surface-variant: #e1e3e4;
-          --color-on-surface-variant: #4f434e;
-          --color-on-primary: #ffffff;
-          --color-primary-container: #611f69;
-          --color-on-primary-fixed: #36003e;
-          --color-tertiary-fixed-dim: #64d9c8;
-          --color-surface-container-low: #f3f4f5;
-          --color-secondary-fixed-dim: #c6c6c7;
-          --color-on-tertiary: #ffffff;
-          --color-on-error: #ffffff;
-          --color-inverse-surface: #2e3132;
-          --color-surface: #f8f9fa;
-          --color-error: #ba1a1a;
-          --color-primary-fixed-dim: #fbabfe;
-          --color-on-secondary-fixed: #1a1c1c;
-          --color-on-error-container: #93000a;
-          --color-on-primary-fixed-variant: #6d2b74;
-          --color-on-tertiary-fixed: #00201c;
-          --color-on-secondary: #ffffff;
-          --color-surface-container-high: #e7e8e9;
-          --color-surface-tint: #88438e;
-          --color-surface-container-highest: #e1e3e4;
-          --color-tertiary: #002d28;
-          --color-tertiary-fixed: #82f6e4;
-          --color-surface-container: #edeeef;
-          --color-surface-bright: #f8f9fa;
-          --color-on-tertiary-fixed-variant: #005048;
-          --color-on-tertiary-container: #3eb9a9;
-        }
-
-        .login-root, .login-root * {
-          box-sizing: border-box;
-        }
-
-        .login-root {
-          font-family: 'Noto Serif', serif;
-          background-color: var(--color-background);
-          color: var(--color-on-surface);
-          width: 100%;
-          min-height: 100%;
-          -webkit-font-smoothing: antialiased;
-          display: flex;
-          min-height: 100vh;
-        }
-
-        /* ── Left column ── */
-        .left-col {
-          display: none;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: 3rem;
-          background-color: var(--color-primary-container);
-          position: relative;
-          overflow: hidden;
-          width: 40%;
-        }
-        @media (min-width: 1024px) { .left-col { display: flex; } }
-
-        .left-bg-glow {
-          position: absolute;
-          inset: 0;
-          z-index: 0;
-          opacity: 0.2;
-          background: radial-gradient(circle at top right, white, transparent, transparent);
-        }
-
-        .left-logo {
-          position: relative;
-          z-index: 10;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 4rem;
-        }
-        .left-logo .icon {
-          font-family: 'Material Symbols Outlined';
-          font-size: 2.25rem;
-          color: var(--color-on-primary);
-        }
-        .left-logo h1 {
-          font-size: 22px;
-          line-height: 30px;
-          font-weight: 600;
-          letter-spacing: -0.01em;
-          color: var(--color-on-primary);
-        }
-
-        .left-headline {
-          position: relative;
-          z-index: 10;
-        }
-        .left-headline h2 {
-          font-size: 28px;
-          line-height: 36px;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: var(--color-on-primary);
-          margin-bottom: 1.5rem;
-          max-width: 28rem;
-        }
-        .left-headline p {
-          font-size: 14px;
-          line-height: 20px;
-          color: var(--color-on-primary-container);
-          max-width: 28rem;
-          opacity: 0.9;
-        }
-
-        .left-illustration {
-          position: relative;
-          z-index: 10;
-          width: 100%;
-          max-width: 24rem;
-          margin: 3rem auto 0;
-          flex-grow: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 200px;
-        }
-        .left-illustration img {
-          width: 100%;
-          height: auto;
-          object-fit: contain;
-          filter: drop-shadow(0 25px 25px rgba(0,0,0,0.15));
-          opacity: 0.8;
-          mix-blend-mode: screen;
-        }
-
-        .left-footer {
-          position: relative;
-          z-index: 10;
-          margin-top: auto;
-          padding-top: 2rem;
-          border-top: 1px solid rgba(255,255,255,0.2);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .left-footer span,
-        .left-footer a {
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: rgba(255,255,255,0.7);
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .left-footer a:hover { color: var(--color-on-primary); }
-        .left-footer-links { display: flex; gap: 1rem; }
-
-        /* ── Right column ── */
-        .right-col {
-          width: 100%;
-          background-color: var(--color-surface-container-lowest);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 1.5rem;
-          overflow-y: auto;
-        }
-        @media (min-width: 640px) { .right-col { padding: 3rem; } }
-        @media (min-width: 1024px) { .right-col { width: 60%; } }
-
-        .form-card {
-          width: 100%;
-          max-width: 32rem;
-        }
-
-        /* Headers */
-        .mobile-header {
-          display: block;
-          text-align: center;
-          margin-bottom: 2rem;
-        }
-        @media (min-width: 1024px) { .mobile-header { display: none; } }
-
-        .mobile-logo-box {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 3rem;
-          height: 3rem;
-          border-radius: 0.5rem;
-          background-color: var(--color-primary-container);
-          margin-bottom: 1rem;
-        }
-        .mobile-logo-box .icon {
-          font-family: 'Material Symbols Outlined';
-          font-size: 1.5rem;
-          color: var(--color-on-primary);
-        }
-        .mobile-header h1 {
-          font-size: 24px;
-          line-height: 32px;
-          font-weight: 700;
-          color: var(--color-on-surface);
-        }
-        .mobile-header p {
-          font-size: 14px;
-          line-height: 20px;
-          color: var(--color-secondary);
-          margin-top: 0.5rem;
-        }
-
-        .desktop-header {
-          display: none;
-          margin-bottom: 2rem;
-        }
-        @media (min-width: 1024px) { .desktop-header { display: block; } }
-        .desktop-header h2 {
-          font-size: 28px;
-          line-height: 36px;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: var(--color-on-surface);
-        }
-        .desktop-header p {
-          font-size: 14px;
-          line-height: 20px;
-          color: var(--color-secondary);
-          margin-top: 0.5rem;
-        }
-
-        /* Form Layout */
-        .form { display: flex; flex-direction: column; gap: 1.25rem; }
-        
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.25rem;
-        }
-        @media (min-width: 640px) {
-          .form-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        .field-label {
-          display: block;
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-on-surface);
-          margin-bottom: 0.5rem;
-        }
-
-        .input-wrapper {
-          position: relative;
-          border-radius: 0.5rem;
-          transition: box-shadow 0.2s;
-        }
-        .input-wrapper:focus-within {
-          box-shadow: 0 0 0 3px rgba(71, 1, 81, 0.3);
-        }
-        .input-icon {
-          position: absolute;
-          inset-block: 0;
-          left: 0;
-          padding-left: 0.75rem;
-          display: flex;
-          align-items: center;
-          pointer-events: none;
-        }
-        .input-icon .icon {
-          font-family: 'Material Symbols Outlined';
-          font-size: 1.25rem;
-          color: var(--color-secondary);
-        }
-        .text-input {
-          display: block;
-          width: 100%;
-          padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-          border: 1px solid var(--color-surface-variant);
-          border-radius: 0.5rem;
-          background-color: var(--color-surface);
-          font-family: 'Noto Serif', serif;
-          font-size: 14px;
-          line-height: 20px;
-          color: var(--color-on-surface);
-          outline: none;
-          transition: border-color 0.2s, background-color 0.2s;
-        }
-        .text-input::placeholder { color: var(--color-secondary); }
-        .text-input:focus {
-          border-color: var(--color-primary);
-          background-color: var(--color-surface-container-lowest);
-        }
-        .text-input.has-right-icon { padding-right: 2.5rem; }
-
-        .pw-toggle {
-          position: absolute;
-          inset-block: 0;
-          right: 0;
-          padding-right: 0.75rem;
-          display: flex;
-          align-items: center;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--color-secondary);
-          transition: color 0.2s;
-        }
-        .pw-toggle:hover { color: var(--color-on-surface); }
-        .pw-toggle .icon {
-          font-family: 'Material Symbols Outlined';
-          font-size: 1.25rem;
-        }
-
-        /* Error Alert */
-        .error-alert {
-          padding: 0.75rem 1rem;
-          background-color: var(--color-error-container);
-          color: var(--color-on-error-container);
-          border-radius: 0.5rem;
-          font-size: 13px;
-          font-weight: 600;
-        }
-
-        /* Submit button */
-        .submit-btn {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 0.5rem;
-          font-family: 'Noto Serif', serif;
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-on-primary);
-          background-color: var(--color-primary-container);
-          cursor: pointer;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-          transition: background-color 0.2s, transform 0.1s;
-          margin-top: 0.5rem;
-        }
-        .submit-btn:hover { background-color: var(--color-on-primary-fixed-variant); }
-        .submit-btn:focus {
-          outline: 2px solid var(--color-primary);
-          outline-offset: 2px;
-        }
-        .submit-btn:active { transform: scale(0.98); }
-
-        /* Divider */
-        .divider {
-          position: relative;
-          margin-top: 1.5rem;
-        }
-        .divider-line {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-        }
-        .divider-line hr {
-          width: 100%;
-          border: none;
-          border-top: 1px solid var(--color-surface-variant);
-        }
-        .divider-label {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-        }
-        .divider-label span {
-          padding: 0 0.5rem;
-          background-color: var(--color-surface-container-lowest);
-          color: var(--color-secondary);
-        }
-
-        /* Google button */
-        .google-btn {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 0.75rem 1rem;
-          border: 1px solid var(--color-surface-variant);
-          border-radius: 0.5rem;
-          background-color: var(--color-surface-container-lowest);
-          font-family: 'Noto Serif', serif;
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-on-surface);
-          cursor: pointer;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-          transition: background-color 0.2s;
-          margin-top: 1rem;
-        }
-        .google-btn:hover { background-color: var(--color-surface-container-low); }
-        .google-btn:focus {
-          outline: 2px solid var(--color-primary);
-          outline-offset: 2px;
-        }
-        .google-btn svg { margin-right: 0.5rem; }
-
-        /* Sign up text */
-        .signup-text {
-          margin-top: 1.5rem;
-          text-align: center;
-          font-size: 14px;
-          line-height: 20px;
-          color: var(--color-secondary);
-        }
-        .signup-link {
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-tertiary-container);
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .signup-link:hover { color: var(--color-tertiary-fixed-dim); }
-
-        /* ── Popup / Modal Styles ── */
-        .popup-overlay {
-          position: fixed;
-          inset: 0;
-          background-color: rgba(25, 28, 29, 0.6);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 999;
-          padding: 1rem;
-        }
-        .popup-card {
-          background-color: var(--color-surface-container-lowest);
-          padding: 2.5rem 2rem;
-          border-radius: 0.75rem;
-          width: 100%;
-          max-width: 26rem;
-          text-align: center;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          border: 1px solid var(--color-outline-variant);
-          animation: popupReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
         @keyframes popupReveal {
           from { transform: scale(0.9); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
-        .popup-icon-box {
-          width: 3.5rem;
-          height: 3.5rem;
-          background-color: #e6f4ea;
-          color: #137333;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 1.25rem;
-        }
-        .popup-icon-box .icon {
-          font-family: 'Material Symbols Outlined';
-          font-size: 2.25rem;
-        }
-        .popup-card h3 {
-          font-size: 22px;
-          font-weight: 700;
-          color: var(--color-on-surface);
-          margin-bottom: 0.75rem;
-        }
-        .popup-card p {
-          font-size: 14px;
-          line-height: 22px;
-          color: var(--color-secondary);
-          margin-bottom: 1.75rem;
-        }
-        .popup-btn {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 0.5rem;
-          font-family: 'Noto Serif', serif;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-on-primary);
-          background-color: var(--color-primary-container);
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-        .popup-btn:hover {
-          background-color: var(--color-on-primary-fixed-variant);
-        }
+        .font-noto { font-family: 'Noto Serif', serif; }
+        .msi { font-family: 'Material Symbols Outlined'; }
       `}</style>
 
-      <div className="login-root">
-        {/* ── Left Column: Branding ── */}
-        <div className="left-col">
-          <div className="left-bg-glow" />
+      <div className="font-noto flex min-h-screen w-full bg-[#f8f9fa] text-[#191c1d] antialiased">
+        {/* Left column */}
+        <div className="relative hidden w-2/5 flex-col justify-between overflow-hidden bg-[#611f69] p-12 lg:flex">
+          <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,white,transparent,transparent)] opacity-20" />
 
-          <div style={{ position: "relative", zIndex: 10 }}>
-            <div className="left-logo">
-              <span className="icon">inventory_2</span>
-              <h1>Inventory</h1>
+          <div className="relative z-10">
+            <div className="mb-16 flex items-center gap-3">
+              <span className="msi text-4xl text-white">inventory_2</span>
+              <h1 className="text-[22px] font-semibold leading-[30px] tracking-[-0.01em] text-white">
+                Inventory
+              </h1>
             </div>
-            <div className="left-headline">
-              <h2>Join the Smart Inventory Fleet</h2>
-              <p>
+            <div>
+              <h2 className="mb-6 max-w-md text-[28px] font-bold leading-9 tracking-[-0.02em] text-white">
+                Join the Smart Inventory Fleet
+              </h2>
+              <p className="max-w-md text-sm leading-5 text-[#d98bdc] opacity-90">
                 Create your manager account today to monitor stock levels,
                 assign warehouse nodes, and streamline supply chains in
                 real-time.
@@ -614,55 +102,83 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="left-illustration">
+          <div className="relative z-10 mx-auto mt-12 flex min-h-[200px] w-full max-w-sm flex-grow items-center justify-center">
             <img
+              className="h-auto w-full object-contain opacity-80 mix-blend-screen drop-shadow-2xl"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs_PPzTvzBRs7dcjx0L4GYS8h7n6Z6q3Yy0qb03ZnnreXXuD7C3Pddw_bMWy-tnzhy2svjmwlUjAa_66iz75ag3e41FiyP6QYutQ63qJK8qADO4dTplysX1V4yISPDmvAf0oNRIXhD6K4KFwQc_rE5DEWL2P9hpaX_AR7twqEXJHvyMszaS4jvBU3DrVmuPN9qbz04btZc7mQuH8y7mQRY24pi-6xUkGbda7J0kXEMuwzjMqTe_zXx8iCQ_1h1e0ZmgiBtH1WhWg"
               alt="Abstract logistics illustration"
             />
           </div>
 
-          <div className="left-footer">
-            <span>© 2024 Inventory Systems</span>
-            <div className="left-footer-links">
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
+          <div className="relative z-10 mt-auto flex items-center justify-between border-t border-white/20 pt-8">
+            <span className="text-xs font-semibold leading-4 tracking-wider text-white/70">
+              © 2024 Inventory Systems
+            </span>
+            <div className="flex gap-4">
+              <a
+                href="#"
+                className="text-xs font-semibold leading-4 tracking-wider text-white/70 no-underline transition-colors hover:text-white"
+              >
+                Privacy
+              </a>
+              <a
+                href="#"
+                className="text-xs font-semibold leading-4 tracking-wider text-white/70 no-underline transition-colors hover:text-white"
+              >
+                Terms
+              </a>
             </div>
           </div>
         </div>
 
-        {/* ── Right Column: Signup Form ── */}
-        <div className="right-col">
-          <div className="form-card">
-            {/* Mobile Header */}
-            <div className="mobile-header">
-              <div className="mobile-logo-box">
-                <span className="icon">inventory_2</span>
+        {/* Right column */}
+        <div className="flex w-full items-center justify-center overflow-y-auto bg-white p-6 sm:p-12 lg:w-3/5">
+          <div className="w-full max-w-lg">
+            {/* Mobile header */}
+            <div className="mb-8 block text-center lg:hidden">
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-[#611f69]">
+                <span className="msi text-2xl text-white">inventory_2</span>
               </div>
-              <h1>Get Started</h1>
-              <p>Create an account to manage assets</p>
+              <h1 className="text-2xl font-bold leading-8 text-[#191c1d]">
+                Get Started
+              </h1>
+              <p className="mt-2 text-sm leading-5 text-[#5d5f5f]">
+                Create an account to manage assets
+              </p>
             </div>
 
-            {/* Desktop Header */}
-            <div className="desktop-header">
-              <h2>Create an account</h2>
-              <p>Fill in the details to establish your system profile.</p>
+            {/* Desktop header */}
+            <div className="mb-8 hidden lg:block">
+              <h2 className="text-[28px] font-bold leading-9 tracking-[-0.02em] text-[#191c1d]">
+                Create an account
+              </h2>
+              <p className="mt-2 text-sm leading-5 text-[#5d5f5f]">
+                Fill in the details to establish your system profile.
+              </p>
             </div>
 
-            {error && <div className="error-alert">{error}</div>}
+            {error && (
+              <div className="mb-5 rounded-lg bg-[#ffdad6] px-4 py-3 text-[13px] font-semibold text-[#93000a]">
+                {error}
+              </div>
+            )}
 
-            <form className="form" onSubmit={handleSubmit}>
-              {/* Row 1: First Name & Last Name */}
-              <div className="form-grid">
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+              {/* First / Last name */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="field-label" htmlFor="firstName">
+                  <label
+                    className="mb-2 block text-xs font-semibold leading-4 tracking-wider text-[#191c1d]"
+                    htmlFor="firstName"
+                  >
                     First Name
                   </label>
-                  <div className="input-wrapper">
-                    <div className="input-icon">
-                      <span className="icon">person</span>
+                  <div className="relative rounded-lg transition-shadow focus-within:shadow-[0_0_0_3px_rgba(71,1,81,0.3)]">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span className="msi text-xl text-[#5d5f5f]">person</span>
                     </div>
                     <input
-                      className="text-input"
+                      className="block w-full rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] py-3 pl-10 pr-3 font-noto text-sm leading-5 text-[#191c1d] outline-none transition-colors placeholder:text-[#5d5f5f] "
                       id="firstName"
                       name="firstName"
                       type="text"
@@ -678,15 +194,18 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="field-label" htmlFor="lastName">
+                  <label
+                    className="mb-2 block text-xs font-semibold leading-4 tracking-wider text-[#191c1d]"
+                    htmlFor="lastName"
+                  >
                     Last Name
                   </label>
-                  <div className="input-wrapper">
-                    <div className="input-icon">
-                      <span className="icon">badge</span>
+                  <div className="relative rounded-lg transition-shadow focus-within:shadow-[0_0_0_3px_rgba(71,1,81,0.3)]">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span className="msi text-xl text-[#5d5f5f]">badge</span>
                     </div>
                     <input
-                      className="text-input"
+                      className="block w-full rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] py-3 pl-10 pr-3 font-noto text-sm leading-5 text-[#191c1d] outline-none transition-colors placeholder:text-[#5d5f5f] "
                       id="lastName"
                       name="lastName"
                       type="text"
@@ -700,17 +219,20 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Row 2: Email */}
+              {/* Email */}
               <div>
-                <label className="field-label" htmlFor="email">
+                <label
+                  className="mb-2 block text-xs font-semibold leading-4 tracking-wider text-[#191c1d]"
+                  htmlFor="email"
+                >
                   Email Address
                 </label>
-                <div className="input-wrapper">
-                  <div className="input-icon">
-                    <span className="icon">mail</span>
+                <div className="relative rounded-lg transition-shadow focus-within:shadow-[0_0_0_3px_rgba(71,1,81,0.3)]">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <span className="msi text-xl text-[#5d5f5f]">mail</span>
                   </div>
                   <input
-                    className="text-input"
+                    className="block w-full rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] py-3 pl-10 pr-3 font-noto text-sm leading-5 text-[#191c1d] outline-none transition-colors placeholder:text-[#5d5f5f]"
                     id="email"
                     name="email"
                     type="email"
@@ -722,17 +244,20 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Row 3: Phone Number */}
+              {/* Phone */}
               <div>
-                <label className="field-label" htmlFor="phoneNumber">
+                <label
+                  className="mb-2 block text-xs font-semibold leading-4 tracking-wider text-[#191c1d]"
+                  htmlFor="phoneNumber"
+                >
                   Phone Number
                 </label>
-                <div className="input-wrapper">
-                  <div className="input-icon">
-                    <span className="icon">call</span>
+                <div className="relative rounded-lg transition-shadow focus-within:shadow-[0_0_0_3px_rgba(71,1,81,0.3)]">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <span className="msi text-xl text-[#5d5f5f]">call</span>
                   </div>
                   <input
-                    className="text-input"
+                    className="block w-full rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] py-3 pl-10 pr-3 font-noto text-sm leading-5 text-[#191c1d] outline-none transition-colors placeholder:text-[#5d5f5f] "
                     id="phoneNumber"
                     name="phoneNumber"
                     type="tel"
@@ -746,18 +271,21 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Row 4: Password & Confirm Password */}
-              <div className="form-grid">
+              {/* Password / Confirm */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="field-label" htmlFor="password">
+                  <label
+                    className="mb-2 block text-xs font-semibold leading-4 tracking-wider text-[#191c1d]"
+                    htmlFor="password"
+                  >
                     Password
                   </label>
-                  <div className="input-wrapper">
-                    <div className="input-icon">
-                      <span className="icon">lock</span>
+                  <div className="relative rounded-lg transition-shadow">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span className="msi text-xl text-[#5d5f5f]">lock</span>
                     </div>
                     <input
-                      className="text-input has-right-icon"
+                      className="block w-full rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] py-3 pl-10 pr-10 font-noto text-sm leading-5 text-[#191c1d] outline-none transition-colors placeholder:text-[#5d5f5f]"
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
@@ -769,14 +297,14 @@ export default function RegisterPage() {
                       onChange={handleChange}
                     />
                     <button
-                      className="pw-toggle"
+                      className="absolute inset-y-0 right-0 flex items-center border-none bg-transparent pr-3 text-[#5d5f5f] transition-colors hover:text-[#191c1d]"
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
                     >
-                      <span className="icon">
+                      <span className="msi text-xl">
                         {showPassword ? "visibility" : "visibility_off"}
                       </span>
                     </button>
@@ -784,15 +312,20 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="field-label" htmlFor="confirmPassword">
+                  <label
+                    className="mb-2 block text-xs font-semibold leading-4 tracking-wider text-[#191c1d]"
+                    htmlFor="confirmPassword"
+                  >
                     Confirm Password
                   </label>
-                  <div className="input-wrapper">
-                    <div className="input-icon">
-                      <span className="icon">enhanced_encryption</span>
+                  <div className="relative rounded-lg transition-shadow">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span className="msi text-xl text-[#5d5f5f]">
+                        enhanced_encryption
+                      </span>
                     </div>
                     <input
-                      className="text-input"
+                      className="block w-full rounded-lg border border-[#e1e3e4] bg-[#f8f9fa] py-3 pl-10 pr-3 font-noto text-sm leading-5 text-[#191c1d] outline-none transition-colors placeholder:text-[#5d5f5f]"
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showPassword ? "text" : "password"}
@@ -805,10 +338,10 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit */}
               <div>
                 <button
-                  className="submit-btn"
+                  className="mt-2 flex w-full justify-center rounded-lg border border-[#611f69] bg-[#611f69] px-4 py-3 font-noto text-xs font-semibold leading-4 tracking-wider text-white shadow-sm transition-colors hover:bg-transparent hover:text-[#611f69]  active:scale-[0.98]"
                   type="submit"
                   disabled={isLoading}
                   style={{
@@ -822,20 +355,25 @@ export default function RegisterPage() {
             </form>
 
             {/* Divider */}
-            <div className="divider">
-              <div className="divider-line">
-                <hr />
+            <div className="relative mt-6">
+              <div className="absolute inset-0 flex items-center">
+                <hr className="w-full border-t border-[#e1e3e4]" />
               </div>
-              <div className="divider-label">
-                <span>Or sign up with</span>
+              <div className="relative flex justify-center text-xs font-semibold leading-4 tracking-wider">
+                <span className="bg-white px-2 text-[#5d5f5f]">
+                  Or sign up with
+                </span>
               </div>
             </div>
 
-            {/* Google Signup */}
-            <button className="google-btn" type="button">
+            {/* Google */}
+            <button
+              className="mt-4 flex w-full items-center justify-center rounded-lg border border-[#e1e3e4] bg-white px-4 py-3 font-noto text-xs font-semibold leading-4 tracking-wider text-[#191c1d] shadow-sm transition-colors hover:bg-[#f3f4f5] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[#470151]"
+              type="button"
+            >
               <svg
                 aria-hidden="true"
-                style={{ width: "1.25rem", height: "1.25rem" }}
+                className="mr-2 h-5 w-5"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -859,9 +397,13 @@ export default function RegisterPage() {
             </button>
 
             {/* Link back to login */}
-            <p className="signup-text">
+            <p className="mt-6 text-center text-sm leading-5 text-[#5d5f5f]">
               Already have an account?{" "}
-              <Link className="signup-link" href="#">
+              <Link
+                href="/login"
+                className="text-xs font-semibold leading-4 tracking-wider text-[#611f69] no-underline transition-colors hover:text-[#64d9c8]"
+                aria-label="Go to login"
+              >
                 Log in
               </Link>
             </p>
@@ -869,19 +411,29 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* ── Conditional Rendered Popup Modal ── */}
+      {/* Success popup */}
       {registeredUser && (
-        <div className="popup-overlay">
-          <div className="popup-card">
-            <div className="popup-icon-box">
-              <span className="icon">check_circle</span>
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#191c1d]/60 p-4 backdrop-blur-sm">
+          <div
+            className="w-full max-w-md rounded-xl border border-[#d2c2ce] bg-white px-8 py-10 text-center font-noto shadow-2xl"
+            style={{
+              animation: "popupReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          >
+            <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#e6f4ea] text-[#137333]">
+              <span className="msi text-4xl">check_circle</span>
             </div>
-            <h3>Registration Successful!</h3>
-            <p>
+            <h3 className="mb-3 text-[22px] font-bold text-[#191c1d]">
+              Registration Successful!
+            </h3>
+            <p className="mb-7 text-sm leading-[22px] text-[#5d5f5f]">
               Welcome, <strong>{registeredUser}</strong>! Your system profile
               has been established successfully.
             </p>
-            <button className="popup-btn" onClick={() => router.push("/login")}>
+            <button
+              className="w-full rounded-lg border-none bg-[#611f69] py-3 px-4 text-[13px] font-semibold tracking-wider text-white transition-colors hover:bg-[#6d2b74]"
+              onClick={() => router.push("/login")}
+            >
               Go to Login
             </button>
           </div>

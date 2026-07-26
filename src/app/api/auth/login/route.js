@@ -22,7 +22,7 @@ export async function POST(request) {
     await connectMongoDB();
 
     // 4. Check if the user exists
-    const user = await User.findOne({ email });
+ const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return NextResponse.json(
         { message: "Invalid email or password!" }, // Vague message for security reasons
@@ -33,7 +33,7 @@ export async function POST(request) {
     // 5. Verify the password
     // NOTE: This assumes you are hashing passwords using bcrypt in your User model middleware (pre-save)
     // If you are storing plain text passwords (not recommended), use: const isPasswordValid = password === user.password;
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+ const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Invalid email or password!" },
