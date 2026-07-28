@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MdPersonAdd,
   MdPeople,
@@ -13,84 +13,66 @@ import {
   MdClose,
 } from "react-icons/md";
 
-// Initial mock dataset
-const initialUsersData = [
-  {
-    id: "USR-001",
-    name: "Sarah Jenkins",
-    email: "s.jenkins@inventory.com",
-    role: "System Admin",
-    department: "IT",
-    status: "Active",
-  },
-  {
-    id: "USR-002",
-    name: "Marcus Chen",
-    email: "m.chen@inventory.com",
-    role: "Warehouse Manager",
-    department: "Logistics",
-    status: "Active",
-  },
-  {
-    id: "USR-003",
-    name: "Elena Rodriguez",
-    email: "e.rodriguez@inventory.com",
-    role: "Inventory Clerk",
-    department: "Operations",
-    status: "Active",
-  },
-  {
-    id: "USR-004",
-    name: "David Kim",
-    email: "d.kim@inventory.com",
-    role: "Inventory Clerk",
-    department: "Operations",
-    status: "Offline",
-  },
-  {
-    id: "USR-005",
-    name: "Anita Patel",
-    email: "a.patel@inventory.com",
-    role: "Auditor",
-    department: "Finance",
-    status: "Active",
-  },
-  {
-    id: "USR-006",
-    name: "James Wilson",
-    email: "j.wilson@inventory.com",
-    role: "Forklift Operator",
-    department: "Logistics",
-    status: "Suspended",
-  },
-];
-
 const defaultFormState = {
   name: "",
   email: "",
   role: "Inventory Clerk",
   department: "Operations",
   status: "Active",
+  phoneNumber: "",
+  jobTitle: "",
+  assignedWarehouse: "",
 };
 
 const UsersPage = () => {
-  // State for search and user data
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState(initialUsersData);
+  const [users, setUsers] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  // State for Modal and Form
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
   const [formData, setFormData] = useState(defaultFormState);
 
-  // Open modal for adding a new user
+  // প্রথমবার লোডে ইউজার ও ওয়্যারহাউজ লিস্ট আনা হচ্ছে
+  useEffect(() => {
+    fetchUsers();
+    fetchWarehouses();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/adduser");
+      const data = await res.json();
+      console.log("Fetched users:", data.users);
+      if (res.ok) setUsers(data.users);
+    } catch (err) {
+      console.error("Failed to load users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWarehouses = async () => {
+    try {
+      const res = await fetch("/api/warehouses");
+      const data = await res.json();
+      if (res.ok) setWarehouses(data.warehouses || []);
+    } catch (err) {
+      console.error("Failed to load warehouses:", err);
+    }
+  };
+
   const handleOpenAddModal = () => {
     setEditingUserId(null);
     setFormData(defaultFormState);
+    setFormError("");
     setIsModalOpen(true);
   };
 
-  // Open modal for editing an existing user
   const handleOpenEditModal = (user) => {
     setEditingUserId(user.id);
     setFormData({
@@ -99,54 +81,94 @@ const UsersPage = () => {
       role: user.role,
       department: user.department,
       status: user.status,
+      phoneNumber: user.phoneNumber || "",
+      jobTitle: user.jobTitle || "",
+      assignedWarehouse: user.assignedWarehouse || "",
     });
+    setFormError("");
     setIsModalOpen(true);
   };
 
-  // Close modal and reset form
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingUserId(null);
     setFormData(defaultFormState);
+    setFormError("");
   };
 
-  // Handle Input Changes for the Form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle Form Submission (Both Add and Edit)
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
+    setSubmitting(true);
 
-    if (editingUserId) {
-      // Edit Mode: Update existing user
-      setUsers(
-        users.map((user) =>
-          user.id === editingUserId ? { ...user, ...formData } : user,
-        ),
-      );
-    } else {
-      // Add Mode: Create new user
-      const newId = `USR-${Math.floor(100 + Math.random() * 900)}`;
-      const newUser = { id: newId, ...formData };
-      setUsers([newUser, ...users]);
+    try {
+      if (editingUserId) {
+        // PUT /api/adduser/[id] দিয়ে রিয়েল আপডেট
+        const res = await fetch(`/api/adduser/${editingUserId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setFormError(data.message || "একটা সমস্যা হয়েছে");
+          setSubmitting(false);
+          return;
+        }
+
+        setUsers(
+          users.map((user) => (user.id === editingUserId ? data.user : user)),
+        );
+      } else {
+        const res = await fetch("/api/adduser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setFormError(data.message || "একটা সমস্যা হয়েছে");
+          setSubmitting(false);
+          return;
+        }
+
+        setUsers([data.user, ...users]);
+      }
+
+      handleCloseModal();
+    } catch (err) {
+      setFormError("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+    } finally {
+      setSubmitting(false);
     }
-
-    handleCloseModal();
   };
 
-  // Delete User handler
-  const handleDeleteUser = (id) => {
-    // In a real app, you might want to add a confirmation dialog here
-    setUsers(users.filter((u) => u.id !== id));
+  const handleDeleteUser = async (id) => {
+    // সাধারণত এখানে একটা confirm dialog থাকা উচিত, আপাতত আগের প্যাটার্নের মতোই সরাসরি ডিলিট করছি
+    const previousUsers = users;
+    setUsers(users.filter((u) => u.id !== id)); // optimistic UI update
+
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        // ব্যর্থ হলে আগের অবস্থায় ফিরিয়ে আনা হচ্ছে
+        setUsers(previousUsers);
+        const data = await res.json();
+        alert(data.message || "User delete করা যায়নি");
+      }
+    } catch (err) {
+      setUsers(previousUsers);
+      alert("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+    }
   };
 
-  // Filter users based on search term
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -157,12 +179,10 @@ const UsersPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans relative">
       <div className="flex flex-row h-screen">
-        {/* Main Dashboard Area */}
         <main
           className="flex-1 p-6 md:p-8 overflow-y-auto"
           aria-hidden={isModalOpen ? "true" : "false"}
         >
-          {/* Header Section */}
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1
@@ -204,12 +224,11 @@ const UsersPage = () => {
             </div>
           </header>
 
-          {/* KPI Cards Grid */}
+          {/* KPI Cards */}
           <section
             aria-label="User Statistics Overview"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
           >
-            {/* Card 1: Total Users (Dynamic) */}
             <article className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <div>
@@ -234,7 +253,6 @@ const UsersPage = () => {
               </div>
             </article>
 
-            {/* Card 2: Admins (Dynamic) */}
             <article className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <div>
@@ -259,7 +277,6 @@ const UsersPage = () => {
               </div>
             </article>
 
-            {/* Card 3: Warehouse Staff (Dynamic) */}
             <article className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <div>
@@ -291,7 +308,7 @@ const UsersPage = () => {
             </article>
           </section>
 
-          {/* Main Content: Users Directory Table */}
+          {/* Users Table */}
           <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <header className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>
@@ -333,13 +350,19 @@ const UsersPage = () => {
                       scope="col"
                       className="px-6 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wider"
                     >
-                      Role
+                      Role / Title
                     </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wider"
                     >
                       Department
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-xs font-semibold text-gray-800 uppercase tracking-wider"
+                    >
+                      Phone
                     </th>
                     <th
                       scope="col"
@@ -356,7 +379,16 @@ const UsersPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white text-sm text-gray-800">
-                  {filteredUsers.length > 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="px-6 py-8 text-center text-gray-500"
+                      >
+                        লোড হচ্ছে...
+                      </td>
+                    </tr>
+                  ) : filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
                       <tr
                         key={user.id}
@@ -370,11 +402,21 @@ const UsersPage = () => {
                             {user.email}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
-                          {user.role}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-medium text-gray-800">
+                            {user.role}
+                          </div>
+                          {user.jobTitle && (
+                            <div className="text-gray-500 text-xs mt-0.5">
+                              {user.jobTitle}
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-600">
                           {user.department}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                          {user.phoneNumber || "—"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <span
@@ -412,7 +454,7 @@ const UsersPage = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan="5"
+                        colSpan="6"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         No users found matching "{searchTerm}"
@@ -425,15 +467,14 @@ const UsersPage = () => {
           </section>
         </main>
 
-        {/* Dynamic Add/Edit User Modal Overlay */}
         {isModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-50 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
           >
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
               <div className="flex justify-between items-center p-6 border-b border-gray-200">
                 <h2
                   id="modal-title"
@@ -450,9 +491,14 @@ const UsersPage = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleFormSubmit} className="p-6">
+              <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto">
+                {formError && (
+                  <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                    {formError}
+                  </div>
+                )}
+
                 <div className="space-y-4">
-                  {/* Name Input */}
                   <div>
                     <label
                       htmlFor="userName"
@@ -467,12 +513,11 @@ const UsersPage = () => {
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900  shadow-sm"
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900 shadow-sm"
                       placeholder="e.g. John Doe"
                     />
                   </div>
 
-                  {/* Email Input */}
                   <div>
                     <label
                       htmlFor="userEmail"
@@ -487,12 +532,11 @@ const UsersPage = () => {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900  shadow-sm"
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900 shadow-sm"
                       placeholder="e.g. j.doe@inventory.com"
                     />
                   </div>
 
-                  {/* Role Dropdown */}
                   <div>
                     <label
                       htmlFor="userRole"
@@ -505,7 +549,7 @@ const UsersPage = () => {
                       name="role"
                       value={formData.role}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900  shadow-sm"
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900 shadow-sm"
                     >
                       <option value="System Admin">System Admin</option>
                       <option value="Warehouse Manager">
@@ -519,7 +563,6 @@ const UsersPage = () => {
                     </select>
                   </div>
 
-                  {/* Department Dropdown */}
                   <div>
                     <label
                       htmlFor="userDepartment"
@@ -532,7 +575,7 @@ const UsersPage = () => {
                       name="department"
                       value={formData.department}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300  outline-none rounded-md px-3 py-2 text-gray-900  shadow-sm"
+                      className="w-full border border-gray-300 outline-none rounded-md px-3 py-2 text-gray-900 shadow-sm"
                     >
                       <option value="IT">IT</option>
                       <option value="Logistics">Logistics</option>
@@ -542,7 +585,65 @@ const UsersPage = () => {
                     </select>
                   </div>
 
-                  {/* Status Dropdown (Useful for edits) */}
+                  <div>
+                    <label
+                      htmlFor="userJobTitle"
+                      className="block text-sm font-semibold text-gray-800 mb-1"
+                    >
+                      Job Title
+                    </label>
+                    <input
+                      id="userJobTitle"
+                      type="text"
+                      name="jobTitle"
+                      value={formData.jobTitle}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900 shadow-sm"
+                      placeholder="e.g. Senior Inventory Clerk"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="userPhone"
+                      className="block text-sm font-semibold text-gray-800 mb-1"
+                    >
+                      Phone Number
+                    </label>
+                    <input
+                      id="userPhone"
+                      type="text"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 outline-[#611F69] rounded-md px-3 py-2 text-gray-900 shadow-sm"
+                      placeholder="e.g. 01712345678"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="userWarehouse"
+                      className="block text-sm font-semibold text-gray-800 mb-1"
+                    >
+                      Assigned Warehouse
+                    </label>
+                    <select
+                      id="userWarehouse"
+                      name="assignedWarehouse"
+                      value={formData.assignedWarehouse}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 outline-none rounded-md px-3 py-2 text-gray-900 shadow-sm"
+                    >
+                      <option value="">-- Select Warehouse --</option>
+                      {warehouses.map((w) => (
+                        <option key={w._id} value={w._id}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <label
                       htmlFor="userStatus"
@@ -555,7 +656,7 @@ const UsersPage = () => {
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 outline-none rounded-md px-3 py-2 text-gray-900  shadow-sm"
+                      className="w-full border border-gray-300 outline-none rounded-md px-3 py-2 text-gray-900 shadow-sm"
                     >
                       <option value="Active">Active</option>
                       <option value="Offline">Offline</option>
@@ -564,7 +665,6 @@ const UsersPage = () => {
                   </div>
                 </div>
 
-                {/* Form Actions */}
                 <div className="mt-8 flex justify-end gap-3">
                   <button
                     type="button"
@@ -575,9 +675,14 @@ const UsersPage = () => {
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-[#611F69] border border-[#611F69] hover:bg-transparent hover:text-[#611F69] cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all "
+                    disabled={submitting}
+                    className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-[#611F69] border border-[#611F69] hover:bg-transparent hover:text-[#611F69] cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all disabled:opacity-50"
                   >
-                    {editingUserId ? "Save Changes" : "Save User"}
+                    {submitting
+                      ? "Saving..."
+                      : editingUserId
+                        ? "Save Changes"
+                        : "Save User"}
                   </button>
                 </div>
               </form>

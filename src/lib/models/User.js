@@ -4,6 +4,18 @@ import jwt from "jsonwebtoken";
 
 const { Schema, Types } = mongoose;
 
+const SYSTEM_ROLES = [
+  "System Admin",
+  "Warehouse Manager",
+  "Inventory Clerk",
+  "Auditor",
+  "Forklift Operator",
+];
+
+const DEPARTMENTS = ["IT", "Logistics", "Operations", "Finance", "HR"];
+
+const ACCOUNT_STATUSES = ["Active", "Offline", "Suspended"];
+
 const userSchema = new Schema(
   {
     firstName: {
@@ -53,13 +65,27 @@ const userSchema = new Schema(
     },
 
     // --- Inventory Management Specific Fields ---
-    role: [
-      {
-        type: Types.ObjectId,
-        ref: "Role",
-        required: [true, "At least one role is required"],
+    // UI-এর "System Role" dropdown এর সাথে মিল রেখে single enum করা হলো
+    role: {
+      type: String,
+      enum: {
+        values: SYSTEM_ROLES,
+        message: "{VALUE} is not a valid system role",
       },
-    ],
+      required: [true, "System role is required"],
+      default: "Inventory Clerk",
+    },
+
+    // নতুন ফিল্ড — UI-এর "Department" dropdown
+    department: {
+      type: String,
+      enum: {
+        values: DEPARTMENTS,
+        message: "{VALUE} is not a valid department",
+      },
+      required: [true, "Department is required"],
+    },
+
     assignedWarehouse: {
       type: Types.ObjectId,
       ref: "Warehouse",
@@ -94,9 +120,17 @@ const userSchema = new Schema(
     country: { type: String, default: "Bangladesh" },
 
     // --- System Status ---
+    // UI-এর "Account Status" dropdown এর সাথে মিল রেখে isActive/isBlocked
+    // এর বদলে single enum ব্যবহার করা হলো
+    accountStatus: {
+      type: String,
+      enum: {
+        values: ACCOUNT_STATUSES,
+        message: "{VALUE} is not a valid account status",
+      },
+      default: "Active",
+    },
     isEmailVerified: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: true },
-    isBlocked: { type: Boolean, default: false },
     lastLogin: { type: Date },
     refreshToken: { type: String },
     createdBy: { type: Types.ObjectId, ref: "User" },
@@ -111,8 +145,6 @@ const userSchema = new Schema(
 
 // --- Middleware & Methods ---
 
-// FIX: Removed 'next' parameter completely.
-// Returning early acts as a successful pass, and errors bubble up naturally.
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
@@ -131,6 +163,7 @@ userSchema.methods.generateAccessToken = function () {
       userid: this._id,
       email: this.email,
       role: this.role,
+      department: this.department,
       warehouseId: this.assignedWarehouse,
     },
     process.env.ACCESTOKEN_SECRET.trim(),
@@ -145,6 +178,9 @@ userSchema.methods.generateRefreshToken = function () {
     { expiresIn: process.env.REFRESHTOKEN_EXPIRE.trim() },
   );
 };
+
+// Export enums so controllers/frontend validation can reuse the same source of truth
+export { SYSTEM_ROLES, DEPARTMENTS, ACCOUNT_STATUSES };
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
