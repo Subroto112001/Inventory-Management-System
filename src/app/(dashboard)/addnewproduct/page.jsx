@@ -10,6 +10,7 @@ import {
   MdAutoFixHigh,
   MdCameraAlt,
   MdClose,
+  MdImage,
 } from "react-icons/md";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
@@ -149,22 +150,47 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
 // ==========================================
 // Main Page Component
 // ==========================================
+const defaultFormState = {
+  productName: "",
+  productSKU: "",
+  price: "",
+  brandName: "",
+  unit: "",
+  quantity: "",
+  description: "",
+  wholesalePrice: "",
+  discount: "",
+  initialStock: "",
+  lowStockAlert: "",
+};
+
 const Page = () => {
-  const [formData, setFormData] = useState({
-    productName: "",
-    productSKU: "", // Hybrid Field
-    price: "",
-    brandName: "",
-    unit: "",
-    quantity: "",
-    description: "",
-    wholesalePrice: "",
-    discount: "",
-    initialStock: "",
-    lowStockAlert: "",
-  });
+  const [formData, setFormData] = useState(defaultFormState);
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [publishError, setPublishError] = useState("");
+
+  // Product list state (GET)
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      if (res.ok) setProducts(data.products || []);
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -204,13 +230,52 @@ const Page = () => {
     { label: "Upload Product Picture", name: "productPicture", type: "file" },
   ];
 
-  const handlePublish = () => {
+  // Product publish → POST /api/products
+  const handlePublish = async () => {
+    setPublishError("");
+
     if (!formData.productName || !formData.productSKU) {
-      alert("Please fill in the required fields (Name & SKU).");
+      setPublishError("Please fill in the required fields (Name & SKU).");
       return;
     }
-    console.log("Publishing Final Data:-", formData);
-    alert("Product published successfully!");
+    if (!formData.price) {
+      setPublishError("Price is required.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // productPicture একটা File object, এখনো কোনো স্টোরেজে আপলোড হওয়ার
+      // ব্যবস্থা নেই — তাই আপাতত বাদ দিয়ে বাকি ডাটা পাঠানো হচ্ছে
+      const { productPicture, ...payload } = formData;
+
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPublishError(data.message || "কিছু একটা সমস্যা হয়েছে");
+        return;
+      }
+
+      alert("Product published successfully!");
+
+      // ফর্ম রিসেট
+      setFormData(defaultFormState);
+
+      // লিস্ট রিফ্রেশ করা হচ্ছে যাতে নতুন প্রোডাক্ট সাথে সাথে দেখা যায়
+      fetchProducts();
+    } catch (err) {
+      console.error("Publish Product Error:", err);
+      setPublishError("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -260,6 +325,12 @@ const Page = () => {
         >
           Product Information
         </h2>
+
+        {publishError && (
+          <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            {publishError}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {input_fields.map((item, index) => {
@@ -363,11 +434,89 @@ const Page = () => {
 
         <div className="mt-6 flex justify-end">
           <ColorButton
-            value="Publish Product"
+            value={submitting ? "Publishing..." : "Publish Product"}
             onClick={handlePublish}
+            disabled={submitting}
             aria-label="Publish the new product to inventory"
           />
         </div>
+      </section>
+
+      {/* ========================================== */}
+      {/* Product List Section (GET) */}
+      {/* ========================================== */}
+      <section
+        className="flex flex-col border border-gray-200 rounded-md p-5 mt-6 bg-white shadow-sm"
+        aria-labelledby="product-list-heading"
+      >
+        <div className="flex justify-between items-center border-b border-gray-100 pb-2 mb-4 mt-2">
+          <h2
+            id="product-list-heading"
+            className="text-[18px] font-medium text-gray-800"
+          >
+            All Products
+          </h2>
+          <span className="text-sm text-gray-500">
+            {loadingProducts ? "" : `${products.length} item(s)`}
+          </span>
+        </div>
+
+        {loadingProducts ? (
+          <p className="text-gray-500 text-sm text-center py-8">
+            Loading products...
+          </p>
+        ) : products.length === 0 ? (
+          <p className="text-gray-500 text-sm text-center py-8">
+            No products found. Add your first product above.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {/* Placeholder image, image upload not connected yet */}
+                <div className="w-full h-36 bg-gray-100 flex items-center justify-center">
+                  <MdImage
+                    className="text-gray-300 text-5xl"
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <div className="p-3">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate">
+                    {product.productName}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    SKU: {product.productSKU}
+                  </p>
+
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-[#611F69] font-bold text-sm">
+                      ৳{product.price}
+                    </span>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        product.currentStock > product.lowStockAlert
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      Stock: {product.currentStock}
+                    </span>
+                  </div>
+
+                  {product.brandName && (
+                    <p className="text-xs text-gray-500 mt-1.5">
+                      Brand: {product.brandName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

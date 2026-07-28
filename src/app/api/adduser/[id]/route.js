@@ -149,7 +149,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params; 
 
     if (!mongoose.isValidObjectId(id)) {
       return NextResponse.json({ message: "Invalid user id" }, { status: 400 });

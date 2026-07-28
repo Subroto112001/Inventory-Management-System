@@ -11,6 +11,19 @@ import { IoSearchOutline } from "react-icons/io5";
 
 const page = () => {
 
+    const fetchProducts = async () => {
+      setLoadingProducts(true);
+      try {
+        const res = await fetch("/api/product");
+        const data = await res.json();
+        if (res.ok) setProducts(data.products || []);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
   const products = [
     {
       SKU: "WTCH-001",

@@ -36,12 +36,17 @@ const UsersPage = () => {
   const [editingUserId, setEditingUserId] = useState(null);
   const [formData, setFormData] = useState(defaultFormState);
 
+  // Delete confirmation modal state
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   // প্রথমবার লোডে ইউজার ও ওয়্যারহাউজ লিস্ট আনা হচ্ছে
   useEffect(() => {
     fetchUsers();
     fetchWarehouses();
   }, []);
 
+  // user will fetch there
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -56,6 +61,7 @@ const UsersPage = () => {
     }
   };
 
+  // warehouse will fetch there
   const fetchWarehouses = async () => {
     try {
       const res = await fetch("/api/warehouses");
@@ -66,6 +72,7 @@ const UsersPage = () => {
     }
   };
 
+  // modal open and close function
   const handleOpenAddModal = () => {
     setEditingUserId(null);
     setFormData(defaultFormState);
@@ -96,11 +103,13 @@ const UsersPage = () => {
     setFormError("");
   };
 
+  // form input change and submit function
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // form submit function for add and edit user
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -108,7 +117,7 @@ const UsersPage = () => {
 
     try {
       if (editingUserId) {
-        // PUT /api/adduser/[id] দিয়ে রিয়েল আপডেট
+        // PUT /api/adduser/[id]
         const res = await fetch(`/api/adduser/${editingUserId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -150,22 +159,36 @@ const UsersPage = () => {
     }
   };
 
-  const handleDeleteUser = async (id) => {
-    // সাধারণত এখানে একটা confirm dialog থাকা উচিত, আপাতত আগের প্যাটার্নের মতোই সরাসরি ডিলিট করছি
-    const previousUsers = users;
-    setUsers(users.filter((u) => u.id !== id)); // optimistic UI update
+  // Delete বাটনে ক্লিক করলে শুধু কনফার্মেশন পপ-আপ খুলবে
+  const handleDeleteUser = (user) => {
+    setDeleteTarget(user);
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (deleting) return;
+    setDeleteTarget(null);
+  };
+
+  // পপ-আপের ভেতরের Delete বাটনে ক্লিক করলে আসল ডিলিট রিকোয়েস্ট যাবে
+  const confirmDeleteUser = async () => {
+    if (!deleteTarget) return;
+
+    const id = deleteTarget.id;
+    setDeleting(true);
 
     try {
-      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/adduser/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        // ব্যর্থ হলে আগের অবস্থায় ফিরিয়ে আনা হচ্ছে
-        setUsers(previousUsers);
         const data = await res.json();
         alert(data.message || "User delete করা যায়নি");
+        return;
       }
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      setDeleteTarget(null);
     } catch (err) {
-      setUsers(previousUsers);
       alert("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -181,7 +204,7 @@ const UsersPage = () => {
       <div className="flex flex-row h-screen">
         <main
           className="flex-1 p-6 md:p-8 overflow-y-auto"
-          aria-hidden={isModalOpen ? "true" : "false"}
+          aria-hidden={isModalOpen || deleteTarget ? "true" : "false"}
         >
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
@@ -441,7 +464,7 @@ const UsersPage = () => {
                               <MdEdit size={20} aria-hidden="true" />
                             </button>
                             <button
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => handleDeleteUser(user)}
                               className="p-1.5 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-red-600"
                               aria-label={`Remove user ${user.name}`}
                             >
@@ -467,6 +490,7 @@ const UsersPage = () => {
           </section>
         </main>
 
+        {/* Add / Edit User Modal */}
         {isModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm p-4"
@@ -686,6 +710,52 @@ const UsersPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteTarget && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-modal-title"
+          >
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="p-6">
+                <h2
+                  id="delete-modal-title"
+                  className="text-lg font-bold text-gray-900 mb-2"
+                >
+                  Delete User
+                </h2>
+                <p className="text-sm text-gray-600">
+                  আপনি কি নিশ্চিত যে{" "}
+                  <span className="font-semibold text-gray-900">
+                    {deleteTarget.name}
+                  </span>{" "}
+                  কে ডিলিট করতে চান? এই কাজটি আর ফিরিয়ে নেওয়া যাবে না।
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 px-6 pb-6">
+                <button
+                  type="button"
+                  onClick={handleCloseDeleteModal}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-md text-sm font-medium shadow-sm transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteUser}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-600 border border-red-600 hover:bg-transparent hover:text-red-600 cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all disabled:opacity-50"
+                >
+                  {deleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
             </div>
           </div>
         )}
