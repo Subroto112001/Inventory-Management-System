@@ -15,6 +15,7 @@ const Page = () => {
       try {
         const res = await fetch("/api/products", { cache: "no-store" });
         const data = await res.json();
+        console.log(data?.products);
         if (res.ok) {
           setProducts(data.products || []);
         } else {
@@ -117,6 +118,7 @@ const Page = () => {
                 price={Number(product.price || 0)}
                 quantity={Number(product.quantity || 0)}
                 image={product.image || placeholder}
+                currentStock={product.currentStock}
               />
             ))
           )}
