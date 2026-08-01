@@ -1,22 +1,25 @@
-
-"use client"
+"use client";
 import ProductCard from "@/Component/Product_card/Product_card";
-import { ImageProvider } from "@/Provider/ImgaeProvider";
 import Link from "next/link";
-
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GoPlusCircle } from "react-icons/go";
 import { IoSearchOutline } from "react-icons/io5";
+import placeholder from '../../../assets/image/Camera.png'
+const Page = () => {
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
-const page = () => {
-
+  useEffect(() => {
     const fetchProducts = async () => {
       setLoadingProducts(true);
       try {
-        const res = await fetch("/api/product");
+        const res = await fetch("/api/products", { cache: "no-store" });
         const data = await res.json();
-        if (res.ok) setProducts(data.products || []);
+        if (res.ok) {
+          setProducts(data.products || []);
+        } else {
+          console.error("Failed to load products:", data.message);
+        }
       } catch (err) {
         console.error("Failed to load products:", err);
       } finally {
@@ -24,37 +27,9 @@ const page = () => {
       }
     };
 
-  const products = [
-    {
-      SKU: "WTCH-001",
-      name: "Minimalist Smart Watch Series 5",
-      price: 199.99,
-      quantity: 10,
-      image: ImageProvider.Watch,
-    },
-    {
-      SKU: "AUD-HD-99",
-      name: "Professional Studio Headphones",
-      price: 8900,
-      quantity: 5,
-      image: ImageProvider.headphone,
-    },
-    {
-      SKU: "FTW-R-42",
-      name: "Performance Running Shoe - Crimson",
-      price: 15200,
-      quantity: 3,
-      image: ImageProvider.showes,
-    },
-    {
-      SKU: "CAM-VNT-01",
-      name: "Retro Instant Film Camera",
-      price: 1800,
-      quantity: 3,
-      image: ImageProvider.Camera,
-    },
-  ];
-  
+    fetchProducts();
+  }, []);
+
   return (
     <div className="p-5">
       <div className="flex  flex-col gap-5">
@@ -66,7 +41,10 @@ const page = () => {
               <h1 className="text-[24px] font-bold">Products</h1>
               <p>Manage Your Inventory Catalog & Product Information</p>
             </div>
-            <Link href="/addnewproduct" className="bg-[#611F69] text-white py-2 px-4 border  border-[#611f69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611f69]  transition-all">
+            <Link
+              href="/addnewproduct"
+              className="bg-[#611F69] text-white py-2 px-4 border  border-[#611f69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611f69]  transition-all"
+            >
               <span>
                 <GoPlusCircle />
               </span>
@@ -126,16 +104,22 @@ const page = () => {
         {/* heading of this page */}
         {/* Product Section*/}
         <div className="flex flex-wrap gap-5 mt-5">
-          {products.map((product) => (
-            <ProductCard
-              key={product.SKU}
-              SKU={product.SKU}
-              name={product.name}
-              price={product.price}
-              quantity={product.quantity}
-              image={product.image}
-            />
-          ))}
+          {loadingProducts ? (
+            <p className="text-gray-500">Loading products...</p>
+          ) : products.length === 0 ? (
+            <p className="text-gray-500">No products found.</p>
+          ) : (
+            products.map((product) => (
+              <ProductCard
+                key={product.id}
+                SKU={product.productSKU}
+                name={product.productName}
+                price={Number(product.price || 0)}
+                quantity={Number(product.quantity || 0)}
+                image={product.image || placeholder}
+              />
+            ))
+          )}
         </div>
         {/* Product Section*/}
       </div>
@@ -143,4 +127,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

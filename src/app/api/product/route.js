@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
     await connectMongoDB();
     const products = await Product.find().sort({ createdAt: -1 }).lean();
 
+    console.log(products);
+    
     const result = products.map((p) => ({
       id: p._id.toString(),
       productName: p.productName,

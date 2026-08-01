@@ -182,9 +182,10 @@ const Page = () => {
   const fetchProducts = async () => {
     setLoadingProducts(true);
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products", { cache: "no-store" });
       const data = await res.json();
       if (res.ok) setProducts(data.products || []);
+      else console.error("Failed to load products:", data.message);
     } catch (err) {
       console.error("Failed to load products:", err);
     } finally {
