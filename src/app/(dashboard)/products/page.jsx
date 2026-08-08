@@ -1,33 +1,73 @@
 "use client";
 import ProductCard from "@/Component/Product_card/Product_card";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GoPlusCircle } from "react-icons/go";
 import { IoSearchOutline } from "react-icons/io5";
-import placeholder from '../../../assets/image/Camera.png'
+import placeholder from "../../../assets/image/Camera.png";
+import DeleteModal from "@/Component/Modal/DeleteModal";
+
 const Page = () => {
+  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDeleteClick = (id, name) => {
+    setSelectedProduct({ id, name });
+    setDeleteModal(true);
+  };
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch("/api/products", { cache: "no-store" });
+      const data = await res.json();
+
+      if (res.ok) {
+        setProducts(data.products || []);
+      } else {
+        console.error("Failed to load products:", data.message);
+      }
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedProduct) return;
+
+    setDeleteLoading(true);
+
+    try {
+      const res = await fetch(`/api/product/${selectedProduct.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        await fetchProducts();
+        router.refresh();
+        setDeleteModal(false);
+        setSelectedProduct(null);
+      } else {
+        alert(data.message || "Could not delete product.");
+      }
+    } catch (err) {
+      console.error("Delete product error:", err);
+      alert("Something went wrong while deleting the product.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoadingProducts(true);
-      try {
-        const res = await fetch("/api/products", { cache: "no-store" });
-        const data = await res.json();
-        console.log(data?.products);
-        if (res.ok) {
-          setProducts(data.products || []);
-        } else {
-          console.error("Failed to load products:", data.message);
-        }
-      } catch (err) {
-        console.error("Failed to load products:", err);
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
@@ -103,7 +143,7 @@ const Page = () => {
           </div>
         </div>
         {/* heading of this page */}
-        {/* Product Section*/}
+        {/* Product Section*/} 
         <div className="flex flex-wrap gap-5 mt-5">
           {loadingProducts ? (
             <p className="text-gray-500">Loading products...</p>
@@ -113,18 +153,27 @@ const Page = () => {
             products.map((product) => (
               <ProductCard
                 key={product.id}
+                id={product.id}
                 SKU={product.productSKU}
                 name={product.productName}
                 price={Number(product.price || 0)}
                 quantity={Number(product.quantity || 0)}
                 image={product.image || placeholder}
                 currentStock={product.currentStock}
+                onDeleteClick={handleDeleteClick}
               />
             ))
           )}
         </div>
         {/* Product Section*/}
       </div>
+      <DeleteModal
+        isOpen={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        onDelete={handleDelete}
+        productName={selectedProduct?.name}
+        loading={deleteLoading}
+      />
     </div>
   );
 };

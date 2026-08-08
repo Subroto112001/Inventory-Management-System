@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
@@ -169,8 +172,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { id } = await params;
+    const productId = id?.trim();
 
-    if (!mongoose.isValidObjectId(id)) {
+    if (!productId || !mongoose.isValidObjectId(productId)) {
       return NextResponse.json(
         { message: "Invalid product id" },
         { status: 400 },
@@ -179,7 +183,7 @@ export async function DELETE(request, { params }) {
 
     await connectMongoDB();
 
-    const deletedProduct = await Product.findByIdAndDelete(id);
+    const deletedProduct = await Product.findByIdAndDelete(productId);
     if (!deletedProduct) {
       return NextResponse.json(
         { message: "Product not found" },

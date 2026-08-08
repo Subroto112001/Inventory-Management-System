@@ -9,8 +9,6 @@ export async function GET() {
   try {
     await connectMongoDB();
     const products = await Product.find().sort({ createdAt: -1 }).lean();
-
-    console.log(products);
     
     const result = products.map((p) => ({
       id: p._id.toString(),
@@ -30,7 +28,6 @@ export async function GET() {
       isActive: p.isActive,
     }));
 
-    console.log(result);
 
     return NextResponse.json(
       { success: true, products: result },
