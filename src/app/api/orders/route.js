@@ -23,7 +23,6 @@ export async function GET() {
   }
 }
 
-// POST: নতুন অর্ডার তৈরি করার জন্য
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -44,10 +43,9 @@ export async function POST(request) {
       tax,
       deliveryCharge,
       grandTotal,
-      userId, // Auth session থেকে ইউজারের ID পাঠাতে হবে
+      userId,
     } = body;
 
-    // ১. বেসিক ভ্যালিডেশন
     if (!cart || cart.length === 0) {
       return NextResponse.json(
         { message: "Cart cannot be empty!" },
@@ -57,16 +55,41 @@ export async function POST(request) {
 
     await connectMongoDB();
 
-    // ২. কার্ট আইটেমগুলোকে অর্ডার স্কিমা অনুযায়ী ফরম্যাট করা
-    const orderItems = cart.map((item) => ({
-      product: item.id || item._id, // ফ্রন্টএন্ডে id থাকলে সেটা ব্যবহার হবে
-      name: item.name || item.productName,
-      sku: item.sku || item.productSKU,
-      quantity: Number(item.quantity),
-      price: Number(item.price),
-    }));
+    // Map cart items and validate MongoDB ObjectIds
+    const orderItems = [];
+    const bulkStockUpdates = [];
 
-    // ৩. পেমেন্ট স্ট্যাটাস ক্যালকুলেশন
+    for (const item of cart) {
+      const rawProductId = item.id || item._id;
+
+      if (!rawProductId || !mongoose.Types.ObjectId.isValid(rawProductId)) {
+        return NextResponse.json(
+          {
+            message: `Invalid product ID for item: ${item.productName || item.name}`,
+          },
+          { status: 400 },
+        );
+      }
+
+      const productId = new mongoose.Types.ObjectId(rawProductId);
+
+      orderItems.push({
+        product: productId,
+        name: item.productName || item.name,
+        sku: item.productSKU || item.sku,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+      });
+
+      bulkStockUpdates.push({
+        updateOne: {
+          filter: { _id: productId },
+          update: { $inc: { currentStock: -Number(item.quantity) } },
+        },
+      });
+    }
+
+    // Payment calculations
     let paymentStatus = "Pending";
     const numAmountReceived = Number(amountReceived) || 0;
     const numGrandTotal = Number(grandTotal) || 0;
@@ -83,7 +106,6 @@ export async function POST(request) {
       paymentStatus = "Pending";
     }
 
-    // ৪. পেমেন্ট অবজেক্ট তৈরি
     const paymentDetails = {
       method: paymentMethod,
       deliveryPaymentType:
@@ -101,37 +123,27 @@ export async function POST(request) {
           : undefined,
       mobileBankingDetails:
         paymentMethod === "Mobile Banking"
-          ? {
-              provider: mobileBankingProvider,
-              transactionId,
-            }
+          ? { provider: mobileBankingProvider, transactionId }
           : undefined,
       cardDetails:
-        paymentMethod === "Card"
-          ? {
-              cardType,
-              cardLast4,
-            }
-          : undefined,
+        paymentMethod === "Card" ? { cardType, cardLast4 } : undefined,
     };
 
-    // আপনার স্কিমাতে processedBy ফিল্ডটি required.
-    // প্রোডাকশনে এখানে লগ-ইন করা ইউজারের ID বসবে।
-    // আপাতত ডামি একটি ObjectId দেওয়া হলো যদি ফ্রন্টএন্ড থেকে userId না আসে।
-    const processedById = userId
-      ? new mongoose.Types.ObjectId(userId)
-      : new mongoose.Types.ObjectId("000000000000000000000000");
+    // Safe ObjectId conversion for processedBy
+    const processedById =
+      userId && mongoose.Types.ObjectId.isValid(userId)
+        ? new mongoose.Types.ObjectId(userId)
+        : new mongoose.Types.ObjectId("000000000000000000000000");
 
-    // ৫. ডাটাবেসে অর্ডার ক্রিয়েট করা
     const newOrder = await Order.create({
       customer: {
         name: customerName,
-        phone: customerPhone || undefined, // empty string থাকলে undefined পাস করা ভালো, validation error এড়াতে
+        phone: customerPhone || undefined,
         address: customerAddress,
       },
       items: orderItems,
       orderType,
-      status: "Confirmed", // অর্ডার তৈরির পর ডিফল্ট স্ট্যাটাস Confirmed রাখা হলো
+      status: "Confirmed",
       financials: {
         subtotal: Number(subtotal),
         tax: Number(tax),
@@ -141,14 +153,6 @@ export async function POST(request) {
       payment: paymentDetails,
       processedBy: processedById,
     });
-
-    // ৬. প্রোডাক্টের বর্তমান স্টক (currentStock) কমানো
-    const bulkStockUpdates = cart.map((item) => ({
-      updateOne: {
-        filter: { _id: item.id || item._id },
-        update: { $inc: { currentStock: -Number(item.quantity) } }, // quantity অনুযায়ী স্টক মাইনাস হবে
-      },
-    }));
 
     if (bulkStockUpdates.length > 0) {
       await Product.bulkWrite(bulkStockUpdates);
@@ -173,8 +177,15 @@ export async function POST(request) {
       );
     }
 
+    if (error.name === "CastError") {
+      return NextResponse.json(
+        { message: `Invalid ID format: ${error.value}` },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: error.message || "Internal server error" },
       { status: 500 },
     );
   }

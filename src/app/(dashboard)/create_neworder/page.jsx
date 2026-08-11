@@ -153,7 +153,6 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
 // Main POS / Create Order Component
 // ==========================================
 
-
 export default function CreateOrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -161,9 +160,9 @@ export default function CreateOrderPage() {
   const [cart, setCart] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchProducts = async () => {
     setLoadingProducts(true);
@@ -187,6 +186,8 @@ export default function CreateOrderPage() {
     fetchProducts();
   }, []);
 
+  console.log(products);
+
   // Order & Delivery States
   const [orderType, setOrderType] = useState("Take Away"); // "Take Away" or "Home Delivery"
   const [deliveryPaymentType, setDeliveryPaymentType] = useState("COD"); // "COD" or "Pre-paid"
@@ -204,6 +205,7 @@ export default function CreateOrderPage() {
       (total, item) => total + item.price * item.quantity,
       0,
     );
+
     const calculatedTax = sub * 0.1;
     const delivery = orderType === "Home Delivery" ? 60 : 0; // Default 60 BDT for Home Delivery
 
@@ -223,15 +225,15 @@ export default function CreateOrderPage() {
     return received > grandTotal ? received - grandTotal : 0;
   }, [amountReceived, grandTotal, orderType, deliveryPaymentType]);
 
-const filteredProducts = useMemo(() => {
-  if (!searchQuery) return products;
-  const lowerCaseQuery = searchQuery.toLowerCase();
-  return products.filter(
-    (product) =>
-      product?.productName?.toLowerCase().includes(lowerCaseQuery) ||
-      product?.productSKU?.toLowerCase().includes(lowerCaseQuery),
-  );
-}, [searchQuery, products]);
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery) return products;
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    return products.filter(
+      (product) =>
+        product?.productName?.toLowerCase().includes(lowerCaseQuery) ||
+        product?.productSKU?.toLowerCase().includes(lowerCaseQuery),
+    );
+  }, [searchQuery, products]);
 
   const addToOrder = (product) => {
     setCart((prevCart) => {
@@ -261,7 +263,7 @@ const filteredProducts = useMemo(() => {
 
   const handleScanSuccess = (scannedCode) => {
     const foundProduct = products.find(
-      (p) => p.productSKU.toLowerCase() === scannedCode.toLowerCase(),
+      (p) => p?.productSKU?.toLowerCase() === scannedCode.toLowerCase(),
     );
 
     if (foundProduct) {
@@ -275,7 +277,8 @@ const filteredProducts = useMemo(() => {
   const handleSearchKeyDown = (e) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
       const foundProduct = products.find(
-        (p) => p.productSKU.toLowerCase() === searchQuery.trim().toLowerCase(),
+        (p) =>
+          p?.productSKU?.toLowerCase() === searchQuery.trim().toLowerCase(),
       );
 
       if (foundProduct) {
@@ -287,7 +290,7 @@ const filteredProducts = useMemo(() => {
     }
   };
 
-  const generateMemo = () => {
+  const handleCreateOrder = async () => {
     if (cart.length === 0) {
       alert("Please add products to the order before generating a memo.");
       return;
@@ -298,7 +301,6 @@ const filteredProducts = useMemo(() => {
       return;
     }
 
-    // Validation for partial payment on Take Away or Prepaid
     const requiresImmediatePayment =
       orderType === "Take Away" ||
       (orderType === "Home Delivery" && deliveryPaymentType === "Pre-paid");
@@ -312,7 +314,59 @@ const filteredProducts = useMemo(() => {
       );
       if (!confirmMsg) return;
     }
-    window.print();
+
+    const orderPayload = {
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      customerAddress: customerAddress.trim(),
+      cart: cart,
+      orderType,
+      deliveryPaymentType:
+        orderType === "Home Delivery" ? deliveryPaymentType : "N/A",
+      paymentMethod,
+      amountReceived: parseFloat(amountReceived) || 0,
+      mobileBankingProvider,
+      transactionId: transactionId.trim(),
+      cardType,
+      cardLast4,
+      subtotal,
+      tax,
+      deliveryCharge,
+      grandTotal,
+    };
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert(`Order placed successfully!`);
+        window.print();
+
+        setCart([]);
+        setCustomerName("");
+        setCustomerPhone("");
+        setCustomerAddress("");
+        setAmountReceived("");
+        setTransactionId("");
+        setCardLast4("");
+      } else {
+        alert(`Failed to create order: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("A network or server error occurred while creating the order.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Determine if we should show the full payment forms
@@ -469,7 +523,11 @@ const filteredProducts = useMemo(() => {
               aria-live="polite"
               className="border border-gray-100 rounded-lg bg-gray-50 p-2"
             >
-              {filteredProducts.length === 0 ? (
+              {loadingProducts ? (
+                <p className="text-gray-500 text-center py-8 text-sm">
+                  Loading products...
+                </p>
+              ) : filteredProducts.length === 0 ? (
                 <p className="text-gray-500 text-center py-8 text-sm">
                   No products found matching "{searchQuery}".
                 </p>
@@ -495,7 +553,7 @@ const filteredProducts = useMemo(() => {
                         <button
                           onClick={() => addToOrder(product)}
                           className="px-4 py-2 bg-[#611F69]/10 text-[#611F69] font-semibold rounded-md hover:bg-[#611F69] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#611F69] transition-all text-sm"
-                          aria-label={`Add ${product.name} to order`}
+                          aria-label={`Add ${product.productName} to order`}
                         >
                           Add
                         </button>
@@ -577,7 +635,7 @@ const filteredProducts = useMemo(() => {
                       >
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-gray-900">
-                            {item.name}
+                            {item.productName}
                           </span>
                           <span className="text-xs text-gray-500">
                             ৳{item.price.toFixed(2)} x {item.quantity}
@@ -594,7 +652,7 @@ const filteredProducts = useMemo(() => {
                           <button
                             onClick={() => removeFromOrder(item.id)}
                             className="w-7 h-7 flex items-center justify-center bg-white text-gray-800 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
-                            aria-label={`Decrease quantity of ${item.name}`}
+                            aria-label={`Decrease quantity of ${item.productName}`}
                           >
                             -
                           </button>
@@ -604,7 +662,7 @@ const filteredProducts = useMemo(() => {
                           <button
                             onClick={() => addToOrder(item)}
                             className="w-7 h-7 flex items-center justify-center bg-white text-gray-800 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
-                            aria-label={`Increase quantity of ${item.name}`}
+                            aria-label={`Increase quantity of ${item.productName}`}
                           >
                             +
                           </button>
@@ -893,12 +951,16 @@ const filteredProducts = useMemo(() => {
 
               {/* Action Button */}
               <button
-                onClick={generateMemo}
-                disabled={cart.length === 0}
+                onClick={handleCreateOrder}
+                disabled={cart.length === 0 || isSubmitting}
                 className="w-full py-3.5 bg-[#611F69] text-white font-bold rounded-lg shadow-lg hover:bg-[#4a1752] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#611F69]/50 transition-all print:hidden flex items-center justify-center gap-2"
                 aria-label="Process Payment and Print Memo"
               >
-                <span>Process Order & Print</span>
+                {isSubmitting ? (
+                  <span>Processing Order...</span>
+                ) : (
+                  <span>Process Order & Print</span>
+                )}
               </button>
 
               {/* Footer text for print */}

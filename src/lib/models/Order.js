@@ -148,9 +148,8 @@ const orderSchema = new Schema(
   { timestamps: true },
 );
 
-// --- Middleware ---
-// Auto-generate order number before saving if not provided
-orderSchema.pre("validate", function (next) {
+// ✅ FIX: Synchronous hook without 'next' parameter
+orderSchema.pre("validate", function () {
   if (!this.orderNumber) {
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.floor(Math.random() * 1000)
@@ -158,7 +157,6 @@ orderSchema.pre("validate", function (next) {
       .padStart(3, "0");
     this.orderNumber = `ORD-${timestamp}-${random}`;
   }
-  next();
 });
 
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
