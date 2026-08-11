@@ -23,6 +23,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
   const [isClient, setIsClient] = useState(false);
   const [cameraError, setCameraError] = useState("");
+
   const scannerRef = useRef(null);
   const isScanningComplete = useRef(false);
 
@@ -151,12 +152,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
 // ==========================================
 // Main POS / Create Order Component
 // ==========================================
-const AVAILABLE_PRODUCTS = [
-  { id: "p1", name: "Premium Wireless Headphones", sku: "SKU001", price: 200 },
-  { id: "p2", name: "Ergonomic Office Chair", sku: "SKU002", price: 850 },
-  { id: "p3", name: "Mechanical Keyboard", sku: "SKU003", price: 120 },
-  { id: "p4", name: "USB-C Fast Charger", sku: "SKU004", price: 45 },
-];
+
 
 export default function CreateOrderPage() {
   const [customerName, setCustomerName] = useState("");
@@ -165,6 +161,31 @@ export default function CreateOrderPage() {
   const [cart, setCart] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch("/api/products", { cache: "no-store" });
+      const data = await res?.json();
+      console.log(data?.products);
+      if (res.ok) {
+        setProducts(data?.products || []);
+      } else {
+        console.error("Failed to load products:", data.message);
+      }
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   // Order & Delivery States
   const [orderType, setOrderType] = useState("Take Away"); // "Take Away" or "Home Delivery"
@@ -202,15 +223,15 @@ export default function CreateOrderPage() {
     return received > grandTotal ? received - grandTotal : 0;
   }, [amountReceived, grandTotal, orderType, deliveryPaymentType]);
 
-  const filteredProducts = useMemo(() => {
-    if (!searchQuery) return AVAILABLE_PRODUCTS;
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    return AVAILABLE_PRODUCTS.filter(
-      (product) =>
-        product.name.toLowerCase().includes(lowerCaseQuery) ||
-        product.sku.toLowerCase().includes(lowerCaseQuery),
-    );
-  }, [searchQuery]);
+const filteredProducts = useMemo(() => {
+  if (!searchQuery) return products;
+  const lowerCaseQuery = searchQuery.toLowerCase();
+  return products.filter(
+    (product) =>
+      product?.productName?.toLowerCase().includes(lowerCaseQuery) ||
+      product?.productSKU?.toLowerCase().includes(lowerCaseQuery),
+  );
+}, [searchQuery, products]);
 
   const addToOrder = (product) => {
     setCart((prevCart) => {
@@ -239,8 +260,8 @@ export default function CreateOrderPage() {
   };
 
   const handleScanSuccess = (scannedCode) => {
-    const foundProduct = AVAILABLE_PRODUCTS.find(
-      (p) => p.sku.toLowerCase() === scannedCode.toLowerCase(),
+    const foundProduct = products.find(
+      (p) => p.productSKU.toLowerCase() === scannedCode.toLowerCase(),
     );
 
     if (foundProduct) {
@@ -253,8 +274,8 @@ export default function CreateOrderPage() {
 
   const handleSearchKeyDown = (e) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
-      const foundProduct = AVAILABLE_PRODUCTS.find(
-        (p) => p.sku.toLowerCase() === searchQuery.trim().toLowerCase(),
+      const foundProduct = products.find(
+        (p) => p.productSKU.toLowerCase() === searchQuery.trim().toLowerCase(),
       );
 
       if (foundProduct) {
@@ -461,10 +482,10 @@ export default function CreateOrderPage() {
                     >
                       <div className="flex flex-col">
                         <span className="text-base font-bold text-gray-900">
-                          {product.name}
+                          {product.productName}
                         </span>
                         <span className="text-xs text-gray-500 font-medium mt-1">
-                          SKU: {product.sku}
+                          SKU: {product.productSKU}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
