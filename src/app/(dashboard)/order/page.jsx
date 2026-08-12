@@ -922,14 +922,14 @@ const filteredAndSortedOrders = useMemo(() => {
                         {order.orderNumber}
                       </td>
                       <td className="px-6 py-4 text-gray-600 print:text-gray-900 print:py-2">
-                        {order.date}
+                        {new Date(order.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 print:py-2">
                         <div className="font-semibold text-gray-900">
-                          {order.customerName}
+                          {order.customer?.name}
                         </div>
                         <div className="text-gray-500 text-sm print:text-gray-700">
-                          {order.customerPhone}
+                          {order.customer?.phone}
                         </div>
                       </td>
                       <td className="px-6 py-4 print:py-2">
@@ -946,7 +946,7 @@ const filteredAndSortedOrders = useMemo(() => {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-semibold text-gray-900 print:py-2">
-                        {order.amount}
+                        {order?.financials?.grandTotal}git
                       </td>
                       <td className="px-6 py-4 text-right print:hidden flex justify-end gap-2">
                         {/* 1. Standard Memo Button */}
@@ -1001,7 +1001,7 @@ const filteredAndSortedOrders = useMemo(() => {
           >
             <span className="text-[14px] text-gray-600" aria-live="polite">
               Showing {filteredAndSortedOrders.length > 0 ? 1 : 0} to{" "}
-              {filteredAndSortedOrders.length} of {ORDERS_DATA.length} entries
+              {filteredAndSortedOrders.length} of {orders.length} entries
             </span>
             <div className="flex items-center gap-2">
               <button
