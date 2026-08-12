@@ -534,6 +534,34 @@ export default function OrdersDashboard() {
   const filterRef = useRef(null);
   const sortRef = useRef(null);
 
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      const res = await fetch("/api/orders", { cache: "no-store" });
+      const data = await res?.json();
+
+      if (res.ok) {
+        setOrders(data?.orders || []);
+      } else {
+        console.error("Failed to load orders:", data.message);
+      }
+    } catch (err) {
+      console.error("Failed to load orders:", err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  console.log(orders);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -546,39 +574,44 @@ export default function OrdersDashboard() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const filteredAndSortedOrders = useMemo(() => {
-    let result = ORDERS_DATA.filter((order) => {
-      const orderMonthName = new Date(order.date).toLocaleString("en-US", {
-        month: "long",
-      });
-      const matchesMonth =
-        selectedMonth === "All Months" ||
-        orderMonthName.toLowerCase() === selectedMonth.toLowerCase();
-
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const matchesSearch =
-        !searchQuery ||
-        order.id.toLowerCase().includes(lowerCaseQuery) ||
-        order.customerName.toLowerCase().includes(lowerCaseQuery) ||
-        order.customerPhone.toLowerCase().includes(lowerCaseQuery) ||
-        order.status.toLowerCase().includes(lowerCaseQuery);
-
-      return matchesMonth && matchesSearch;
+const filteredAndSortedOrders = useMemo(() => {
+  let result = orders.filter((order) => {
+    // Month
+    const orderMonthName = new Date(order.createdAt).toLocaleString("en-US", {
+      month: "long",
     });
 
-    if (sortBy === "completed") {
-      result.sort((a, b) =>
-        a.status === "Completed" ? -1 : b.status === "Completed" ? 1 : 0,
-      );
-    } else if (sortBy === "not_completed") {
-      result.sort((a, b) =>
-        a.status !== "Completed" ? -1 : b.status !== "Completed" ? 1 : 0,
-      );
-    }
+    const matchesMonth =
+      selectedMonth === "All Months" ||
+      orderMonthName.toLowerCase() === selectedMonth.toLowerCase();
 
-    return result;
-  }, [searchQuery, selectedMonth, sortBy]);
+    // Search
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
+    const matchesSearch =
+      !searchQuery ||
+      order.orderNumber?.toLowerCase().includes(lowerCaseQuery) ||
+      order.customer?.name?.toLowerCase().includes(lowerCaseQuery) ||
+      order.customer?.phone?.toLowerCase().includes(lowerCaseQuery) ||
+      order.status?.toLowerCase().includes(lowerCaseQuery) ||
+      order.payment?.paymentStatus?.toLowerCase().includes(lowerCaseQuery) ||
+      order.payment?.method?.toLowerCase().includes(lowerCaseQuery);
+
+    return matchesMonth && matchesSearch;
+  });
+
+  if (sortBy === "completed") {
+    result.sort((a, b) =>
+      a.status === "Completed" ? -1 : b.status === "Completed" ? 1 : 0,
+    );
+  } else if (sortBy === "not_completed") {
+    result.sort((a, b) =>
+      a.status !== "Completed" ? -1 : b.status !== "Completed" ? 1 : 0,
+    );
+  }
+
+  return result;
+}, [orders, searchQuery, selectedMonth, sortBy]);
 
   const generateReport = () => {
     if (filteredAndSortedOrders.length === 0) {
@@ -882,11 +915,11 @@ export default function OrdersDashboard() {
                 {filteredAndSortedOrders.length > 0 ? (
                   filteredAndSortedOrders.map((order) => (
                     <tr
-                      key={order.id}
+                      key={order.orderNumber}
                       className="hover:bg-gray-50 transition-colors group"
                     >
                       <td className="px-6 py-4 font-medium text-[#611F69] print:text-gray-900 print:py-2">
-                        {order.id}
+                        {order.orderNumber}
                       </td>
                       <td className="px-6 py-4 text-gray-600 print:text-gray-900 print:py-2">
                         {order.date}

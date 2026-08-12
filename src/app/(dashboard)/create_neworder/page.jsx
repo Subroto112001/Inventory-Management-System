@@ -169,7 +169,7 @@ export default function CreateOrderPage() {
     try {
       const res = await fetch("/api/products", { cache: "no-store" });
       const data = await res?.json();
-      console.log(data?.products);
+
       if (res.ok) {
         setProducts(data?.products || []);
       } else {
