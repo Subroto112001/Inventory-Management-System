@@ -482,6 +482,35 @@ export default function StockManagement() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [updateAmount, setUpdateAmount] = useState("");
 
+
+ const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch("/api/products", { cache: "no-store" });
+      const data = await res.json();
+
+      if (res.ok) {
+        setProducts(data.products || []);
+      } else {
+        console.error("Failed to load products:", data.message);
+      }
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+   useEffect(() => {
+     fetchProducts();
+   }, []);
+  
+console.log(products);
+
+
   // স্ট্যাটাস ডায়নামিকভাবে ক্যালকুলেট করার ফাংশন
   const getStatus = (current, min) => {
     if (current === 0) return "Out of Stock";
