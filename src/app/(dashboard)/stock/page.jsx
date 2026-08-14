@@ -9,468 +9,16 @@ import {
   MdSearch,
   MdFilterList,
   MdArrowDropDown,
-  MdMemory,
   MdEdit,
   MdShoppingCartCheckout,
-  MdPrecisionManufacturing,
-  MdBuildCircle,
   MdReceiptLong,
-  MdCable,
   MdChevronLeft,
   MdChevronRight,
   MdClose,
-  MdComputer,
-  MdMouse,
-  MdKeyboard,
-  MdRouter,
-  MdHeadset,
-  MdCamera,
-  MdStorage,
-  MdPower,
-  MdDns,
+  MdInventory2,
 } from "react-icons/md";
 
-// Expanded Demo Stock Data (54 Items Total)
-const INITIAL_STOCK_DATA = [
-  // Original 4 items
-  {
-    id: "SNS-A-1024",
-    name: "Precision Sensor Alpha",
-    location: "WH-East (Aisle 4)",
-    minStock: 150,
-    currentStock: 45,
-    icon: MdMemory,
-  },
-  {
-    id: "ACT-HD-99",
-    name: "Heavy Duty Actuator",
-    location: "WH-Main (Zone B)",
-    minStock: 50,
-    currentStock: 210,
-    icon: MdPrecisionManufacturing,
-  },
-  {
-    id: "SRV-M-001",
-    name: "Industrial Servo Motor",
-    location: "WH-South (Dock 2)",
-    minStock: 20,
-    currentStock: 0,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "CBL-CU-50",
-    name: "Shielded Copper Cable 50m",
-    location: "WH-Main (Rack 12)",
-    minStock: 100,
-    currentStock: 845,
-    icon: MdCable,
-  },
-
-  // 50 New IT & Hardware Items
-  {
-    id: "NET-CAT6-100",
-    name: "Cat6 Ethernet Cable 100m",
-    location: "WH-East (Rack 1)",
-    minStock: 20,
-    currentStock: 85,
-    icon: MdCable,
-  },
-  {
-    id: "NET-FBR-05",
-    name: "Fiber Optic Patch Cord 5m",
-    location: "WH-East (Rack 2)",
-    minStock: 50,
-    currentStock: 120,
-    icon: MdCable,
-  },
-  {
-    id: "RTR-CS-2900",
-    name: "Cisco Router 2900 Series",
-    location: "WH-North (Zone A)",
-    minStock: 5,
-    currentStock: 12,
-    icon: MdRouter,
-  },
-  {
-    id: "SWT-24G-POE",
-    name: "24-Port Gigabit PoE Switch",
-    location: "WH-North (Zone A)",
-    minStock: 10,
-    currentStock: 8,
-    icon: MdDns,
-  },
-  {
-    id: "STO-NVME-1T",
-    name: "NVMe SSD 1TB Gen4",
-    location: "WH-Main (Aisle 2)",
-    minStock: 30,
-    currentStock: 145,
-    icon: MdStorage,
-  },
-  {
-    id: "MEM-DDR4-16",
-    name: "DDR4 RAM 16GB 3200MHz",
-    location: "WH-Main (Aisle 2)",
-    minStock: 50,
-    currentStock: 320,
-    icon: MdMemory,
-  },
-  {
-    id: "CPU-INT-I7",
-    name: "Intel Core i7-13700K",
-    location: "WH-Main (Secure Vault)",
-    minStock: 15,
-    currentStock: 42,
-    icon: MdMemory,
-  },
-  {
-    id: "CPU-AMD-R7",
-    name: "AMD Ryzen 7 7800X3D",
-    location: "WH-Main (Secure Vault)",
-    minStock: 15,
-    currentStock: 28,
-    icon: MdMemory,
-  },
-  {
-    id: "MB-ATX-Z790",
-    name: "ATX Motherboard Z790",
-    location: "WH-West (Aisle 5)",
-    minStock: 20,
-    currentStock: 18,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "PSU-750W-G",
-    name: "750W 80+ Gold Power Supply",
-    location: "WH-West (Aisle 5)",
-    minStock: 25,
-    currentStock: 60,
-    icon: MdPower,
-  },
-  {
-    id: "RCK-42U-SRV",
-    name: "Server Rack 42U",
-    location: "WH-South (Dock 1)",
-    minStock: 2,
-    currentStock: 5,
-    icon: MdDns,
-  },
-  {
-    id: "UPS-1000VA",
-    name: "UPS 1000VA Line-Interactive",
-    location: "WH-South (Dock 1)",
-    minStock: 10,
-    currentStock: 22,
-    icon: MdPower,
-  },
-  {
-    id: "MON-4K-27",
-    name: "4K Dell Monitor 27 inch",
-    location: "WH-East (Aisle 3)",
-    minStock: 15,
-    currentStock: 8,
-    icon: MdComputer,
-  },
-  {
-    id: "KBD-MECH-BL",
-    name: "Mechanical Keyboard (Blue)",
-    location: "WH-East (Aisle 3)",
-    minStock: 40,
-    currentStock: 110,
-    icon: MdKeyboard,
-  },
-  {
-    id: "MUS-WL-ERG",
-    name: "Wireless Ergonomic Mouse",
-    location: "WH-East (Aisle 3)",
-    minStock: 50,
-    currentStock: 95,
-    icon: MdMouse,
-  },
-  {
-    id: "AUD-ANC-HDS",
-    name: "Noise Cancelling Headset",
-    location: "WH-West (Aisle 1)",
-    minStock: 30,
-    currentStock: 75,
-    icon: MdHeadset,
-  },
-  {
-    id: "CAM-WEB-108",
-    name: "Web Camera 1080p HD",
-    location: "WH-West (Aisle 1)",
-    minStock: 40,
-    currentStock: 20,
-    icon: MdCamera,
-  },
-  {
-    id: "CBL-HDMI-5M",
-    name: "HDMI Cable 5m v2.1",
-    location: "WH-East (Rack 1)",
-    minStock: 100,
-    currentStock: 420,
-    icon: MdCable,
-  },
-  {
-    id: "CBL-DP-2M",
-    name: "DisplayPort Cable 2m",
-    location: "WH-East (Rack 1)",
-    minStock: 80,
-    currentStock: 150,
-    icon: MdCable,
-  },
-  {
-    id: "DOK-USBC-01",
-    name: "USB-C Docking Station",
-    location: "WH-Main (Aisle 4)",
-    minStock: 25,
-    currentStock: 0,
-    icon: MdComputer,
-  },
-  {
-    id: "STO-NAS-4B",
-    name: "NAS Storage Enclosure 4-Bay",
-    location: "WH-North (Zone B)",
-    minStock: 5,
-    currentStock: 9,
-    icon: MdStorage,
-  },
-  {
-    id: "STO-HDD-8T",
-    name: "8TB Enterprise HDD 7200RPM",
-    location: "WH-North (Zone B)",
-    minStock: 20,
-    currentStock: 45,
-    icon: MdStorage,
-  },
-  {
-    id: "SBC-RPI-4B",
-    name: "Raspberry Pi 4 Model B",
-    location: "WH-Main (Aisle 2)",
-    minStock: 50,
-    currentStock: 18,
-    icon: MdMemory,
-  },
-  {
-    id: "MCU-ARD-R3",
-    name: "Arduino Uno R3",
-    location: "WH-Main (Aisle 2)",
-    minStock: 100,
-    currentStock: 310,
-    icon: MdMemory,
-  },
-  {
-    id: "MCU-ESP-32",
-    name: "ESP32 Microcontroller",
-    location: "WH-Main (Aisle 2)",
-    minStock: 150,
-    currentStock: 500,
-    icon: MdMemory,
-  },
-  {
-    id: "ACC-THM-10G",
-    name: "Thermal Paste (10g Syringe)",
-    location: "WH-West (Aisle 2)",
-    minStock: 80,
-    currentStock: 215,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "FAN-CAS-120",
-    name: "Case Fan 120mm PWM",
-    location: "WH-West (Aisle 2)",
-    minStock: 100,
-    currentStock: 80,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "CLR-AIO-240",
-    name: "CPU Liquid Cooler 240mm",
-    location: "WH-West (Aisle 2)",
-    minStock: 15,
-    currentStock: 32,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "NET-RJ45-1C",
-    name: "RJ45 Connectors (Pack of 100)",
-    location: "WH-East (Rack 2)",
-    minStock: 50,
-    currentStock: 120,
-    icon: MdCable,
-  },
-  {
-    id: "ACC-TIE-500",
-    name: "Cable Ties (Pack of 500)",
-    location: "WH-East (Rack 2)",
-    minStock: 40,
-    currentStock: 90,
-    icon: MdCable,
-  },
-  {
-    id: "WIF-AX-AP",
-    name: "Wi-Fi 6 Access Point",
-    location: "WH-North (Zone A)",
-    minStock: 10,
-    currentStock: 24,
-    icon: MdRouter,
-  },
-  {
-    id: "NET-POE-INJ",
-    name: "PoE Injector 802.3af",
-    location: "WH-North (Zone A)",
-    minStock: 30,
-    currentStock: 12,
-    icon: MdPower,
-  },
-  {
-    id: "RCK-FAN-SRV",
-    name: "Server Cabinet Fan Unit",
-    location: "WH-South (Dock 1)",
-    minStock: 10,
-    currentStock: 15,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "NET-KVM-4P",
-    name: "KVM Switch 4-Port",
-    location: "WH-North (Zone C)",
-    minStock: 8,
-    currentStock: 3,
-    icon: MdDns,
-  },
-  {
-    id: "NET-PNL-24P",
-    name: "Network Patch Panel 24-Port",
-    location: "WH-North (Zone C)",
-    minStock: 15,
-    currentStock: 26,
-    icon: MdDns,
-  },
-  {
-    id: "RCK-PDU-8",
-    name: "Rackmount PDU 8-Outlet",
-    location: "WH-South (Dock 1)",
-    minStock: 20,
-    currentStock: 40,
-    icon: MdPower,
-  },
-  {
-    id: "MEM-ECC-32",
-    name: "Server RAM 32GB ECC",
-    location: "WH-Main (Secure Vault)",
-    minStock: 30,
-    currentStock: 0,
-    icon: MdMemory,
-  },
-  {
-    id: "STO-SAS-2T",
-    name: "SAS Hard Drive 2.4TB 10K",
-    location: "WH-North (Zone B)",
-    minStock: 20,
-    currentStock: 35,
-    icon: MdStorage,
-  },
-  {
-    id: "NET-SFP-10G",
-    name: "SFP+ Transceiver Module 10G",
-    location: "WH-North (Zone C)",
-    minStock: 40,
-    currentStock: 110,
-    icon: MdRouter,
-  },
-  {
-    id: "RCK-NUT-100",
-    name: "Rack Screws & Cage Nuts (100)",
-    location: "WH-South (Dock 1)",
-    minStock: 50,
-    currentStock: 85,
-    icon: MdPrecisionManufacturing,
-  },
-  {
-    id: "NET-NIC-10G",
-    name: "10G Network Interface Card",
-    location: "WH-Main (Aisle 4)",
-    minStock: 15,
-    currentStock: 22,
-    icon: MdComputer,
-  },
-  {
-    id: "SEC-FW-APP",
-    name: "Firewall Security Appliance",
-    location: "WH-North (Secure Vault)",
-    minStock: 5,
-    currentStock: 7,
-    icon: MdDns,
-  },
-  {
-    id: "ACC-BT-USB",
-    name: "Bluetooth 5.0 USB Adapter",
-    location: "WH-East (Aisle 3)",
-    minStock: 100,
-    currentStock: 280,
-    icon: MdComputer,
-  },
-  {
-    id: "STO-USB-128",
-    name: "USB 3.0 Flash Drive 128GB",
-    location: "WH-East (Aisle 3)",
-    minStock: 100,
-    currentStock: 54,
-    icon: MdStorage,
-  },
-  {
-    id: "FUR-CHR-ERG",
-    name: "Ergonomic Office Chair (IT Room)",
-    location: "WH-South (Zone C)",
-    minStock: 5,
-    currentStock: 12,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "TLS-STP-ANT",
-    name: "Anti-Static Wrist Strap",
-    location: "WH-West (Tool Rack)",
-    minStock: 30,
-    currentStock: 45,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "TLS-SD-SET",
-    name: "Precision Screwdriver Set",
-    location: "WH-West (Tool Rack)",
-    minStock: 15,
-    currentStock: 8,
-    icon: MdBuildCircle,
-  },
-  {
-    id: "TLS-MM-DGT",
-    name: "Digital Multimeter",
-    location: "WH-West (Tool Rack)",
-    minStock: 10,
-    currentStock: 14,
-    icon: MdPrecisionManufacturing,
-  },
-  {
-    id: "TLS-CBL-TST",
-    name: "Network Cable Tester",
-    location: "WH-West (Tool Rack)",
-    minStock: 10,
-    currentStock: 0,
-    icon: MdPrecisionManufacturing,
-  },
-  {
-    id: "UPS-3000VA",
-    name: "Uninterruptible Power Supply 3000VA",
-    location: "WH-South (Dock 1)",
-    minStock: 3,
-    currentStock: 4,
-    icon: MdPower,
-  },
-];
-
 export default function StockManagement() {
-  const [stockItems, setStockItems] = useState(INITIAL_STOCK_DATA);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Pagination State
@@ -482,8 +30,8 @@ export default function StockManagement() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [updateAmount, setUpdateAmount] = useState("");
 
-
- const [products, setProducts] = useState([]);
+  // আসল প্রোডাক্ট ডাটা (API থেকে ফেচ করা)
+  const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   const fetchProducts = async () => {
@@ -504,12 +52,24 @@ export default function StockManagement() {
     }
   };
 
-   useEffect(() => {
-     fetchProducts();
-   }, []);
-  
-console.log(products);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
+  // API থেকে আসা প্রোডাক্ট ডাটাকে টেবিলের ফরম্যাটে ম্যাপ করা হচ্ছে
+  // (এখানেই ডামি ডাটার বদলে আসল স্টক ডাটা ব্যবহার হচ্ছে)
+  const stockItems = useMemo(() => {
+    return products.map((p) => ({
+      id: p.id,
+      sku: p.productSKU,
+      name: p.productName,
+      brand: p.brandName,
+      minStock: p.lowStockAlert ?? 0,
+      currentStock: p.currentStock ?? 0,
+      image: p.image || "",
+      icon: MdInventory2,
+    }));
+  }, [products]);
 
   // স্ট্যাটাস ডায়নামিকভাবে ক্যালকুলেট করার ফাংশন
   const getStatus = (current, min) => {
@@ -524,9 +84,9 @@ console.log(products);
     const lowerCaseQuery = searchQuery.toLowerCase();
     return stockItems.filter(
       (item) =>
-        item.name.toLowerCase().includes(lowerCaseQuery) ||
-        item.id.toLowerCase().includes(lowerCaseQuery) ||
-        item.location.toLowerCase().includes(lowerCaseQuery) ||
+        (item.name || "").toLowerCase().includes(lowerCaseQuery) ||
+        (item.sku || "").toLowerCase().includes(lowerCaseQuery) ||
+        (item.brand || "").toLowerCase().includes(lowerCaseQuery) ||
         getStatus(item.currentStock, item.minStock)
           .toLowerCase()
           .includes(lowerCaseQuery),
@@ -581,13 +141,19 @@ console.log(products);
       return;
     }
 
-    setStockItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === selectedItem.id
-          ? { ...item, currentStock: newStock }
-          : item,
+    // UI-তে সাথে সাথে আপডেট দেখানোর জন্য (optimistic update)
+    setProducts((prevProducts) =>
+      prevProducts.map((p) =>
+        p.id === selectedItem.id ? { ...p, currentStock: newStock } : p,
       ),
     );
+
+    // TODO: ডাটাবেজেও পরিবর্তনটা সেভ রাখতে এখানে আপনার আপডেট API কল করুন, যেমন:
+    // await fetch(`/api/products/${selectedItem.id}`, {
+    //   method: "PATCH",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ currentStock: newStock }),
+    // });
 
     setIsModalOpen(false);
     setSelectedItem(null);
@@ -653,7 +219,6 @@ console.log(products);
             <MdDownload className="text-[18px]" aria-hidden="true" />
             Export to PDF
           </button>
-          
         </div>
       </div>
 
@@ -763,7 +328,7 @@ console.log(products);
                   scope="col"
                   className="px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-semibold print:border-b print:border-gray-400"
                 >
-                  Location
+                  Brand
                 </th>
                 <th
                   scope="col"
@@ -792,7 +357,18 @@ console.log(products);
               </tr>
             </thead>
             <tbody className="text-sm">
-              {currentItems.length > 0 ? (
+              {loadingProducts ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-6 py-12 text-center text-gray-500"
+                  >
+                    <p className="text-sm font-medium text-gray-900">
+                      স্টক ডাটা লোড হচ্ছে...
+                    </p>
+                  </td>
+                </tr>
+              ) : currentItems.length > 0 ? (
                 currentItems.map((item) => {
                   const IconComponent = item.icon;
                   const currentStatus = getStatus(
@@ -809,33 +385,41 @@ console.log(products);
                       <td className="px-6 py-4 print:py-2">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded flex flex-shrink-0 items-center justify-center border print:hidden ${
+                            className={`w-10 h-10 rounded flex flex-shrink-0 items-center justify-center border overflow-hidden print:hidden ${
                               currentStatus === "Out of Stock"
                                 ? "bg-red-50 border-red-200"
                                 : "bg-gray-100 border-gray-200"
                             }`}
                           >
-                            <IconComponent
-                              className={
-                                currentStatus === "Out of Stock"
-                                  ? "text-red-500 text-[20px]"
-                                  : "text-gray-500 text-[20px]"
-                              }
-                              aria-hidden="true"
-                            />
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <IconComponent
+                                className={
+                                  currentStatus === "Out of Stock"
+                                    ? "text-red-500 text-[20px]"
+                                    : "text-gray-500 text-[20px]"
+                                }
+                                aria-hidden="true"
+                              />
+                            )}
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">
                               {item.name}
                             </div>
                             <div className="text-xs text-gray-500 font-mono mt-0.5">
-                              SKU: {item.id}
+                              SKU: {item.sku}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-600 print:text-gray-900 print:py-2">
-                        {item.location}
+                        {item.brand}
                       </td>
                       <td className="px-6 py-4 text-right text-gray-500 print:text-gray-900 print:py-2">
                         {item.minStock}
