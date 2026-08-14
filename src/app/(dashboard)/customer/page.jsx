@@ -98,6 +98,7 @@ const INITIAL_CUSTOMERS = [
 ];
 
 export default function CustomerManagement() {
+  
   const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
   const [searchQuery, setSearchQuery] = useState("");
 
