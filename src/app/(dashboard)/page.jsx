@@ -1,5 +1,5 @@
-"use client"
-import React from "react";
+"use client";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../../css/Dashboard.css";
 import {
   LineChart,
@@ -23,28 +23,198 @@ import {
   MdMoreVert,
   MdFilterList,
   MdArrowForward,
+  MdErrorOutline,
+  MdRefresh,
 } from "react-icons/md";
 
-// Accessible mock datasets for the charts
-const salesTrendData = [
-  { name: "Mon", revenue: 4000 },
-  { name: "Tue", revenue: 3000 },
-  { name: "Wed", revenue: 5000 },
-  { name: "Thu", revenue: 2780 },
-  { name: "Fri", revenue: 6890 },
-  { name: "Sat", revenue: 8390 },
-  { name: "Sun", revenue: 9490 },
-];
+const formatCurrency = (value) =>
+  `$${(Number(value) || 0).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
-const topProductsData = [
-  { name: "Speaker", units: 1200 },
-  { name: "Sneakers", units: 900 },
-  { name: "Headphones", units: 750 },
-  { name: "Camera", units: 600 },
-  { name: "Mobile", units: 450 },
-];
+const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 const page = () => {
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError("");
+    try {
+      const [productRes, orderRes] = await Promise.all([
+        fetch("/api/product", { cache: "no-store" }),
+        fetch("/api/orders", { cache: "no-store" }),
+      ]);
+      const productData = await productRes.json();
+      const orderData = await orderRes.json();
+
+      if (!productRes.ok || !productData.success) {
+        throw new Error(productData.message || "Failed to load products");
+      }
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || "Failed to load orders");
+      }
+
+      setProducts(productData.products || []);
+      setOrders(orderData.orders || []);
+    } catch (err) {
+      setLoadError(
+        err.message || "Something went wrong while loading the dashboard",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // --- Time boundaries ---
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  // --- Product-derived stats ---
+  const productStats = useMemo(() => {
+    const totalProducts = products.length;
+    const productsBeforeThisMonth = products.filter(
+      (p) => p.createdAt && new Date(p.createdAt) < thisMonthStart,
+    ).length;
+    const productGrowth =
+      productsBeforeThisMonth > 0
+        ? ((totalProducts - productsBeforeThisMonth) /
+            productsBeforeThisMonth) *
+          100
+        : null;
+
+    const lowStock = products.filter((p) => {
+      const alert = Number(p.lowStockAlert) || 0;
+      const stock = Number(p.currentStock) || 0;
+      return alert > 0 && stock <= alert;
+    });
+    const outOfStockCount = lowStock.filter(
+      (p) => (Number(p.currentStock) || 0) <= 0,
+    ).length;
+
+    return { totalProducts, productGrowth, lowStock, outOfStockCount };
+  }, [products, thisMonthStart]);
+
+  // --- Order-derived stats ---
+  const orderStats = useMemo(() => {
+    let todaySales = 0;
+    let yesterdaySales = 0;
+    let monthRevenue = 0;
+    let lastMonthRevenue = 0;
+
+    // last 7 days, oldest to newest
+    const dayBuckets = [];
+    for (let i = 6; i >= 0; i -= 1) {
+      const d = new Date(todayStart);
+      d.setDate(d.getDate() - i);
+      dayBuckets.push({
+        key: d.toDateString(),
+        name: d.toLocaleDateString("en-US", { weekday: "short" }),
+        revenue: 0,
+      });
+    }
+    const dayMap = Object.fromEntries(dayBuckets.map((b) => [b.key, b]));
+
+    // top products sold this month
+    const productUnits = {};
+
+    orders.forEach((order) => {
+      if (order.status === "Cancelled") return;
+      const grand = Number(order?.financials?.grandTotal) || 0;
+      const created = order.createdAt ? new Date(order.createdAt) : null;
+      if (!created) return;
+
+      if (created >= todayStart) todaySales += grand;
+      else if (created >= yesterdayStart && created < todayStart)
+        yesterdaySales += grand;
+
+      if (created >= thisMonthStart) monthRevenue += grand;
+      else if (created >= lastMonthStart && created < thisMonthStart)
+        lastMonthRevenue += grand;
+
+      const dayKey = startOfDay(created).toDateString();
+      if (dayMap[dayKey]) dayMap[dayKey].revenue += grand;
+
+      if (created >= thisMonthStart) {
+        (order.items || []).forEach((item) => {
+          const name = item.name || "Unknown";
+          productUnits[name] =
+            (productUnits[name] || 0) + (Number(item.quantity) || 0);
+        });
+      }
+    });
+
+    const salesGrowth =
+      yesterdaySales > 0
+        ? ((todaySales - yesterdaySales) / yesterdaySales) * 100
+        : null;
+    const revenueGrowth =
+      lastMonthRevenue > 0
+        ? ((monthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : null;
+
+    const topProducts = Object.entries(productUnits)
+      .map(([name, units]) => ({ name, units }))
+      .sort((a, b) => b.units - a.units)
+      .slice(0, 5);
+
+    return {
+      todaySales,
+      salesGrowth,
+      monthRevenue,
+      revenueGrowth,
+      salesTrendData: dayBuckets.map(({ name, revenue }) => ({
+        name,
+        revenue,
+      })),
+      topProducts,
+    };
+  }, [orders, todayStart, yesterdayStart, thisMonthStart, lastMonthStart]);
+
+  const roundPct = (v) =>
+    v === null || Number.isNaN(v) ? null : Math.round(v * 10) / 10;
+  const salesGrowth = roundPct(orderStats.salesGrowth);
+  const revenueGrowth = roundPct(orderStats.revenueGrowth);
+  const productGrowth = roundPct(productStats.productGrowth);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-row h-screen items-center justify-center">
+        <p className="text-body">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-row h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center max-w-sm">
+          <MdErrorOutline size={36} className="text-error" aria-hidden="true" />
+          <p className="text-h3 text-on-surface">
+            Couldn't load your dashboard
+          </p>
+          <p className="text-body text-secondary">{loadError}</p>
+          <button
+            onClick={fetchData}
+            className="btn-primary text-label-sm flex items-center gap-1"
+          >
+            <MdRefresh size={16} aria-hidden="true" />
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-row h-screen">
@@ -79,16 +249,33 @@ const page = () => {
                   <h2 className="text-label-sm text-secondary uppercase">
                     Total Products
                   </h2>
-                  <p className="text-h2 text-on-surface">12,450</p>
+                  <p className="text-h2 text-on-surface">
+                    {productStats.totalProducts.toLocaleString()}
+                  </p>
                 </div>
                 <div className="icon-box icon-box-tertiary" aria-hidden="true">
                   <MdInventory2 size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
-                  <MdArrowUpward size={14} aria-hidden="true" /> 4.2%
-                </span>
+                {productGrowth !== null ? (
+                  <span
+                    className={`badge-trend text-label-sm flex items-center gap-1 ${
+                      productGrowth >= 0 ? "trend-up" : "trend-warning"
+                    }`}
+                  >
+                    {productGrowth >= 0 ? (
+                      <MdArrowUpward size={14} aria-hidden="true" />
+                    ) : (
+                      <MdArrowDownward size={14} aria-hidden="true" />
+                    )}
+                    {Math.abs(productGrowth)}%
+                  </span>
+                ) : (
+                  <span className="text-label-sm text-secondary">
+                    New catalog
+                  </span>
+                )}
                 <span className="text-label-sm text-secondary">
                   vs last month
                 </span>
@@ -102,16 +289,33 @@ const page = () => {
                   <h2 className="text-label-sm text-secondary uppercase">
                     Today's Sales
                   </h2>
-                  <p className="text-h2 text-on-surface">$4,280</p>
+                  <p className="text-h2 text-on-surface">
+                    {formatCurrency(orderStats.todaySales)}
+                  </p>
                 </div>
                 <div className="icon-box icon-box-primary" aria-hidden="true">
                   <MdTrendingUp size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
-                  <MdArrowUpward size={14} aria-hidden="true" /> 12.5%
-                </span>
+                {salesGrowth !== null ? (
+                  <span
+                    className={`badge-trend text-label-sm flex items-center gap-1 ${
+                      salesGrowth >= 0 ? "trend-up" : "trend-warning"
+                    }`}
+                  >
+                    {salesGrowth >= 0 ? (
+                      <MdArrowUpward size={14} aria-hidden="true" />
+                    ) : (
+                      <MdArrowDownward size={14} aria-hidden="true" />
+                    )}
+                    {Math.abs(salesGrowth)}%
+                  </span>
+                ) : (
+                  <span className="text-label-sm text-secondary">
+                    No sales yesterday
+                  </span>
+                )}
                 <span className="text-label-sm text-secondary">
                   vs yesterday
                 </span>
@@ -125,7 +329,9 @@ const page = () => {
                   <h2 className="text-label-sm text-secondary uppercase">
                     Low Stock Alerts
                   </h2>
-                  <p className="text-h2 text-on-surface">24</p>
+                  <p className="text-h2 text-on-surface">
+                    {productStats.lowStock.length}
+                  </p>
                 </div>
                 <div className="icon-box icon-box-warning" aria-hidden="true">
                   <MdWarning size={24} />
@@ -133,7 +339,7 @@ const page = () => {
               </div>
               <div className="trend-info">
                 <span className="badge-trend text-label-sm trend-warning flex items-center gap-1">
-                  <MdArrowDownward size={14} aria-hidden="true" /> 2 less
+                  {productStats.outOfStockCount} out of stock
                 </span>
                 <span className="text-label-sm text-secondary">
                   needs action
@@ -141,23 +347,40 @@ const page = () => {
               </div>
             </article>
 
-            {/* Card 4: Monthly Profit */}
+            {/* Card 4: Monthly Revenue */}
             <article className="card">
               <div className="card-header">
                 <div>
                   <h2 className="text-label-sm text-secondary uppercase">
-                    Monthly Profit
+                    Monthly Revenue
                   </h2>
-                  <p className="text-h2 text-on-surface">$82,400</p>
+                  <p className="text-h2 text-on-surface">
+                    {formatCurrency(orderStats.monthRevenue)}
+                  </p>
                 </div>
                 <div className="icon-box icon-box-tertiary" aria-hidden="true">
                   <MdAttachMoney size={24} />
                 </div>
               </div>
               <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
-                  <MdArrowUpward size={14} aria-hidden="true" /> 8.4%
-                </span>
+                {revenueGrowth !== null ? (
+                  <span
+                    className={`badge-trend text-label-sm flex items-center gap-1 ${
+                      revenueGrowth >= 0 ? "trend-up" : "trend-warning"
+                    }`}
+                  >
+                    {revenueGrowth >= 0 ? (
+                      <MdArrowUpward size={14} aria-hidden="true" />
+                    ) : (
+                      <MdArrowDownward size={14} aria-hidden="true" />
+                    )}
+                    {Math.abs(revenueGrowth)}%
+                  </span>
+                ) : (
+                  <span className="text-label-sm text-secondary">
+                    No data last month
+                  </span>
+                )}
                 <span className="text-label-sm text-secondary">
                   vs last month
                 </span>
@@ -165,7 +388,7 @@ const page = () => {
             </article>
           </section>
 
-          {/* Charts Section Placeholder */}
+          {/* Charts Section */}
           <section aria-label="Dashboard Charts" className="charts-grid">
             <article className="card chart-container">
               <div className="chart-header">
@@ -189,7 +412,6 @@ const page = () => {
                 tabIndex={0}
                 style={{ width: "100%", height: "280px" }}
               >
-                {/* Screen-reader hidden semantic fallback table for full A11y compliance */}
                 <table className="sr-only" aria-hidden="false">
                   <caption>Sales Revenue for the last 7 days</caption>
                   <thead>
@@ -199,8 +421,8 @@ const page = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {salesTrendData.map((data) => (
-                      <tr key={data.name}>
+                    {orderStats.salesTrendData.map((data, i) => (
+                      <tr key={`${data.name}-${i}`}>
                         <td>{data.name}</td>
                         <td>${data.revenue}</td>
                       </tr>
@@ -214,7 +436,7 @@ const page = () => {
                   aria-hidden="true"
                 >
                   <LineChart
-                    data={salesTrendData}
+                    data={orderStats.salesTrendData}
                     margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -266,7 +488,6 @@ const page = () => {
                 tabIndex={0}
                 style={{ width: "100%", height: "280px" }}
               >
-                {/* Screen-reader hidden semantic fallback table for full A11y compliance */}
                 <table className="sr-only" aria-hidden="false">
                   <caption>Units sold for top products this month</caption>
                   <thead>
@@ -276,7 +497,7 @@ const page = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {topProductsData.map((data) => (
+                    {orderStats.topProducts.map((data) => (
                       <tr key={data.name}>
                         <td>{data.name}</td>
                         <td>{data.units}</td>
@@ -285,32 +506,42 @@ const page = () => {
                   </tbody>
                 </table>
 
-                <ResponsiveContainer
-                  width="100%"
-                  height="100%"
-                  aria-hidden="true"
-                >
-                  <BarChart
-                    data={topProductsData}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                {orderStats.topProducts.length > 0 ? (
+                  <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                    aria-hidden="true"
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 12, fill: "#4b5563" }}
-                    />
-                    <YAxis tick={{ fontSize: 12, fill: "#4b5563" }} />
-                    <Tooltip
-                      cursor={{ fill: "#f3f4f6" }}
-                      contentStyle={{
-                        borderRadius: "8px",
-                        border: "none",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                      }}
-                    />
-                    <Bar dataKey="units" fill="#047857" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                    <BarChart
+                      data={orderStats.topProducts}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 12, fill: "#4b5563" }}
+                      />
+                      <YAxis tick={{ fontSize: 12, fill: "#4b5563" }} />
+                      <Tooltip
+                        cursor={{ fill: "#f3f4f6" }}
+                        contentStyle={{
+                          borderRadius: "8px",
+                          border: "none",
+                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        }}
+                      />
+                      <Bar
+                        dataKey="units"
+                        fill="#047857"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-secondary text-label-sm">
+                    No sales recorded yet this month.
+                  </div>
+                )}
               </div>
             </article>
           </section>
@@ -350,118 +581,74 @@ const page = () => {
                   </tr>
                 </thead>
                 <tbody className="text-body">
-                  <tr>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>ITM-8492</div>
-                      <div className="text-label-sm text-secondary">
-                        Industrial Ball Bearings
-                      </div>
-                    </td>
-                    <td className="text-secondary">Hardware</td>
-                    <td>
-                      <span className="status-badge status-low">Low Stock</span>
-                    </td>
-                    <td className="text-right">
-                      <div
-                        className="text-error"
-                        aria-label="12 out of 50 minimum"
+                  {productStats.lowStock.length > 0 ? (
+                    productStats.lowStock.slice(0, 8).map((p) => {
+                      const stock = Number(p.currentStock) || 0;
+                      const minLevel = Number(p.lowStockAlert) || 0;
+                      const isOut = stock <= 0;
+                      return (
+                        <tr key={p.id}>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>
+                              {p.productSKU}
+                            </div>
+                            <div className="text-label-sm text-secondary">
+                              {p.productName}
+                            </div>
+                          </td>
+                          <td className="text-secondary">
+                            {p.brandName || "—"}
+                          </td>
+                          <td>
+                            <span
+                              className={`status-badge ${isOut ? "status-out" : "status-low"}`}
+                            >
+                              {isOut ? "Out of Stock" : "Low Stock"}
+                            </span>
+                          </td>
+                          <td className="text-right">
+                            <div
+                              className={isOut ? "text-error" : ""}
+                              style={
+                                !isOut
+                                  ? { color: "#856404", fontWeight: 600 }
+                                  : undefined
+                              }
+                              aria-label={`${stock} out of ${minLevel} minimum`}
+                            >
+                              {stock}{" "}
+                              <span
+                                className="text-secondary"
+                                style={{ fontSize: "11px", fontWeight: 400 }}
+                                aria-hidden="true"
+                              >
+                                / {minLevel} min
+                              </span>
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            <button
+                              className="btn-primary text-label-sm"
+                              style={{ padding: "6px 12px", margin: "0 auto" }}
+                              aria-label={`${isOut ? "Urgent restock" : "Reorder"} ${p.productName}`}
+                            >
+                              {isOut ? "Urgent Restock" : "Reorder"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="text-center text-secondary"
+                        style={{ padding: "2rem 0" }}
                       >
-                        12{" "}
-                        <span
-                          className="text-secondary"
-                          style={{ fontSize: "11px", fontWeight: 400 }}
-                          aria-hidden="true"
-                        >
-                          / 50 min
-                        </span>
-                      </div>
-                    </td>
-                    <td className="text-center">
-                      <button
-                        className="btn-primary text-label-sm"
-                        style={{ padding: "6px 12px", margin: "0 auto" }}
-                        aria-label="Reorder Industrial Ball Bearings"
-                      >
-                        Reorder
-                      </button>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>ELC-201A</div>
-                      <div className="text-label-sm text-secondary">
-                        Copper Wiring Spool (50m)
-                      </div>
-                    </td>
-                    <td className="text-secondary">Electrical</td>
-                    <td>
-                      <span className="status-badge status-out">
-                        Out of Stock
-                      </span>
-                    </td>
-                    <td className="text-right">
-                      <div
-                        className="text-error"
-                        aria-label="0 out of 20 minimum"
-                      >
-                        0{" "}
-                        <span
-                          className="text-secondary"
-                          style={{ fontSize: "11px", fontWeight: 400 }}
-                          aria-hidden="true"
-                        >
-                          / 20 min
-                        </span>
-                      </div>
-                    </td>
-                    <td className="text-center">
-                      <button
-                        className="btn-primary text-label-sm"
-                        style={{ padding: "6px 12px", margin: "0 auto" }}
-                        aria-label="Urgent Restock Copper Wiring Spool"
-                      >
-                        Urgent Restock
-                      </button>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>PKG-994</div>
-                      <div className="text-label-sm text-secondary">
-                        Heavy Duty Corrugated Boxes
-                      </div>
-                    </td>
-                    <td className="text-secondary">Packaging</td>
-                    <td>
-                      <span className="status-badge status-low">Low Stock</span>
-                    </td>
-                    <td className="text-right">
-                      <div
-                        style={{ color: "#856404", fontWeight: 600 }}
-                        aria-label="45 out of 100 minimum"
-                      >
-                        45{" "}
-                        <span
-                          className="text-secondary"
-                          style={{ fontSize: "11px", fontWeight: 400 }}
-                          aria-hidden="true"
-                        >
-                          / 100 min
-                        </span>
-                      </div>
-                    </td>
-                    <td className="text-center">
-                      <button
-                        className="btn-primary text-label-sm"
-                        style={{ padding: "6px 12px", margin: "0 auto" }}
-                        aria-label="Reorder Heavy Duty Corrugated Boxes"
-                      >
-                        Reorder
-                      </button>
-                    </td>
-                  </tr>
+                        Nothing needs restocking right now.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

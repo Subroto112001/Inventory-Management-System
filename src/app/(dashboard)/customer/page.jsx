@@ -143,7 +143,7 @@ export default function CustomerManagement() {
     const { customerId } = deleteModal;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/customers/${customerId}`, {
+      const res = await fetch(`/api/customer/${customerId}`, {
         method: "DELETE",
       });
 
@@ -181,7 +181,7 @@ export default function CustomerManagement() {
     setIsSaving(true);
 
     try {
-      const res = await fetch(`/api/customers/${editModal.data._id}`, {
+      const res = await fetch(`/api/customer/${editModal.data._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editModal.data),

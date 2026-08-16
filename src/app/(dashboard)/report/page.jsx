@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   MdDownload,
   MdTrendingUp,
@@ -8,109 +8,177 @@ import {
   MdInventory,
   MdShoppingCart,
   MdVisibility,
+  MdErrorOutline,
+  MdRefresh,
 } from "react-icons/md";
 
-// গ্রাফের জন্য ডেমো ডেটা
-const CHART_DATA = [
-  { month: "Jan", profit: 4000, lost: 400 },
-  { month: "Feb", profit: 3000, lost: 600 },
-  { month: "Mar", profit: 5000, lost: 300 },
-  { month: "Apr", profit: 4500, lost: 800 },
-  { month: "May", profit: 6000, lost: 200 },
-  { month: "Jun", profit: 7000, lost: 100 },
-  { month: "Jul", profit: 8500, lost: 500 },
-];
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(Number(value) || 0);
 
-// রিসেন্ট ১০ টি অর্ডারের ডেমো ডেটা
-const RECENT_ORDERS = [
-  {
-    id: "#ORD-8830",
-    date: "Oct 28, 2023",
-    customer: "John Doe",
-    amount: "$1,200.00",
-    status: "Completed",
-  },
-  {
-    id: "#ORD-8829",
-    date: "Oct 27, 2023",
-    customer: "Jane Smith",
-    amount: "$850.00",
-    status: "Completed",
-  },
-  {
-    id: "#ORD-8828",
-    date: "Oct 27, 2023",
-    customer: "Michael Johnson",
-    amount: "$320.00",
-    status: "Pending",
-  },
-  {
-    id: "#ORD-8827",
-    date: "Oct 26, 2023",
-    customer: "Emily Davis",
-    amount: "$4,500.00",
-    status: "Completed",
-  },
-  {
-    id: "#ORD-8826",
-    date: "Oct 25, 2023",
-    customer: "Chris Brown",
-    amount: "$150.00",
-    status: "Cancelled",
-  },
-  {
-    id: "#ORD-8825",
-    date: "Oct 25, 2023",
-    customer: "Sarah Wilson",
-    amount: "$980.00",
-    status: "Completed",
-  },
-  {
-    id: "#ORD-8824",
-    date: "Oct 24, 2023",
-    customer: "David Clark",
-    amount: "$2,100.00",
-    status: "Pending",
-  },
-  {
-    id: "#ORD-8823",
-    date: "Oct 23, 2023",
-    customer: "James Lewis",
-    amount: "$430.00",
-    status: "Completed",
-  },
-  {
-    id: "#ORD-8822",
-    date: "Oct 22, 2023",
-    customer: "Laura Walker",
-    amount: "$760.00",
-    status: "Completed",
-  },
-  {
-    id: "#ORD-8821",
-    date: "Oct 21, 2023",
-    customer: "Eleanor Pena",
-    amount: "$1,240.00",
-    status: "Completed",
-  },
-];
+const formatDate = (value) => {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 export default function ReportsDashboard() {
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError("");
+    try {
+      const [orderRes, productRes] = await Promise.all([
+        fetch("/api/orders", { cache: "no-store" }),
+        fetch("/api/product", { cache: "no-store" }),
+      ]);
+
+      const orderData = await orderRes.json();
+      const productData = await productRes.json();
+
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || "Failed to load orders");
+      }
+      if (!productRes.ok || !productData.success) {
+        throw new Error(productData.message || "Failed to load products");
+      }
+
+      setOrders(orderData.orders || []);
+      setProducts(productData.products || []);
+    } catch (err) {
+      setLoadError(err.message || "Something went wrong while loading reports");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   // পিডিএফ/প্রিন্ট কল করার ফাংশন
   const generatePDF = () => {
     window.print();
   };
 
-  // গ্রাফের ম্যাক্সিমাম ভ্যালু বের করা (স্কেলিংয়ের জন্য)
+  // --- Product / stock stats ---
+  const productStats = useMemo(() => {
+    let inStock = 0;
+    let activeCount = 0;
+    let lowStockCount = 0;
+
+    products.forEach((p) => {
+      inStock += Number(p.currentStock) || 0;
+      if (p.isActive) activeCount += 1;
+      const alertLevel = Number(p.lowStockAlert) || 0;
+      if (alertLevel > 0 && (Number(p.currentStock) || 0) <= alertLevel) {
+        lowStockCount += 1;
+      }
+    });
+
+    return { inStock, activeCount, lowStockCount };
+  }, [products]);
+
+  // --- Order / revenue stats, plus last 7 months of chart data ---
+  const orderStats = useMemo(() => {
+    const months = [];
+    const monthMap = {};
+    const now = new Date();
+
+    for (let i = 6; i >= 0; i -= 1) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      months.push(key);
+      monthMap[key] = {
+        month: d.toLocaleString("en-US", { month: "short" }),
+        profit: 0,
+        lost: 0,
+        sold: 0,
+      };
+    }
+
+    let productsSold = 0;
+    let totalRevenue = 0;
+    let revenueLost = 0;
+
+    orders.forEach((order) => {
+      const isCancelled = order.status === "Cancelled";
+      const grandTotal = Number(order?.financials?.grandTotal) || 0;
+      const itemsQty = (order.items || []).reduce(
+        (sum, item) => sum + (Number(item.quantity) || 0),
+        0,
+      );
+
+      if (isCancelled) {
+        revenueLost += grandTotal;
+      } else {
+        totalRevenue += grandTotal;
+        productsSold += itemsQty;
+      }
+
+      if (order.createdAt) {
+        const d = new Date(order.createdAt);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        if (monthMap[key]) {
+          if (isCancelled) {
+            monthMap[key].lost += grandTotal;
+          } else {
+            monthMap[key].profit += grandTotal;
+            monthMap[key].sold += itemsQty;
+          }
+        }
+      }
+    });
+
+    const chartData = months.map((key) => monthMap[key]);
+    const current = chartData[chartData.length - 1];
+    const previous = chartData[chartData.length - 2];
+
+    const revenueGrowth =
+      previous && previous.profit > 0
+        ? ((current.profit - previous.profit) / previous.profit) * 100
+        : null;
+    const soldGrowth =
+      previous && previous.sold > 0
+        ? ((current.sold - previous.sold) / previous.sold) * 100
+        : null;
+
+    return {
+      productsSold,
+      totalRevenue,
+      revenueLost,
+      chartData,
+      revenueGrowth,
+      soldGrowth,
+    };
+  }, [orders]);
+
+  const recentOrders = useMemo(() => orders.slice(0, 10), [orders]);
+
   const maxChartValue = Math.max(
-    ...CHART_DATA.map((d) => Math.max(d.profit, d.lost)),
+    1,
+    ...orderStats.chartData.map((d) => Math.max(d.profit, d.lost)),
   );
 
-  // স্ট্যাটাস অনুযায়ী ব্যাজ স্টাইল
+  // স্ট্যাটাস অনুযায়ী ব্যাজ স্টাইল
   const getStatusStyle = (status) => {
     switch (status) {
-      case "Completed":
+      case "Delivered":
         return "bg-[#611F69]/10 text-[#611F69]";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-700";
+      case "Shipped":
+        return "bg-indigo-100 text-indigo-700";
       case "Pending":
         return "bg-yellow-100 text-yellow-800";
       case "Cancelled":
@@ -119,6 +187,47 @@ export default function ReportsDashboard() {
         return "bg-gray-200 text-gray-800";
     }
   };
+
+  const formatGrowth = (value) => {
+    if (value === null || Number.isNaN(value)) return null;
+    const rounded = Math.round(value * 10) / 10;
+    return rounded;
+  };
+
+  const revenueGrowth = formatGrowth(orderStats.revenueGrowth);
+  const soldGrowth = formatGrowth(orderStats.soldGrowth);
+
+  if (isLoading) {
+    return (
+      <main className="p-5 min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500 text-sm">Loading reports...</p>
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="p-5 min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center max-w-sm">
+          <MdErrorOutline
+            className="text-4xl text-red-500"
+            aria-hidden="true"
+          />
+          <p className="text-base font-semibold text-gray-900">
+            Couldn't load your reports
+          </p>
+          <p className="text-sm text-gray-500">Something Getting Error, Please try again later.</p>
+          <button
+            onClick={fetchData}
+            className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#611F69] bg-[#611F69]/10 rounded-lg hover:bg-[#611F69]/20 transition-colors"
+          >
+            <MdRefresh className="text-lg" aria-hidden="true" />
+            Try again
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="p-5 min-h-screen bg-gray-50 print:bg-white print:p-0">
@@ -139,7 +248,7 @@ export default function ReportsDashboard() {
             Reports & Analytics
           </h1>
           <p className="text-gray-500 text-sm">
-            Overview of your sales, stock, and profit performance.
+            Overview of your sales, stock, and revenue performance.
           </p>
         </div>
         <button
@@ -166,10 +275,28 @@ export default function ReportsDashboard() {
               />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">14,284</p>
-          <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1 print:hidden">
-            <MdTrendingUp aria-hidden="true" /> +8.5% this month
+          <p className="text-2xl font-bold text-gray-900">
+            {orderStats.productsSold.toLocaleString()}
           </p>
+          {soldGrowth !== null ? (
+            <p
+              className={`text-xs font-medium mt-2 flex items-center gap-1 print:hidden ${
+                soldGrowth >= 0 ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {soldGrowth >= 0 ? (
+                <MdTrendingUp aria-hidden="true" />
+              ) : (
+                <MdTrendingDown aria-hidden="true" />
+              )}
+              {soldGrowth >= 0 ? "+" : ""}
+              {soldGrowth}% this month
+            </p>
+          ) : (
+            <p className="text-xs text-gray-400 font-medium mt-2 print:hidden">
+              Not enough data yet
+            </p>
+          )}
         </div>
 
         {/* Current Stock */}
@@ -185,17 +312,23 @@ export default function ReportsDashboard() {
               />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">8,520</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {productStats.inStock.toLocaleString()}
+          </p>
           <p className="text-xs text-gray-500 font-medium mt-2 print:hidden">
-            Across 3 warehouses
+            {productStats.activeCount} active product
+            {productStats.activeCount === 1 ? "" : "s"}
+            {productStats.lowStockCount > 0
+              ? ` · ${productStats.lowStockCount} low on stock`
+              : ""}
           </p>
         </div>
 
-        {/* Total Profit */}
+        {/* Total Revenue */}
         <div className="bg-[#611F69] rounded-lg border border-[#611F69] p-6 shadow-sm print:bg-white print:border-gray-300">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-xs text-gray-200 uppercase tracking-wider font-semibold print:text-gray-500">
-              Total Profit Made
+              Total Revenue
             </h3>
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center print:hidden">
               <MdTrendingUp
@@ -205,18 +338,29 @@ export default function ReportsDashboard() {
             </div>
           </div>
           <p className="text-2xl font-bold text-white print:text-gray-900">
-            $128,450.00
+            {formatCurrency(orderStats.totalRevenue)}
           </p>
-          <p className="text-xs text-green-300 font-medium mt-2 print:hidden">
-            Exceeds target by 12%
-          </p>
+          {revenueGrowth !== null ? (
+            <p
+              className={`text-xs font-medium mt-2 print:hidden ${
+                revenueGrowth >= 0 ? "text-green-300" : "text-red-300"
+              }`}
+            >
+              {revenueGrowth >= 0 ? "+" : ""}
+              {revenueGrowth}% vs last month
+            </p>
+          ) : (
+            <p className="text-xs text-gray-200 font-medium mt-2 print:hidden">
+              Not enough data yet
+            </p>
+          )}
         </div>
 
-        {/* Profit Lost */}
+        {/* Revenue Lost */}
         <div className="bg-white rounded-lg border border-red-200 p-6 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-xs text-red-500 uppercase tracking-wider font-semibold">
-              Estimated Profit Lost
+              Revenue Lost
             </h3>
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center print:hidden">
               <MdTrendingDown
@@ -225,9 +369,11 @@ export default function ReportsDashboard() {
               />
             </div>
           </div>
-          <p className="text-2xl font-bold text-red-600">$4,250.00</p>
+          <p className="text-2xl font-bold text-red-600">
+            {formatCurrency(orderStats.revenueLost)}
+          </p>
           <p className="text-xs text-gray-500 font-medium mt-2 print:hidden">
-            Due to stockouts & cancellations
+            From cancelled orders
           </p>
         </div>
       </div>
@@ -235,7 +381,7 @@ export default function ReportsDashboard() {
       {/* Chart Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-8 print:border-gray-300">
         <h2 className="text-lg font-bold text-gray-900 mb-6">
-          Profit vs. Profit Lost Analytics
+          Revenue vs. Revenue Lost (Last 7 Months)
         </h2>
 
         {/* Custom SVG Bar Chart */}
@@ -243,7 +389,9 @@ export default function ReportsDashboard() {
           {/* Y-Axis Guidelines */}
           <div className="absolute inset-0 flex flex-col justify-between border-l border-gray-200 text-xs text-gray-400 pb-6 pointer-events-none">
             <div className="border-b border-dashed border-gray-200 w-full flex-1 relative">
-              <span className="absolute -left-10 -top-2">${maxChartValue}</span>
+              <span className="absolute -left-10 -top-2">
+                ${Math.round(maxChartValue)}
+              </span>
             </div>
             <div className="border-b border-dashed border-gray-200 w-full flex-1 relative">
               <span className="absolute -left-10 -top-2">
@@ -260,7 +408,7 @@ export default function ReportsDashboard() {
 
           {/* Chart Bars */}
           <div className="flex w-full h-full pl-8 items-end justify-around relative z-10 pb-6">
-            {CHART_DATA.map((data, index) => {
+            {orderStats.chartData.map((data, index) => {
               const profitHeight = (data.profit / maxChartValue) * 100;
               const lostHeight = (data.lost / maxChartValue) * 100;
 
@@ -271,7 +419,8 @@ export default function ReportsDashboard() {
                 >
                   {/* Tooltip on hover (Hidden on print) */}
                   <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-gray-900 text-white text-xs px-2 py-1 rounded transition-opacity print:hidden z-20 whitespace-nowrap pointer-events-none">
-                    Profit: ${data.profit} | Lost: ${data.lost}
+                    Revenue: {formatCurrency(data.profit)} | Lost:{" "}
+                    {formatCurrency(data.lost)}
                   </div>
 
                   <div className="flex items-end gap-1 w-full justify-center h-full">
@@ -300,14 +449,12 @@ export default function ReportsDashboard() {
         <div className="flex justify-center items-center gap-6 mt-4">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-[#611F69]"></span>
-            <span className="text-sm text-gray-600 font-medium">
-              Profit Made
-            </span>
+            <span className="text-sm text-gray-600 font-medium">Revenue</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500"></span>
             <span className="text-sm text-gray-600 font-medium">
-              Profit Lost
+              Revenue Lost
             </span>
           </div>
         </div>
@@ -343,32 +490,48 @@ export default function ReportsDashboard() {
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-gray-100">
-              {RECENT_ORDERS.map((order, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-[#611F69] print:text-gray-900">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{order.date}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">
-                    {order.customer}
-                  </td>
-                  <td className="px-6 py-4 font-bold text-gray-900 text-right">
-                    {order.amount}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold print:border print:border-gray-400 print:bg-white print:text-gray-900 ${getStatusStyle(order.status)}`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right print:hidden">
-                    <button className="text-[#611F69] hover:bg-[#611F69]/10 p-2 rounded transition-colors focus:outline-none">
-                      <MdVisibility className="text-[18px]" />
-                    </button>
+              {recentOrders.length > 0 ? (
+                recentOrders.map((order) => (
+                  <tr
+                    key={order._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 font-medium text-[#611F69] print:text-gray-900">
+                      {order.orderNumber}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {formatDate(order.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {order.customer?.name || "Guest"}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-gray-900 text-right">
+                      {formatCurrency(order.financials?.grandTotal)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold print:border print:border-gray-400 print:bg-white print:text-gray-900 ${getStatusStyle(order.status)}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right print:hidden">
+                      <button className="text-[#611F69] hover:bg-[#611F69]/10 p-2 rounded transition-colors focus:outline-none">
+                        <MdVisibility className="text-[18px]" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-12 text-center text-gray-500 bg-gray-50"
+                  >
+                    No orders yet.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
