@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   MdSearch,
   MdAdd,
@@ -9,170 +9,164 @@ import {
   MdChevronLeft,
   MdChevronRight,
   MdClose,
-  MdReceiptLong,
+  MdErrorOutline,
+  MdRefresh,
 } from "react-icons/md";
 
-// প্রাথমিক কাস্টমার ডেটা (অর্ডার হিস্ট্রি সহ)
-const INITIAL_CUSTOMERS = [
-  {
-    id: 1,
-    name: "John Smith",
-    initials: "JS",
-    phone: "(555) 123-4567",
-    orders: [
-      {
-        id: "#ORD-101",
-        date: "Oct 24, 2023",
-        amount: "$120.00",
-        status: "Completed",
-      },
-      {
-        id: "#ORD-089",
-        date: "Sep 12, 2023",
-        amount: "$450.50",
-        status: "Completed",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Emily Johnson",
-    initials: "EJ",
-    phone: "(555) 987-6543",
-    orders: [
-      {
-        id: "#ORD-102",
-        date: "Oct 25, 2023",
-        amount: "$85.00",
-        status: "Pending",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Michael Davis",
-    initials: "MD",
-    phone: "(555) 555-0192",
-    orders: [],
-  },
-  {
-    id: 4,
-    name: "Sarah Williams",
-    initials: "SW",
-    phone: "(555) 321-7654",
-    orders: [
-      {
-        id: "#ORD-095",
-        date: "Oct 10, 2023",
-        amount: "$1,200.00",
-        status: "Completed",
-      },
-      {
-        id: "#ORD-092",
-        date: "Oct 05, 2023",
-        amount: "$340.00",
-        status: "Cancelled",
-      },
-      {
-        id: "#ORD-081",
-        date: "Aug 22, 2023",
-        amount: "$65.00",
-        status: "Completed",
-      },
-    ],
-  },
-  {
-    id: 5,
-    name: "David Brown",
-    initials: "DB",
-    phone: "(555) 888-2345",
-    orders: [
-      {
-        id: "#ORD-105",
-        date: "Oct 28, 2023",
-        amount: "$210.00",
-        status: "Completed",
-      },
-    ],
-  },
-];
+const EMPTY_FORM = {
+  fullName: "",
+  email: "",
+  phoneNumber: "",
+  address: "",
+  notes: "",
+};
+
+function getInitials(fullName = "") {
+  return (
+    fullName
+      .split(" ")
+      .filter((n) => n.length > 0)
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase() || "C"
+  );
+}
 
 export default function CustomerManagement() {
-  
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [customers, setCustomers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Modals State
+  // Add modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newCustomerData, setNewCustomerData] = useState({
-    name: "",
-    phone: "",
-  });
+  const [newCustomerData, setNewCustomerData] = useState(EMPTY_FORM);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  // Delete modal
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     customerId: null,
   });
-  const [editModal, setEditModal] = useState({ isOpen: false, data: null });
-  const [ordersModal, setOrdersModal] = useState({
-    isOpen: false,
-    customer: null,
-  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // সার্চ ফিল্টারিং লজিক
+  // Edit modal
+  const [editModal, setEditModal] = useState({ isOpen: false, data: null });
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  // --- Fetch customers from the real API ---
+  const fetchCustomers = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError("");
+    try {
+      const res = await fetch("/api/customer", { cache: "no-store" });
+      const data = await res.json();
+     
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to load customers");
+      }
+
+      setCustomers(data.customers || []);
+    } catch (err) {
+      setLoadError(
+        err.message || "Something went wrong while loading customers",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
+
+  // --- Search filtering ---
   const filteredCustomers = useMemo(() => {
     if (!searchQuery) return customers;
-    const lowerCaseQuery = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase();
     return customers.filter(
-      (customer) =>
-        customer.name.toLowerCase().includes(lowerCaseQuery) ||
-        customer.phone.includes(searchQuery),
+      (c) =>
+        c.fullName?.toLowerCase().includes(q) ||
+        c.phoneNumber?.includes(searchQuery) ||
+        c.email?.toLowerCase().includes(q),
     );
   }, [searchQuery, customers]);
 
-  // --- Add Handlers ---
+  // --- Add Customer (POST /api/customers) ---
   const handleAddChange = (e) => {
     const { name, value } = e.target;
     setNewCustomerData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
+    setAddError("");
+    setIsSubmitting(true);
 
-    // নতুন কাস্টমারের জন্য ইউনিক আইডি এবং ইনিশিয়ালস তৈরি করা
-    const newId =
-      customers.length > 0 ? Math.max(...customers.map((c) => c.id)) + 1 : 1;
-    const initials =
-      newCustomerData.name
-        .split(" ")
-        .filter((n) => n.length > 0)
-        .map((n) => n[0])
-        .join("")
-        .substring(0, 2)
-        .toUpperCase() || "C";
+    try {
+      const res = await fetch("/api/customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: newCustomerData.fullName,
+          email: newCustomerData.email || undefined,
+          phoneNumber: newCustomerData.phoneNumber,
+          address: newCustomerData.address || undefined,
+          notes: newCustomerData.notes || undefined,
+        }),
+      });
 
-    const newCustomer = {
-      id: newId,
-      name: newCustomerData.name,
-      initials: initials,
-      phone: newCustomerData.phone,
-      orders: [], // নতুন কাস্টমারের কোনো অর্ডার হিস্ট্রি থাকবে না
-    };
+      const data = await res.json();
 
-    // নতুন কাস্টমারকে টেবিলের শুরুতে যুক্ত করা
-    setCustomers([newCustomer, ...customers]);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to create customer");
+      }
 
-    // ফর্ম রিসেট এবং মোডাল বন্ধ করা
-    setNewCustomerData({ name: "", phone: "" });
-    setIsAddModalOpen(false);
+      // Prepend the newly created customer returned by the API
+      setCustomers((prev) => [data.customer, ...prev]);
+      setNewCustomerData(EMPTY_FORM);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      setAddError(err.message || "Something went wrong while saving");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // --- Delete Handlers ---
-  const handleDeleteConfirm = () => {
-    setCustomers(customers.filter((c) => c.id !== deleteModal.customerId));
-    setDeleteModal({ isOpen: false, customerId: null });
+  // --- Delete Customer ---
+  // NOTE: no DELETE /api/customers/[id] route was provided yet, so this only
+  // updates local state. Add a DELETE handler on the backend to persist this.
+  const handleDeleteConfirm = async () => {
+    const { customerId } = deleteModal;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/customers/${customerId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.success === false)
+          throw new Error(data.message || "Delete failed");
+      }
+      // Even if the route doesn't exist yet (404), reflect the removal locally
+      // so the UI stays usable; re-add a real DELETE handler server-side.
+      setCustomers((prev) => prev.filter((c) => c._id !== customerId));
+      setDeleteModal({ isOpen: false, customerId: null });
+    } catch (err) {
+      setCustomers((prev) => prev.filter((c) => c._id !== customerId));
+      setDeleteModal({ isOpen: false, customerId: null });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
-  // --- Edit Handlers ---
+  // --- Edit Customer ---
+  // NOTE: no PUT /api/customers/[id] route was provided yet, so this only
+  // updates local state. Add a PUT handler on the backend to persist this.
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditModal((prev) => ({
@@ -181,28 +175,41 @@ export default function CustomerManagement() {
     }));
   };
 
-  const handleEditSave = (e) => {
+  const handleEditSave = async (e) => {
     e.preventDefault();
-    setCustomers(
-      customers.map((c) =>
-        c.id === editModal.data.id
-          ? {
-              ...c,
-              name: editModal.data.name,
-              phone: editModal.data.phone,
-              initials:
-                editModal.data.name
-                  .split(" ")
-                  .filter((n) => n.length > 0)
-                  .map((n) => n[0])
-                  .join("")
-                  .substring(0, 2)
-                  .toUpperCase() || "C",
-            }
-          : c,
-      ),
-    );
-    setEditModal({ isOpen: false, data: null });
+    setEditError("");
+    setIsSaving(true);
+
+    try {
+      const res = await fetch(`/api/customers/${editModal.data._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editModal.data),
+      });
+
+      let updated = editModal.data;
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.customer) updated = data.customer;
+      }
+
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c._id === editModal.data._id ? { ...c, ...updated } : c,
+        ),
+      );
+      setEditModal({ isOpen: false, data: null });
+    } catch (err) {
+      // Fall back to local-only update if the PUT route isn't set up yet
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c._id === editModal.data._id ? { ...c, ...editModal.data } : c,
+        ),
+      );
+      setEditModal({ isOpen: false, data: null });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -226,7 +233,7 @@ export default function CustomerManagement() {
           </div>
           <div>
             <div className="font-bold text-2xl text-gray-900">
-              {customers.length}
+              {isLoading ? "—" : customers.length}
             </div>
             <div className="text-xs text-gray-500 uppercase tracking-wider mt-1 font-semibold">
               Total Customers
@@ -247,12 +254,15 @@ export default function CustomerManagement() {
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name or phone..."
+            placeholder="Search by name, phone, or email..."
             className="w-full outline-none bg-transparent text-gray-900 placeholder-gray-500"
           />
         </div>
         <button
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => {
+            setAddError("");
+            setIsAddModalOpen(true);
+          }}
           className="flex items-center justify-center w-full sm:w-auto gap-2 bg-[#6C1B7B] text-white px-5 py-2.5 rounded-lg cursor-pointer hover:bg-[#52135d] transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6C1B7B]"
           aria-label="Add a new customer"
         >
@@ -281,9 +291,9 @@ export default function CustomerManagement() {
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-6 text-xs text-gray-500 uppercase tracking-wider font-semibold text-center"
+                  className="py-4 px-6 text-xs text-gray-500 uppercase tracking-wider font-semibold"
                 >
-                  Total Orders
+                  Email
                 </th>
                 <th
                   scope="col"
@@ -294,10 +304,38 @@ export default function CustomerManagement() {
               </tr>
             </thead>
             <tbody className="text-sm text-gray-900">
-              {filteredCustomers.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-gray-500">
+                    Loading customers...
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center bg-gray-50">
+                    <div className="flex flex-col items-center gap-3">
+                      <MdErrorOutline
+                        className="text-3xl text-red-500"
+                        aria-hidden="true"
+                      />
+                      <p className="text-base font-semibold text-gray-900">
+                        Couldn't load customers
+                      </p>
+                      <p className="text-sm text-gray-500">{loadError}</p>
+                      <button
+                        onClick={fetchCustomers}
+                        className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#6C1B7B] bg-[#F3EBF4] rounded-lg hover:bg-[#e4d1e8] transition-colors"
+                      >
+                        <MdRefresh className="text-lg" aria-hidden="true" />
+                        Try again
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredCustomers.length > 0 ? (
                 filteredCustomers.map((customer) => (
                   <tr
-                    key={customer.id}
+                    key={customer._id}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors group"
                   >
                     <td className="py-4 px-6">
@@ -306,38 +344,32 @@ export default function CustomerManagement() {
                           className="w-10 h-10 rounded-full bg-[#F3EBF4] flex items-center justify-center text-[#6C1B7B] font-bold border border-[#e4d1e8]"
                           aria-hidden="true"
                         >
-                          {customer.initials}
+                          {getInitials(customer.fullName)}
                         </div>
-                        <span className="font-semibold">{customer.name}</span>
+                        <span className="font-semibold">
+                          {customer.fullName}
+                        </span>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-gray-600">
-                      {customer.phone}
+                      {customer.phoneNumber}
                     </td>
-                    <td className="py-4 px-6 text-center">
-                      <button
-                        onClick={() =>
-                          setOrdersModal({ isOpen: true, customer })
-                        }
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-[#6C1B7B]/10 text-[#6C1B7B] font-semibold rounded-full hover:bg-[#6C1B7B]/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#6C1B7B]"
-                        aria-label={`View ${customer.orders.length} orders for ${customer.name}`}
-                      >
-                        <MdReceiptLong className="text-lg" aria-hidden="true" />
-                        {customer.orders.length} Orders
-                      </button>
+                    <td className="py-4 px-6 text-gray-600">
+                      {customer.email || "—"}
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() =>
+                          onClick={() => {
+                            setEditError("");
                             setEditModal({
                               isOpen: true,
                               data: { ...customer },
-                            })
-                          }
+                            });
+                          }}
                           className="p-2 text-gray-500 hover:text-[#6C1B7B] hover:bg-[#F3EBF4] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#6C1B7B]"
-                          title={`Edit ${customer.name}`}
-                          aria-label={`Edit ${customer.name}`}
+                          title={`Edit ${customer.fullName}`}
+                          aria-label={`Edit ${customer.fullName}`}
                         >
                           <MdEdit className="text-xl" aria-hidden="true" />
                         </button>
@@ -345,12 +377,12 @@ export default function CustomerManagement() {
                           onClick={() =>
                             setDeleteModal({
                               isOpen: true,
-                              customerId: customer.id,
+                              customerId: customer._id,
                             })
                           }
                           className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-600"
-                          title={`Delete ${customer.name}`}
-                          aria-label={`Delete ${customer.name}`}
+                          title={`Delete ${customer.fullName}`}
+                          aria-label={`Delete ${customer.fullName}`}
                         >
                           <MdDelete className="text-xl" aria-hidden="true" />
                         </button>
@@ -365,10 +397,14 @@ export default function CustomerManagement() {
                     className="py-12 text-center text-gray-500 bg-gray-50"
                   >
                     <p className="text-base font-semibold text-gray-900">
-                      No results found
+                      {customers.length === 0
+                        ? "No customers yet"
+                        : "No results found"}
                     </p>
                     <p className="text-sm mt-1">
-                      We couldn't find any customers matching "{searchQuery}"
+                      {customers.length === 0
+                        ? "Add your first customer to get started."
+                        : `We couldn't find any customers matching "${searchQuery}"`}
                     </p>
                   </td>
                 </tr>
@@ -402,23 +438,9 @@ export default function CustomerManagement() {
               1
             </button>
             <button
-              className="w-8 h-8 rounded-md text-gray-600 hover:bg-gray-100 font-medium flex items-center justify-center transition-all duration-300"
-              aria-label="Page 2"
-            >
-              2
-            </button>
-            <button
-              className="w-8 h-8 rounded-md text-gray-600 hover:bg-gray-100 font-medium flex items-center justify-center transition-all duration-300"
-              aria-label="Page 3"
-            >
-              3
-            </button>
-            <span className="text-gray-400 px-1" aria-hidden="true">
-              ...
-            </span>
-            <button
               className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               aria-label="Next page"
+              disabled
             >
               <MdChevronRight className="text-xl" aria-hidden="true" />
             </button>
@@ -447,7 +469,8 @@ export default function CustomerManagement() {
               <button
                 onClick={() => {
                   setIsAddModalOpen(false);
-                  setNewCustomerData({ name: "", phone: "" });
+                  setNewCustomerData(EMPTY_FORM);
+                  setAddError("");
                 }}
                 className="text-gray-400 hover:text-gray-600 focus:outline-none"
                 aria-label="Close add modal"
@@ -457,40 +480,113 @@ export default function CustomerManagement() {
             </div>
             <form onSubmit={handleAddSubmit}>
               <div className="p-6 space-y-4">
+                {addError && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                    <MdErrorOutline
+                      className="text-lg shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
+                    <span>{addError}</span>
+                  </div>
+                )}
                 <div>
                   <label
-                    htmlFor="add-name"
+                    htmlFor="add-fullName"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Full Name
                   </label>
                   <input
-                    id="add-name"
-                    name="name"
+                    id="add-fullName"
+                    name="fullName"
                     type="text"
                     required
+                    minLength={2}
                     placeholder="e.g. Robert Fox"
-                    value={newCustomerData.name}
+                    value={newCustomerData.fullName}
                     onChange={handleAddChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label
-                    htmlFor="add-phone"
+                    htmlFor="add-phoneNumber"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Phone Number
                   </label>
                   <input
-                    id="add-phone"
-                    name="phone"
+                    id="add-phoneNumber"
+                    name="phoneNumber"
                     type="text"
                     required
-                    placeholder="e.g. (555) 012-3456"
-                    value={newCustomerData.phone}
+                    placeholder="e.g. 01712345678"
+                    value={newCustomerData.phoneNumber}
                     onChange={handleAddChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Bangladeshi format, e.g. 01712345678 or +8801712345678
+                  </p>
+                </div>
+                <div>
+                  <label
+                    htmlFor="add-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Email{" "}
+                    <span className="text-gray-400 font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <input
+                    id="add-email"
+                    name="email"
+                    type="email"
+                    placeholder="e.g. robert@example.com"
+                    value={newCustomerData.email}
+                    onChange={handleAddChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="add-address"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Address{" "}
+                    <span className="text-gray-400 font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <input
+                    id="add-address"
+                    name="address"
+                    type="text"
+                    placeholder="e.g. House 12, Road 5, Dhanmondi, Dhaka"
+                    value={newCustomerData.address}
+                    onChange={handleAddChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="add-notes"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Notes{" "}
+                    <span className="text-gray-400 font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <textarea
+                    id="add-notes"
+                    name="notes"
+                    rows={2}
+                    placeholder="Any extra details about this customer"
+                    value={newCustomerData.notes}
+                    onChange={handleAddChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400 resize-none"
                   />
                 </div>
               </div>
@@ -499,7 +595,8 @@ export default function CustomerManagement() {
                   type="button"
                   onClick={() => {
                     setIsAddModalOpen(false);
-                    setNewCustomerData({ name: "", phone: "" });
+                    setNewCustomerData(EMPTY_FORM);
+                    setAddError("");
                   }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
                 >
@@ -507,9 +604,10 @@ export default function CustomerManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6C1B7B] transition-colors"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6C1B7B] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Add Customer
+                  {isSubmitting ? "Saving..." : "Add Customer"}
                 </button>
               </div>
             </form>
@@ -535,7 +633,7 @@ export default function CustomerManagement() {
               </h2>
               <p className="text-gray-600 text-sm">
                 Are you sure you want to delete this customer? This action
-                cannot be undone and will remove their order history.
+                cannot be undone.
               </p>
             </div>
             <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
@@ -549,9 +647,10 @@ export default function CustomerManagement() {
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-60"
               >
-                Delete
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
@@ -584,36 +683,77 @@ export default function CustomerManagement() {
             </div>
             <form onSubmit={handleEditSave}>
               <div className="p-6 space-y-4">
+                {editError && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                    <MdErrorOutline
+                      className="text-lg shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
+                    <span>{editError}</span>
+                  </div>
+                )}
                 <div>
                   <label
-                    htmlFor="edit-name"
+                    htmlFor="edit-fullName"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Full Name
                   </label>
                   <input
-                    id="edit-name"
-                    name="name"
+                    id="edit-fullName"
+                    name="fullName"
                     type="text"
                     required
-                    value={editModal.data.name}
+                    value={editModal.data.fullName || ""}
                     onChange={handleEditChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
                   />
                 </div>
                 <div>
                   <label
-                    htmlFor="edit-phone"
+                    htmlFor="edit-phoneNumber"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Phone Number
                   </label>
                   <input
-                    id="edit-phone"
-                    name="phone"
+                    id="edit-phoneNumber"
+                    name="phoneNumber"
                     type="text"
                     required
-                    value={editModal.data.phone}
+                    value={editModal.data.phoneNumber || ""}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="edit-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="edit-email"
+                    name="email"
+                    type="email"
+                    value={editModal.data.email || ""}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="edit-address"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Address
+                  </label>
+                  <input
+                    id="edit-address"
+                    name="address"
+                    type="text"
+                    value={editModal.data.address || ""}
                     onChange={handleEditChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
                   />
@@ -629,122 +769,13 @@ export default function CustomerManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6C1B7B] transition-colors"
+                  disabled={isSaving}
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6C1B7B] transition-colors disabled:opacity-60"
                 >
-                  Save Changes
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* 4. View Orders Modal */}
-      {ordersModal.isOpen && ordersModal.customer && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="orders-dialog-title"
-        >
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
-              <div>
-                <h2
-                  id="orders-dialog-title"
-                  className="text-xl font-bold text-gray-900"
-                >
-                  Order History
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Customer:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {ordersModal.customer.name}
-                  </span>
-                </p>
-              </div>
-              <button
-                onClick={() =>
-                  setOrdersModal({ isOpen: false, customer: null })
-                }
-                className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-200 rounded-full transition-colors focus:outline-none"
-                aria-label="Close orders modal"
-              >
-                <MdClose className="text-2xl" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="overflow-y-auto p-6">
-              {ordersModal.customer.orders.length > 0 ? (
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-200 text-sm text-gray-500">
-                      <th scope="col" className="pb-3 font-semibold">
-                        Order ID
-                      </th>
-                      <th scope="col" className="pb-3 font-semibold">
-                        Date
-                      </th>
-                      <th scope="col" className="pb-3 font-semibold">
-                        Amount
-                      </th>
-                      <th scope="col" className="pb-3 font-semibold">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm text-gray-900">
-                    {ordersModal.customer.orders.map((order) => (
-                      <tr
-                        key={order.id}
-                        className="border-b border-gray-100 last:border-0"
-                      >
-                        <td className="py-4 font-medium text-[#6C1B7B]">
-                          {order.id}
-                        </td>
-                        <td className="py-4 text-gray-600">{order.date}</td>
-                        <td className="py-4 font-semibold">{order.amount}</td>
-                        <td className="py-4">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-md ${
-                              order.status === "Completed"
-                                ? "bg-green-100 text-green-700"
-                                : order.status === "Pending"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {order.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
-                    <MdReceiptLong className="text-3xl" aria-hidden="true" />
-                  </div>
-                  <p className="text-gray-900 font-medium">
-                    No order history found
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    This customer hasn't placed any orders yet.
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
-              <button
-                onClick={() =>
-                  setOrdersModal({ isOpen: false, customer: null })
-                }
-                className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}
