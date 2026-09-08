@@ -10,7 +10,7 @@ import { FaClipboardUser } from "react-icons/fa6";
 import { FcSalesPerformance } from "react-icons/fc";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { LuBuilding2, LuCar, LuLayoutDashboard } from "react-icons/lu";
-import { MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { MdLocalOffer, MdOutlineProductionQuantityLimits } from "react-icons/md";
 import { VscGraph } from "react-icons/vsc";
 
 const Sidebar = () => {
@@ -40,6 +40,12 @@ const Sidebar = () => {
       name: "Promotions",
       icon: <BiSolidOffer />,
       link: "/promotions",
+    },
+    {
+      name: "Offers",
+      icon: <MdLocalOffer />,
+      link: "/offers",
+
     },
     { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
     { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
