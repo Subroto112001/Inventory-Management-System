@@ -7,16 +7,16 @@ import User, {
   DEPARTMENTS,
   ACCOUNT_STATUSES,
 } from "@/lib/models/User";
+import { requireAuth } from "@/lib/auth";
 // import { getServerSession } from "next-auth";
 // import { authOptions } from "@/lib/auth";
 
 export async function POST(request) {
   try {
-    // TODO: অ্যাডমিন-অনলি অ্যাক্সেস চেক
-    // const session = await getServerSession(authOptions);
-    // if (!session || session.user.role !== "System Admin") {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
+    const authenticatedUser = await requireAuth(request);
+    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
 
     const body = await request.json();
     const {
@@ -169,8 +169,12 @@ function generateTempPassword() {
     .join("");
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const authenticatedUser = await requireAuth(request);
+    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
     await connectMongoDB();
     const users = await User.find().sort({ createdAt: -1 }).lean();
 
@@ -188,8 +192,8 @@ export async function GET() {
         : "",
       assignedWarehouseName: "",
     }));
-      console.log("Fetched users:", result);
-      
+    console.log("Fetched users:", result);
+
     return NextResponse.json({ success: true, users: result }, { status: 200 });
   } catch (error) {
     console.error("Fetch Users API Error:", error);

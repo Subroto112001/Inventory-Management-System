@@ -508,7 +508,7 @@ export default function OffersPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/products", { cache: "no-store" });
+      const res = await fetch("/api/product", { cache: "no-store" });
       const data = await res?.json();
       if (res.ok) {
         setProducts(data?.products || []);

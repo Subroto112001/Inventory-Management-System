@@ -6,9 +6,14 @@ import User, {
   DEPARTMENTS,
   ACCOUNT_STATUSES,
 } from "@/lib/models/User";
+import { requireAuth } from "@/lib/auth";
 
 export async function PUT(request, { params }) {
   try {
+    const authenticatedUser = await requireAuth(request);
+    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
     const { id } = params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -149,7 +154,11 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = await params; 
+    const authenticatedUser = await requireAuth(request);
+    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
+    const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
       return NextResponse.json({ message: "Invalid user id" }, { status: 400 });

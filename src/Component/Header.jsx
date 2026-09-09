@@ -1,9 +1,24 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { RiShoppingBag4Line } from "react-icons/ri";
+import { FiLogOut } from "react-icons/fi";
 
 const Header = () => {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  };
+
   return (
     <div className="p-5 print:hidden">
       <div className="flex justify-between items-center">
@@ -37,6 +52,16 @@ const Header = () => {
           >
             <FaUserCircle aria-hidden="true" />
           </Link>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="Log out"
+            title="Log out"
+            className="text-[22px] text-white cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#611F69]"
+          >
+            <FiLogOut aria-hidden="true" />
+          </button>
         </nav>
       </div>
     </div>

@@ -16,6 +16,19 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Required Environment
+
+Authentication requires a strong server-only JWT secret. Add this to `.env.local`:
+
+```env
+JWT_SECRET=<at-least-32-random-characters>
+```
+
+Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+The application rejects missing or short secrets and does not use a fallback key.
+
+The existing `MONGODB_URI` and `MONGODB_DB` variables are also required for database access.
+
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

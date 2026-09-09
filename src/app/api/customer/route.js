@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Customer from "@/lib/models/Customer";
+import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // GET: Fetch all customers
-export async function GET() {
+export async function GET(request) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     await connectMongoDB();
 
     const customers = await Customer.find().sort({ createdAt: -1 }).lean();
@@ -35,6 +39,9 @@ export async function GET() {
 // POST: Create customer
 export async function POST(request) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const body = await request.json();
 
     const { fullName, email, phoneNumber, address, notes } = body;

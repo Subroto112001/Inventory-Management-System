@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs"; // Used to compare hashed passwords
-import jwt from "jsonwebtoken"; // Used to generate access tokens
+import { signAccessToken } from "@/lib/auth";
 
 export async function POST(request) {
   try {
     // 1. Parse the incoming JSON data from the request body
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, rememberMe = false } = body;
 
     // 2. Check necessary fields
     if (!email || !password) {
@@ -22,7 +22,10 @@ export async function POST(request) {
     await connectMongoDB();
 
     // 4. Check if the user exists
- const user = await User.findOne({ email }).select("+password");
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).select(
+      "+password",
+    );
     if (!user) {
       return NextResponse.json(
         { message: "Invalid email or password!" }, // Vague message for security reasons
@@ -33,7 +36,7 @@ export async function POST(request) {
     // 5. Verify the password
     // NOTE: This assumes you are hashing passwords using bcrypt in your User model middleware (pre-save)
     // If you are storing plain text passwords (not recommended), use: const isPasswordValid = password === user.password;
- const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Invalid email or password!" },
@@ -41,20 +44,16 @@ export async function POST(request) {
       );
     }
 
-    // 6. Generate a JWT Token
-    const tokenData = {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-    };
+    if (user.accountStatus !== "Active") {
+      return NextResponse.json(
+        { message: "This account is not active." },
+        { status: 403 },
+      );
+    }
 
-    const token = jwt.sign(
-      tokenData,
-      process.env.JWT_SECRET || "your_jwt_secret_key",
-      {
-        expiresIn: "1d", // Token valid for 1 day
-      },
-    );
+    const token = signAccessToken(user, rememberMe ? "30d" : "1d");
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
 
     // 7. Create response and set JWT as an HTTP-only cookie
     const response = NextResponse.json(
@@ -76,7 +75,7 @@ export async function POST(request) {
       httpOnly: true, // Prevents client-side scripts from accessing the cookie (XSS protection)
       secure: process.env.NODE_ENV === "production", // Ensures cookie is sent over HTTPS only in production
       sameSite: "strict", // Protects against CSRF attacks
-      maxAge: 60 * 60 * 24, // 1 day in seconds
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       path: "/",
     });
 

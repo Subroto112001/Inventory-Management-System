@@ -3,13 +3,17 @@ import connectMongoDB from "@/lib/databse/mongodb"; // আপনার ডির
 import Order from "@/lib/models/Order";
 import Product from "@/lib/models/Product";
 import mongoose from "mongoose";
+import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // GET: সব অর্ডার ফেচ করার জন্য
-export async function GET() {
+export async function GET(request) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     await connectMongoDB();
     const orders = await Order.find().sort({ createdAt: -1 }).lean();
 
@@ -25,6 +29,10 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const authenticatedUser = await requireAuth(request);
+    if (!authenticatedUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const body = await request.json();
     const {
       customerName,
@@ -43,7 +51,6 @@ export async function POST(request) {
       tax,
       deliveryCharge,
       grandTotal,
-      userId,
     } = body;
 
     if (!cart || cart.length === 0) {
@@ -130,10 +137,7 @@ export async function POST(request) {
     };
 
     // Safe ObjectId conversion for processedBy
-    const processedById =
-      userId && mongoose.Types.ObjectId.isValid(userId)
-        ? new mongoose.Types.ObjectId(userId)
-        : new mongoose.Types.ObjectId("000000000000000000000000");
+    const processedById = authenticatedUser._id;
 
     const newOrder = await Order.create({
       customer: {

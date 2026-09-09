@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import Offer from "@/models/Offer";
+import Offer from "@/lib/models/Offer";
 import { getUserId } from "@/lib/getUserId";
 import { normalizeOfferInput, serializeOffer } from "@/lib/offerHelpers";
+import connectMongoDB from "@/lib/databse/mongodb";
+import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/offers  — list all offers, newest first
-export async function GET() {
+export async function GET(request) {
   try {
-    await dbConnect();
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    await connectMongoDB();
 
     const offers = await Offer.find().sort({ createdAt: -1 });
 
@@ -29,14 +33,19 @@ export async function GET() {
 // POST /api/offers — create a new offer
 export async function POST(request) {
   try {
-    await dbConnect();
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    await connectMongoDB();
 
     const body = await request.json();
-    const userId = getUserId(request, body);
-
+    const userId = getUserId(request);
     if (!userId) {
       return NextResponse.json(
-        { success: false, message: "Unauthorized: no user id found for createdBy." },
+        {
+          success: false,
+          message: "Unauthorized: no user id found for createdBy.",
+        },
         { status: 401 },
       );
     }
@@ -62,7 +71,10 @@ export async function POST(request) {
 
     if (err.code === 11000) {
       return NextResponse.json(
-        { success: false, message: "An offer with that offer code already exists." },
+        {
+          success: false,
+          message: "An offer with that offer code already exists.",
+        },
         { status: 409 },
       );
     }

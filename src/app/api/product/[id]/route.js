@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
+import Offer from "@/lib/models/Offer";
+import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(request, { params }) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -26,6 +31,25 @@ export async function GET(request, { params }) {
         { status: 404 },
       );
     }
+
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+    const offers = await Offer.find({
+      isActive: true,
+      startDate: { $lte: todayEnd },
+      endDate: { $gte: todayStart },
+      $or: [
+        { applyTo: "All Products" },
+        { applyTo: "Specific Products", products: product._id },
+      ],
+    })
+      .select(
+        "offerName offerCode discountType discountValue maxDiscountAmount applyTo startDate endDate usageLimit usageCount",
+      )
+      .lean();
 
     return NextResponse.json(
       {
@@ -46,6 +70,26 @@ export async function GET(request, { params }) {
           lowStockAlert: product.lowStockAlert ?? 0,
           image: product.image?.url || "",
           isActive: product.isActive,
+          offers: offers
+            .filter(
+              (offer) =>
+                offer.startDate <= todayEnd &&
+                offer.endDate >= todayStart &&
+                (offer.usageLimit === undefined ||
+                  offer.usageLimit === null ||
+                  offer.usageCount < offer.usageLimit),
+            )
+            .map((offer) => ({
+              id: offer._id.toString(),
+              offerName: offer.offerName,
+              offerCode: offer.offerCode || "",
+              discountType: offer.discountType,
+              discountValue: offer.discountValue,
+              maxDiscountAmount: offer.maxDiscountAmount ?? null,
+              applyTo: offer.applyTo,
+              startDate: offer.startDate,
+              endDate: offer.endDate,
+            })),
         },
       },
       { status: 200 },
@@ -61,6 +105,9 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -171,6 +218,9 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
     const productId = id?.trim();
 

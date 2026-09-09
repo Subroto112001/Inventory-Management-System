@@ -143,7 +143,7 @@ const Page = () => {
           </div>
         </div>
         {/* heading of this page */}
-        {/* Product Section*/} 
+        {/* Product Section*/}
         <div className="flex flex-wrap gap-5 mt-5">
           {loadingProducts ? (
             <p className="text-gray-500">Loading products...</p>
@@ -160,6 +160,7 @@ const Page = () => {
                 quantity={Number(product.quantity || 0)}
                 image={product.image || placeholder}
                 currentStock={product.currentStock}
+                offers={product.offers}
                 onDeleteClick={handleDeleteClick}
               />
             ))

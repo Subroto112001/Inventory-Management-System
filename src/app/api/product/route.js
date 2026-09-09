@@ -1,15 +1,48 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
+import Offer from "@/lib/models/Offer";
+import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     await connectMongoDB();
     const products = await Product.find().sort({ createdAt: -1 }).lean();
-    
+    const productIds = products.map((product) => product._id);
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+    const offers = await Offer.find({
+      isActive: true,
+      startDate: { $lte: todayEnd },
+      endDate: { $gte: todayStart },
+      $or: [
+        { applyTo: "All Products" },
+        { applyTo: "Specific Products", products: { $in: productIds } },
+      ],
+    })
+      .select(
+        "offerName offerCode discountType discountValue maxDiscountAmount applyTo products startDate endDate usageLimit usageCount",
+      )
+      .lean();
+
+    const usableOffers = offers.filter(
+      (offer) =>
+        offer.startDate <= todayEnd &&
+        offer.endDate >= todayStart &&
+        (offer.usageLimit === undefined ||
+          offer.usageLimit === null ||
+          offer.usageCount < offer.usageLimit),
+    );
+
     const result = products.map((p) => ({
       id: p._id.toString(),
       productName: p.productName,
@@ -26,8 +59,24 @@ export async function GET() {
       lowStockAlert: p.lowStockAlert ?? 0,
       image: p.image?.url || "",
       isActive: p.isActive,
+      offers: usableOffers
+        .filter(
+          (offer) =>
+            offer.applyTo === "All Products" ||
+            offer.products.some((productId) => productId.equals(p._id)),
+        )
+        .map((offer) => ({
+          id: offer._id.toString(),
+          offerName: offer.offerName,
+          offerCode: offer.offerCode || "",
+          discountType: offer.discountType,
+          discountValue: offer.discountValue,
+          maxDiscountAmount: offer.maxDiscountAmount ?? null,
+          applyTo: offer.applyTo,
+          startDate: offer.startDate,
+          endDate: offer.endDate,
+        })),
     }));
-
 
     return NextResponse.json(
       { success: true, products: result },
@@ -44,6 +93,9 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const body = await request.json();
     const {
       productName,

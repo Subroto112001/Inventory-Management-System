@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import Offer from "@/models/Offer";
-import { normalizeOfferInput, serializeOffer, isValidObjectId } from "@/lib/offerHelpers";
+import Offer from "@/lib/models/Offer";
+import {
+  normalizeOfferInput,
+  serializeOffer,
+  isValidObjectId,
+} from "@/lib/offerHelpers";
+import connectMongoDB from "@/lib/databse/mongodb";
+import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +22,10 @@ export async function GET(request, { params }) {
   }
 
   try {
-    await dbConnect();
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    await connectMongoDB();
 
     const offer = await Offer.findById(id);
     if (!offer) {
@@ -53,7 +61,10 @@ export async function PUT(request, { params }) {
   }
 
   try {
-    await dbConnect();
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    await connectMongoDB();
 
     const body = await request.json();
     const updates = normalizeOfferInput(body);
@@ -83,7 +94,10 @@ export async function PUT(request, { params }) {
 
     if (err.code === 11000) {
       return NextResponse.json(
-        { success: false, message: "An offer with that offer code already exists." },
+        {
+          success: false,
+          message: "An offer with that offer code already exists.",
+        },
         { status: 409 },
       );
     }
@@ -108,7 +122,10 @@ export async function DELETE(request, { params }) {
   }
 
   try {
-    await dbConnect();
+    if (!(await requireAuth(request))) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    await connectMongoDB();
 
     const offer = await Offer.findByIdAndDelete(id);
     if (!offer) {

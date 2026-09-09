@@ -12,25 +12,22 @@ const ProductCard = ({
   price,
   image,
   currentStock,
+  offers = [],
   onDeleteClick,
 }) => {
-
-
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
 
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
-      setIsMenuOpen(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <article className="relative border border-gray-200 rounded-md p-4 w-87.5">
@@ -107,6 +104,15 @@ useEffect(() => {
           <p className="text-[16px] font-medium">${price.toFixed(2)}</p>
           <p className="text-[16px]">QTY : {currentStock}</p>
         </div>
+        {offers.length > 0 && (
+          <div className="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">
+            {offers[0].offerName}:{" "}
+            {offers[0].discountType === "Percentage"
+              ? `${offers[0].discountValue}% off`
+              : `৳${offers[0].discountValue} off`}
+            {offers.length > 1 ? ` +${offers.length - 1} more` : ""}
+          </div>
+        )}
       </div>
     </article>
   );

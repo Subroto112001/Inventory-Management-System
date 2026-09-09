@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
-import mongoose from "mongoose";
 
 export async function POST(request) {
   try {
@@ -21,7 +20,8 @@ export async function POST(request) {
     await connectMongoDB();
 
     // check if a user with the same email already exists
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return NextResponse.json(
         { message: "A user with this email already exists!" },
@@ -29,19 +29,15 @@ export async function POST(request) {
       );
     }
 
-    // Assign a default role (you can modify this logic to assign roles based on your requirements)
-    const defaultRoleId = new mongoose.Types.ObjectId();
-
-    // Save the new user information to the database
     const newUser = await User.create({
-      firstName,
-      lastName,
-      email,
+      firstName: firstName.trim(),
+      lastName: lastName?.trim(),
+      email: normalizedEmail,
       phoneNumber,
       password,
-      role: [defaultRoleId],
+      role: "Inventory Clerk",
+      department: "Operations",
     });
-    console.log("New user created:", newUser);
     // After successful registration, you might want to return the created user data (excluding sensitive info) or just a success message
     return NextResponse.json(
       {
