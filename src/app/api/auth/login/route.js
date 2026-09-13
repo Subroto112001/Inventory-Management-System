@@ -6,60 +6,79 @@ import { signAccessToken } from "@/lib/auth";
 
 export async function POST(request) {
   try {
-    // 1. Parse the incoming JSON data from the request body
+    // 1. Parse request body
     const body = await request.json();
     const { email, password, rememberMe = false } = body;
 
-    // 2. Check necessary fields
+    // 2. Validate fields
     if (!email || !password) {
       return NextResponse.json(
-        { message: "Email and password are required!" },
+        {
+          success: false,
+          message: "Email and password are required!",
+        },
         { status: 400 },
       );
     }
 
-    // 3. Connect to MongoDB
+    // 3. Connect MongoDB
     await connectMongoDB();
 
-    // 4. Check if the user exists
+    // 4. Find user
     const normalizedEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail }).select(
-      "+password",
-    );
+
+    const user = await User.findOne({
+      email: normalizedEmail,
+    }).select("+password");
+
     if (!user) {
       return NextResponse.json(
-        { message: "Invalid email or password!" }, // Vague message for security reasons
+        {
+          success: false,
+          message: "Invalid email or password!",
+        },
         { status: 401 },
       );
     }
 
-    // 5. Verify the password
-    // NOTE: This assumes you are hashing passwords using bcrypt in your User model middleware (pre-save)
-    // If you are storing plain text passwords (not recommended), use: const isPasswordValid = password === user.password;
+    // 5. Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
       return NextResponse.json(
-        { message: "Invalid email or password!" },
+        {
+          success: false,
+          message: "Invalid email or password!",
+        },
         { status: 401 },
       );
     }
 
+    // 6. Check account status
     if (user.accountStatus !== "Active") {
       return NextResponse.json(
-        { message: "This account is not active." },
+        {
+          success: false,
+          message: "This account is not active.",
+        },
         { status: 403 },
       );
     }
 
+    // 7. Create token
     const token = signAccessToken(user, rememberMe ? "30d" : "1d");
-    user.lastLogin = new Date();
-    await user.save({ validateBeforeSave: false });
 
-    // 7. Create response and set JWT as an HTTP-only cookie
+    user.lastLogin = new Date();
+
+    await user.save({
+      validateBeforeSave: false,
+    });
+
+    // 8. Create response
     const response = NextResponse.json(
       {
-        message: "Login successful!",
         success: true,
+        message: "Login successful!",
         user: {
           firstName: user.firstName,
           lastName: user.lastName,
@@ -70,20 +89,33 @@ export async function POST(request) {
       { status: 200 },
     );
 
-    // Set the cookie securely
+    // 9. Set cookie
     response.cookies.set("token", token, {
-      httpOnly: true, // Prevents client-side scripts from accessing the cookie (XSS protection)
-      secure: process.env.NODE_ENV === "production", // Ensures cookie is sent over HTTPS only in production
-      sameSite: "strict", // Protects against CSRF attacks
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       path: "/",
     });
 
     return response;
   } catch (error) {
-    console.error("Login API Error:", error);
+    // 🔴 Show actual error in terminal
+    console.error("=================================");
+    console.error("LOGIN API ERROR");
+    console.error("Message:", error?.message);
+    console.error("Stack:", error?.stack);
+    console.error("=================================");
+
+    // 🔴 Send error to frontend during development
     return NextResponse.json(
-      { message: "Internal server error" },
+      {
+        success: false,
+        message:
+          process.env.NODE_ENV === "development"
+            ? error?.message || "Unknown error"
+            : "Internal server error",
+      },
       { status: 500 },
     );
   }
