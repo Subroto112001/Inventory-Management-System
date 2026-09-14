@@ -170,13 +170,17 @@ function generateTempPassword() {
 }
 
 export async function GET(request) {
+   console.log("1. GET /user API called");
   try {
     const authenticatedUser = await requireAuth(request);
+
     if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
     }
     await connectMongoDB();
     const users = await User.find().sort({ createdAt: -1 }).lean();
+
+    console.log("Fetched users:", users);
 
     const result = users.map((user) => ({
       id: user._id.toString(),
