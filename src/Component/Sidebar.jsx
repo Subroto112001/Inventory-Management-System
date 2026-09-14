@@ -11,6 +11,7 @@ import { FcSalesPerformance } from "react-icons/fc";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { LuBuilding2, LuCar, LuLayoutDashboard } from "react-icons/lu";
 import { MdLocalOffer, MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { PiWarehouse } from "react-icons/pi";
 import { VscGraph } from "react-icons/vsc";
 
 const Sidebar = () => {
@@ -45,7 +46,11 @@ const Sidebar = () => {
       name: "Offers",
       icon: <MdLocalOffer />,
       link: "/offers",
-
+    },
+    {
+      name: "Warehouse",
+      icon: <PiWarehouse />,
+      link: "/warehouse",
     },
     { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
     { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
