@@ -11,6 +11,7 @@ import {
   MdDeleteOutline,
   MdArrowUpward,
   MdClose,
+  MdEmail,
 } from "react-icons/md";
 
 const defaultFormState = {
@@ -189,6 +190,18 @@ const UsersPage = () => {
       alert("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const resendInvitation = async (user) => {
+    try {
+      const res = await fetch(`/api/adduser/${user.id}/resend-invitation`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      alert(data.message || "Invitation sent");
+    } catch {
+      alert("Unable to send invitation");
     }
   };
 
@@ -456,6 +469,14 @@ const UsersPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => resendInvitation(user)}
+                              className="p-1.5 text-gray-600 hover:text-[#611F69] hover:bg-purple-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                              aria-label={`Resend invitation to ${user.name}`}
+                              title="Resend invitation"
+                            >
+                              <MdEmail size={20} aria-hidden="true" />
+                            </button>
                             <button
                               onClick={() => handleOpenEditModal(user)}
                               className="p-1.5 text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600"

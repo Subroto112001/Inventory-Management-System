@@ -6,10 +6,6 @@ import connectMongoDB from "@/lib/databse/mongodb";
 
 export async function GET(request) {
   try {
-  
-
-    
-
     // Fetch all warehouses, sorted by newest first
     // Populating the manager field allows you to display manager names on the frontend later
     const warehouses = await Warehouse.find()
@@ -17,9 +13,7 @@ export async function GET(request) {
       .sort({ createdAt: -1 })
       .lean(); 
 
-    
-  
-  
+
     return NextResponse.json(
       {
         success: true,

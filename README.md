@@ -29,6 +29,26 @@ The application rejects missing or short secrets and does not use a fallback key
 
 The existing `MONGODB_URI` and `MONGODB_DB` variables are also required for database access.
 
+## Invitation Email Setup
+
+Public registration is disabled. A System Admin creates each user from the User Management page, and the user receives a six digit code by email before setting a password.
+
+Configure Nodemailer with an SMTP account in `.env.local`:
+
+```env
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-smtp-user
+SMTP_PASS=your-smtp-password
+SMTP_FROM="Inventory Management <no-reply@example.com>"
+APP_URL=http://localhost:3000
+```
+
+`SMTP_SECURE=true` is normally used with port `465`. Keep SMTP credentials server-side and never expose them as `NEXT_PUBLIC_*` variables.
+
+For Gmail, `SMTP_HOST`, `SMTP_PORT`, and `SMTP_SECURE` may be omitted; the application defaults to `smtp.gmail.com`, port `465`, with TLS enabled. `SMTP_PASS` must be a Gmail App Password, not the normal account password.
+
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

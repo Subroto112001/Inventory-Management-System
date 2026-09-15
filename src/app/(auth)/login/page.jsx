@@ -303,15 +303,8 @@ export default function LoginPage() {
               Log in with Google
             </button>
 
-            {/* Sign up link */}
             <p className="mt-8 text-center text-sm leading-5 text-[#5d5f5f]">
-              Don't have an account?{" "}
-              <Link
-                className="text-xs font-semibold leading-4 tracking-wider text-[#00453e] no-underline transition-colors hover:text-[#64d9c8]"
-                href="/signup"
-              >
-                Create an account
-              </Link>
+              Access is invitation only. Contact your system administrator.
             </p>
           </div>
         </div>

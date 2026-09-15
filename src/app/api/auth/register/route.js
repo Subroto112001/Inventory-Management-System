@@ -1,67 +1,10 @@
 import { NextResponse } from "next/server";
-import connectMongoDB from "@/lib/databse/mongodb";
-import User from "@/lib/models/User";
-
 export async function POST(request) {
-  try {
-    // Parse the incoming JSON data from the request body
-    const body = await request.json();
-    const { firstName, lastName, email, phoneNumber, password } = body;
-
-    // Check necessary fields
-    if (!firstName || !email || !password) {
-      return NextResponse.json(
-        { message: "First name, email, and password are required!" },
-        { status: 400 },
-      );
-    }
-
-    // connect to MongoDB
-    await connectMongoDB();
-
-    // check if a user with the same email already exists
-    const normalizedEmail = email.trim().toLowerCase();
-    const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser) {
-      return NextResponse.json(
-        { message: "A user with this email already exists!" },
-        { status: 409 },
-      );
-    }
-
-    const newUser = await User.create({
-      firstName: firstName.trim(),
-      lastName: lastName?.trim(),
-      email: normalizedEmail,
-      phoneNumber,
-      password,
-      role: "Inventory Clerk",
-      department: "Operations",
-    });
-    // After successful registration, you might want to return the created user data (excluding sensitive info) or just a success message
-    return NextResponse.json(
-      {
-        message: "User registered successfully!",
-        success: true,
-        userName: newUser.firstName,
-      },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("Registration API Error:", error);
-
-    // Validation error handling
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((val) => val.message);
-      return NextResponse.json(
-        { message: messages.join(", ") },
-        { status: 400 },
-      );
-    }
-
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json(
+    {
+      message:
+        "Public registration is disabled. Contact a system administrator for an invitation.",
+    },
+    { status: 403 },
+  );
 }

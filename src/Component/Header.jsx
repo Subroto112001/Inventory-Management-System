@@ -10,14 +10,21 @@ import { FiLogOut } from "react-icons/fi";
 const Header = () => {
   const router = useRouter();
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } finally {
-      router.replace("/login");
-      router.refresh();
+const handleLogout = async () => {
+  try {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      window.location.href = "/login";
     }
-  };
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+};
 
   return (
     <div className="p-5 print:hidden">

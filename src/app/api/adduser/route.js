@@ -7,7 +7,8 @@ import User, {
   DEPARTMENTS,
   ACCOUNT_STATUSES,
 } from "@/lib/models/User";
-import { requireAuth } from "@/lib/auth";
+import { hashSecret, requireAuth } from "@/lib/auth";
+import { sendInvitationCode } from "@/lib/mailer";
 // import { getServerSession } from "next-auth";
 // import { authOptions } from "@/lib/auth";
 
@@ -20,11 +21,11 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      name, // ফ্রন্টএন্ড formData.name পাঠায়, fullName না
+      name,
       email,
       role,
       department,
-      status, // ফ্রন্টএন্ড formData.status পাঠায়, accountStatus না
+      status,
       phoneNumber,
       assignedWarehouse,
       jobTitle,
@@ -86,7 +87,7 @@ export async function POST(request) {
       );
     }
 
-    const tempPassword = generateTempPassword();
+    const verificationCode = crypto.randomInt(100000, 1000000).toString();
 
     const newUser = await User.create({
       firstName,
@@ -98,9 +99,23 @@ export async function POST(request) {
       phoneNumber: phoneNumber || undefined,
       assignedWarehouse: assignedWarehouse || undefined,
       jobTitle: jobTitle || undefined,
-      password: tempPassword,
+      password: `Aa1${crypto.randomBytes(32).toString("hex")}`,
+      invitationCodeHash: hashSecret(verificationCode),
+      invitationCodeExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      invitationCodeAttempts: 0,
       // createdBy: session?.user?.id,
     });
+
+    try {
+      await sendInvitationCode({
+        email: newUser.email,
+        name: `${newUser.firstName} ${newUser.lastName || ""}`.trim(),
+        code: verificationCode,
+      });
+    } catch (mailError) {
+      await User.findByIdAndDelete(newUser._id);
+      throw mailError;
+    }
 
     console.log("New user created by admin:", newUser.email);
 
@@ -119,7 +134,6 @@ export async function POST(request) {
           assignedWarehouse: newUser.assignedWarehouse?.toString() || "",
           jobTitle: newUser.jobTitle || "",
         },
-        temporaryPassword: tempPassword,
       },
       { status: 201 },
     );
@@ -148,29 +162,8 @@ export async function POST(request) {
   }
 }
 
-function generateTempPassword() {
-  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const lower = "abcdefghijkmnpqrstuvwxyz";
-  const digits = "23456789";
-  const all = upper + lower + digits;
-
-  let password =
-    upper[crypto.randomInt(upper.length)] +
-    lower[crypto.randomInt(lower.length)] +
-    digits[crypto.randomInt(digits.length)];
-
-  for (let i = 0; i < 7; i++) {
-    password += all[crypto.randomInt(all.length)];
-  }
-
-  return password
-    .split("")
-    .sort(() => crypto.randomInt(3) - 1)
-    .join("");
-}
-
 export async function GET(request) {
-   console.log("1. GET /user API called");
+  console.log("1. GET /user API called");
   try {
     const authenticatedUser = await requireAuth(request);
 

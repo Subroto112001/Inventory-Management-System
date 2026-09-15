@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
@@ -78,4 +79,8 @@ export function clearAuthCookie(response) {
     path: "/",
   });
   return response;
+}
+
+export function hashSecret(value) {
+  return crypto.createHash("sha256").update(value).digest("hex");
 }
