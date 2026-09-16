@@ -1,5 +1,6 @@
 "use client";
 
+import CustomerdataProvider from "@/dataProvider/ustomerdataProvider";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   MdSearch,
@@ -34,8 +35,6 @@ function getInitials(fullName = "") {
 }
 
 export default function CustomerManagement() {
-  const [customers, setCustomers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -57,32 +56,8 @@ export default function CustomerManagement() {
   const [isSaving, setIsSaving] = useState(false);
   const [editError, setEditError] = useState("");
 
-  // --- Fetch customers from the real API ---
-  const fetchCustomers = useCallback(async () => {
-    setIsLoading(true);
-    setLoadError("");
-    try {
-      const res = await fetch("/api/customer", { cache: "no-store" });
-      const data = await res.json();
-     
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to load customers");
-      }
-
-      setCustomers(data.customers || []);
-    } catch (err) {
-      setLoadError(
-        err.message || "Something went wrong while loading customers",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
-
+const { customers, loadingCustomers, fetchCustomers } = CustomerdataProvider();
+console.log(customers);
   // --- Search filtering ---
   const filteredCustomers = useMemo(() => {
     if (!searchQuery) return customers;
@@ -233,7 +208,7 @@ export default function CustomerManagement() {
           </div>
           <div>
             <div className="font-bold text-2xl text-gray-900">
-              {isLoading ? "—" : customers.length}
+              {loadingCustomers ? "—" : customers.length}
             </div>
             <div className="text-xs text-gray-500 uppercase tracking-wider mt-1 font-semibold">
               Total Customers
@@ -304,7 +279,7 @@ export default function CustomerManagement() {
               </tr>
             </thead>
             <tbody className="text-sm text-gray-900">
-              {isLoading ? (
+              {loadingCustomers ? (
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-gray-500">
                     Loading customers...
