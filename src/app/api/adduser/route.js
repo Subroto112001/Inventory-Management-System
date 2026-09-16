@@ -164,7 +164,7 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  console.log("1. GET /user API called");
+ 
   try {
     const authenticatedUser = await requireAuth(request);
 

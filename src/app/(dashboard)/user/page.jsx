@@ -1,6 +1,7 @@
 "use client";
 import useUsers from "@/dataProvider/userData";
 import useWarehouses from "@/dataProvider/wareHousedata";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import {
   MdPersonAdd,
@@ -34,18 +35,33 @@ const UsersPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
   const [formData, setFormData] = useState(defaultFormState);
-  const { users, loading, fetchUsers, error } = useUsers();
+
+  // Added setUsers to successfully update local state on CRUD actions
+  const { users, setUsers, loading, fetchUsers, error } = useUsers();
+
   // Delete confirmation modal state
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const { warehouses, loadingWarehouses, fetchWarehouses } = useWarehouses();
+  const router = useRouter();
+
+  // If you have a logged-in user context/state, replace `mydata` with it accordingly.
+  const mydata = null;
 
   useEffect(() => {
     fetchUsers();
     fetchWarehouses();
   }, []);
 
-  // modal open and close function
+  useEffect(() => {
+    if (!loading) {
+      if (!mydata || mydata.role !== "System Admin") {
+        router.push("/");
+      }
+    }
+  }, [mydata, loading, router]);
+
+  // Modal open and close functions
   const handleOpenAddModal = () => {
     setEditingUserId(null);
     setFormData(defaultFormState);
@@ -76,13 +92,11 @@ const UsersPage = () => {
     setFormError("");
   };
 
-  // form input change and submit function
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // form submit function for add and edit user
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -90,7 +104,6 @@ const UsersPage = () => {
 
     try {
       if (editingUserId) {
-        // PUT /api/adduser/[id]
         const res = await fetch(`/api/adduser/${editingUserId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -99,7 +112,10 @@ const UsersPage = () => {
         const data = await res.json();
 
         if (!res.ok) {
-          setFormError(data.message || "There was an issue updating the user, Contact with your Admin");
+          setFormError(
+            data.message ||
+              "There was an issue updating the user, Contact with your Admin",
+          );
           setSubmitting(false);
           return;
         }
@@ -116,7 +132,10 @@ const UsersPage = () => {
         const data = await res.json();
 
         if (!res.ok) {
-          setFormError(data.message || "There was an issue adding the user, Contact with your Admin");
+          setFormError(
+            data.message ||
+              "There was an issue adding the user, Contact with your Admin",
+          );
           setSubmitting(false);
           return;
         }
@@ -126,16 +145,14 @@ const UsersPage = () => {
 
       handleCloseModal();
     } catch (err) {
-      setFormError("There was an issue with the server, please try again later");
+      setFormError(
+        "There was an issue with the server, please try again later",
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  /**
-   * Delete a user
-   */
-  console.log(error);
   const handleDeleteUser = (user) => {
     setDeleteTarget(user);
   };
@@ -145,7 +162,6 @@ const UsersPage = () => {
     setDeleteTarget(null);
   };
 
-  // পপ-আপের ভেতরের Delete বাটনে ক্লিক করলে আসল ডিলিট রিকোয়েস্ট যাবে
   const confirmDeleteUser = async () => {
     if (!deleteTarget) return;
 
@@ -225,7 +241,7 @@ const UsersPage = () => {
               </div>
               <button
                 onClick={handleOpenAddModal}
-                className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-[#611F69] border border-[#611F69] hover:bg-transparent hover:text-[#611F69] cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all "
+                className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-[#611F69] border border-[#611F69] hover:bg-transparent hover:text-[#611F69] cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all"
                 aria-label="Open form to add a new user"
                 aria-haspopup="dialog"
               >
@@ -476,7 +492,7 @@ const UsersPage = () => {
                         colSpan="6"
                         className="px-6 py-8 text-center text-gray-500"
                       >
-                        {error}
+                        {error || "No users found."}
                       </td>
                     </tr>
                   )}
@@ -487,7 +503,6 @@ const UsersPage = () => {
         </main>
 
         {/* Add / Edit User Modal */}
-
         {isModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm p-4"
@@ -505,7 +520,7 @@ const UsersPage = () => {
                 </h2>
                 <button
                   onClick={handleCloseModal}
-                  className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors "
+                  className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Close modal"
                 >
                   <MdClose size={24} aria-hidden="true" />

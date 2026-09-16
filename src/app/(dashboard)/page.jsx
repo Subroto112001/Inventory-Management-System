@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../../css/Dashboard.css";
 import {
@@ -32,7 +33,7 @@ const formatCurrency = (value) =>
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-const page = () => {
+const Page = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +112,6 @@ const page = () => {
     let monthRevenue = 0;
     let lastMonthRevenue = 0;
 
-    // last 7 days, oldest to newest
     const dayBuckets = [];
     for (let i = 6; i >= 0; i -= 1) {
       const d = new Date(todayStart);
@@ -124,7 +124,6 @@ const page = () => {
     }
     const dayMap = Object.fromEntries(dayBuckets.map((b) => [b.key, b]));
 
-    // top products sold this month
     const productUnits = {};
 
     orders.forEach((order) => {
@@ -186,17 +185,77 @@ const page = () => {
   const revenueGrowth = roundPct(orderStats.revenueGrowth);
   const productGrowth = roundPct(productStats.productGrowth);
 
+  // --- Skeleton Loading UI ---
   if (isLoading) {
     return (
-      <div className="flex flex-row h-screen items-center justify-center">
-        <p className="text-body">Loading dashboard...</p>
+      <div className="h-screen w-full overflow-hidden bg-gray-50/50 p-6 flex flex-col justify-between">
+        <span className="sr-only" role="status" aria-live="polite">
+          Loading dashboard metrics and statistics...
+        </span>
+
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between mb-6 animate-pulse">
+          <div className="flex flex-col gap-2">
+            <div className="h-8 w-48 bg-gray-200 rounded-md" />
+            <div className="h-4 w-64 bg-gray-200 rounded-md" />
+          </div>
+          <div className="h-10 w-32 bg-gray-200 rounded-md" />
+        </div>
+
+        {/* KPI Cards Skeleton */}
+        <div className="kpi-grid mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="card animate-pulse flex flex-col justify-between p-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                  <div className="h-3 w-24 bg-gray-200 rounded" />
+                  <div className="h-7 w-20 bg-gray-200 rounded" />
+                </div>
+                <div className="w-10 h-10 bg-gray-200 rounded-md" />
+              </div>
+              <div className="h-3 w-32 bg-gray-200 rounded mt-4" />
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Skeleton */}
+        <div className="charts-grid mb-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="card animate-pulse p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col gap-2">
+                  <div className="h-5 w-32 bg-gray-200 rounded" />
+                  <div className="h-3 w-40 bg-gray-200 rounded" />
+                </div>
+                <div className="w-6 h-6 bg-gray-200 rounded" />
+              </div>
+              <div className="h-[240px] w-full bg-gray-200/70 rounded-md" />
+            </div>
+          ))}
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="table-section animate-pulse p-4 card">
+          <div className="flex items-center justify-between mb-4">
+            <div className="h-5 w-44 bg-gray-200 rounded" />
+            <div className="h-4 w-20 bg-gray-200 rounded" />
+          </div>
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-10 w-full bg-gray-200/60 rounded" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className="flex flex-row h-screen items-center justify-center">
+      <div className="flex flex-row h-screen items-center justify-center overflow-hidden">
         <div className="flex flex-col items-center gap-3 text-center max-w-sm">
           <MdErrorOutline size={36} className="text-error" aria-hidden="true" />
           <p className="text-h3 text-on-surface">
@@ -216,9 +275,10 @@ const page = () => {
   }
 
   return (
-    <div>
-      <div className="flex flex-row h-screen">
-        <main className="dashboard-main">
+    <div className="h-screen w-full overflow-hidden">
+      {/* Hide scrollbars across elements while preserving smooth overflow */}
+      <div className="flex flex-row h-full overflow-hidden">
+        <main className="dashboard-main h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {/* Header Section */}
           <header className="dashboard-header">
             <div>
@@ -242,7 +302,6 @@ const page = () => {
 
           {/* KPI Cards Grid */}
           <section aria-label="Key Performance Indicators" className="kpi-grid">
-            {/* Card 1: Total Products */}
             <article className="card">
               <div className="card-header">
                 <div>
@@ -282,7 +341,6 @@ const page = () => {
               </div>
             </article>
 
-            {/* Card 2: Today's Sales */}
             <article className="card">
               <div className="card-header">
                 <div>
@@ -322,7 +380,6 @@ const page = () => {
               </div>
             </article>
 
-            {/* Card 3: Low Stock Alerts */}
             <article className="card">
               <div className="card-header">
                 <div>
@@ -347,7 +404,6 @@ const page = () => {
               </div>
             </article>
 
-            {/* Card 4: Monthly Revenue */}
             <article className="card">
               <div className="card-header">
                 <div>
@@ -565,7 +621,7 @@ const page = () => {
               </button>
             </header>
 
-            <div className="table-responsive">
+            <div className="table-responsive [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <table aria-labelledby="low-stock-heading" className="data-table">
                 <thead>
                   <tr className="text-label-sm">
@@ -659,4 +715,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

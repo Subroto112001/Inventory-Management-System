@@ -7,7 +7,6 @@ import { BiPurchaseTagAlt, BiSolidOffer } from "react-icons/bi";
 import { CgShutterstock } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
-import { FcSalesPerformance } from "react-icons/fc";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { LuBuilding2, LuCar, LuLayoutDashboard } from "react-icons/lu";
 import {
@@ -20,7 +19,7 @@ import useCurrentUser from "@/dataProvider/getMe";
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const { mydata, loading } = useCurrentUser(); 
+  const { mydata, loading } = useCurrentUser();
 
   const menuItems = [
     { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
@@ -28,7 +27,7 @@ const Sidebar = () => {
       name: "Users",
       icon: <FaRegUser />,
       link: "/user",
-      allowedRoles: ["Admin", "SuperAdmin"], 
+      allowedRoles: ["Admin", "System Admin"],
     },
     {
       name: "Products",
@@ -66,15 +65,17 @@ const Sidebar = () => {
     { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
   ];
 
-  // ইউজারের রোলের ভিত্তিতে মেনু ফিল্টার করা
+  /**
+   * Filter menu items based on user role
+   */
   const filteredMenuItems = menuItems.filter((item) => {
-    // যদি কোনো আইটেমের জন্য allowedRoles না থাকে, তবে সবাই দেখতে পাবে
+    // If item has no role restrictions
     if (!item.allowedRoles) return true;
 
-    // ইউজার ডেটা লোড হওয়ার আগে বা রোল না থাকলে হাইড রাখতে পারেন
+    // If user data or role is missing
     if (!mydata || !mydata.role) return false;
 
-    // ইউজারের রোল যদি allowedRoles-এর মধ্যে থাকে তবে দেখাবে
+    // Check if user's role matches allowed roles
     return item.allowedRoles.includes(mydata.role);
   });
 
@@ -104,10 +105,34 @@ const Sidebar = () => {
         </div>
 
         {/* Semantic list wrapper */}
-        <ul className="mt-4 flex flex-col gap-2">
+        <ul className="mt-4 flex flex-col gap-2" aria-busy={loading}>
           {loading ? (
-            // চাইলে এখানে লোডিং স্টেট দেখাতে পারেন
-            <p className="text-sm text-gray-400 px-2">Loading menu...</p>
+            /* Skeleton Loading UI with A11y attributes */
+            <React.Fragment>
+              <li className="sr-only" role="status" aria-live="polite">
+                Loading navigation menu...
+              </li>
+              {Array.from({ length: 8 }).map((_, index) => (
+                <li
+                  key={index}
+                  className="flex items-center gap-3 p-2.5 rounded-md animate-pulse bg-gray-50/80"
+                  aria-hidden="true"
+                >
+                  {/* Skeleton Icon */}
+                  <div className="w-5 h-5 bg-gray-200 rounded-md shrink-0" />
+                  {/* Skeleton Text with natural varying widths */}
+                  <div
+                    className={`h-4 bg-gray-200 rounded-md ${
+                      index % 3 === 0
+                        ? "w-28"
+                        : index % 2 === 0
+                          ? "w-20"
+                          : "w-24"
+                    }`}
+                  />
+                </li>
+              ))}
+            </React.Fragment>
           ) : (
             filteredMenuItems.map((item, index) => {
               const isActive = pathname === item.link;
