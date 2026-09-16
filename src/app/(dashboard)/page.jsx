@@ -989,13 +989,14 @@ const Page = () => {
                   </p>
                 </div>
 
-                <button
+                <Link
+                  href="/order"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all orders"
                 >
                   View All
                   <MdArrowForward size={16} />
-                </button>
+                </Link>
               </div>
 
               <div className="table-responsive [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -1153,13 +1154,14 @@ const Page = () => {
                   {offerList.length} Offers
                 </span>
 
-                <button
+                <Link
+                  href="/offers"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all offers"
                 >
                   View All
                   <MdArrowForward size={16} />
-                </button>
+                </Link>
               </div>
             </header>
 
