@@ -30,6 +30,8 @@ import {
   MdShoppingCart,
   MdLocalOffer,
 } from "react-icons/md";
+import CustomerdataProvider from "@/dataProvider/CustomerdataProvider";
+import Link from "next/link";
 
 const formatCurrency = (value) =>
   `$${(Number(value) || 0).toLocaleString("en-US", {
@@ -90,17 +92,19 @@ const getOrderStatusClass = (status) => {
 const Page = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [customers, setCustomers] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  const { customers, loadingCustomers, fetchCustomers } =
+    CustomerdataProvider();
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setLoadError("");
 
     try {
-      const [productRes, orderRes, customerRes] = await Promise.all([
+      const [productRes, orderRes] = await Promise.all([
         fetch("/api/product", {
           cache: "no-store",
         }),
@@ -108,22 +112,10 @@ const Page = () => {
         fetch("/api/orders", {
           cache: "no-store",
         }),
-
-        fetch("/api/customers", {
-          cache: "no-store",
-        }),
       ]);
 
       const productData = await productRes.json();
       const orderData = await orderRes.json();
-
-      let customerData = {};
-
-      try {
-        customerData = await customerRes.json();
-      } catch {
-        customerData = {};
-      }
 
       if (!productRes.ok || !productData.success) {
         throw new Error(productData.message || "Failed to load products");
@@ -131,22 +123,6 @@ const Page = () => {
 
       if (!orderRes.ok || !orderData.success) {
         throw new Error(orderData.message || "Failed to load orders");
-      }
-
-      /*
-       * Customer API is kept separate so the dashboard can still
-       * work with orders/products if the customer endpoint returns
-       * an unexpected response.
-       */
-      if (customerRes.ok) {
-        setCustomers(
-          customerData.customers ||
-            customerData.users ||
-            customerData.data ||
-            [],
-        );
-      } else {
-        setCustomers([]);
       }
 
       setProducts(productData.products || []);
@@ -439,7 +415,7 @@ const Page = () => {
   // Loading UI
   // ------------------------------------------------------------
 
-  if (isLoading) {
+  if (isLoading || loadingCustomers) {
     return (
       <div className="h-screen w-full overflow-hidden bg-gray-50/50 p-6 flex flex-col justify-between">
         <span className="sr-only" role="status" aria-live="polite">
@@ -927,7 +903,6 @@ const Page = () => {
                   <thead>
                     <tr>
                       <th scope="col">Product Name</th>
-
                       <th scope="col">Units Sold</th>
                     </tr>
                   </thead>
@@ -1144,13 +1119,14 @@ const Page = () => {
               </div>
 
               <div className="mt-6">
-                <button
+                <Link
+                  href="/customers"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all customers"
                 >
                   View Customers
                   <MdArrowForward size={16} />
-                </button>
+                </Link>
               </div>
             </article>
           </section>
@@ -1392,7 +1368,9 @@ const Page = () => {
                                 padding: "6px 12px",
                                 margin: "0 auto",
                               }}
-                              aria-label={`${isOut ? "Urgent restock" : "Reorder"} ${p.productName}`}
+                              aria-label={`${
+                                isOut ? "Urgent restock" : "Reorder"
+                              } ${p.productName}`}
                             >
                               {isOut ? "Urgent Restock" : "Reorder"}
                             </button>

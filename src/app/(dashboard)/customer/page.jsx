@@ -1,6 +1,6 @@
 "use client";
 
-import CustomerdataProvider from "@/dataProvider/ustomerdataProvider";
+import CustomerdataProvider from "@/dataProvider/CustomerdataProvider";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   MdSearch,
@@ -56,8 +56,9 @@ export default function CustomerManagement() {
   const [isSaving, setIsSaving] = useState(false);
   const [editError, setEditError] = useState("");
 
-const { customers, loadingCustomers, fetchCustomers } = CustomerdataProvider();
-console.log(customers);
+  const { customers, loadingCustomers, fetchCustomers } =
+    CustomerdataProvider();
+
   // --- Search filtering ---
   const filteredCustomers = useMemo(() => {
     if (!searchQuery) return customers;
