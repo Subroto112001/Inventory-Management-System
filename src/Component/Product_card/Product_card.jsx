@@ -53,9 +53,12 @@ const ProductCard = ({
         <div className="flex flex-row justify-between items-center">
           <div className="flex flex-col gap-2 border-b border-gray-100 pb-2">
             <p className="text-gray-400 text-[14px]">{SKU}</p>
-            <p className="text-[20px] font-bold truncate text-[#611F69] cursor-pointer">
+            <Link
+              href={`/product_details/${id}`}
+              className="text-[20px] font-bold truncate text-[#611F69] cursor-pointer hover:underline"
+            >
               {name}
-            </p>
+            </Link>
           </div>
           <div className="relative" ref={menuRef}>
             <button
