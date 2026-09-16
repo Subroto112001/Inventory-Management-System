@@ -156,7 +156,7 @@ export async function DELETE(request, { params }) {
   try {
     const authenticatedUser = await requireAuth(request);
     if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ message: "Unauthorized For this Job" }, { status: 403 });
     }
     const { id } = await params;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import useProducts, { loadingProducts, products } from "@/dataProvider/ProductdataProvider";
 import React, { useState, useMemo, useEffect } from "react";
 import {
   MdDownload,
@@ -30,31 +31,10 @@ export default function StockManagement() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [updateAmount, setUpdateAmount] = useState("");
 
-  // আসল প্রোডাক্ট ডাটা (API থেকে ফেচ করা)
-  const [products, setProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
 
-  const fetchProducts = async () => {
-    setLoadingProducts(true);
-    try {
-      const res = await fetch("/api/products", { cache: "no-store" });
-      const data = await res.json();
+  const { products, loadingProducts, fetchProducts } = useProducts();
 
-      if (res.ok) {
-        setProducts(data.products || []);
-      } else {
-        console.error("Failed to load products:", data.message);
-      }
-    } catch (err) {
-      console.error("Failed to load products:", err);
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
   // API থেকে আসা প্রোডাক্ট ডাটাকে টেবিলের ফরম্যাটে ম্যাপ করা হচ্ছে
   // (এখানেই ডামি ডাটার বদলে আসল স্টক ডাটা ব্যবহার হচ্ছে)
@@ -71,14 +51,20 @@ export default function StockManagement() {
     }));
   }, [products]);
 
-  // স্ট্যাটাস ডায়নামিকভাবে ক্যালকুলেট করার ফাংশন
+  /**
+   * Function to dynamically calculate status
+   * */
+
   const getStatus = (current, min) => {
     if (current === 0) return "Out of Stock";
     if (current <= min) return "Low Stock";
     return "In Stock";
   };
 
-  // সার্চ কোয়েরি অনুযায়ী স্টক ফিল্টার করার লজিক
+  /** 
+   * Logic to filter stocks according to search query
+   * */
+  
   const filteredStock = useMemo(() => {
     if (!searchQuery) return stockItems;
     const lowerCaseQuery = searchQuery.toLowerCase();

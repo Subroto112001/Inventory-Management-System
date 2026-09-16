@@ -1,6 +1,7 @@
 "use client";
-
+import useCurrentUser from "@/dataProvider/getMe";
 import React, { useEffect, useState } from "react";
+
 import {
   MdPerson,
   MdEmail,
@@ -15,110 +16,17 @@ import {
 } from "react-icons/md";
 
 export default function UserProfile() {
-  const [mydata, setMydata] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const [profileData, setProfileData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    location: "",
-    role: "",
-    department: "",
-    assignedStore: "",
-    status: "",
-  });
-
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    location: "",
-    role: "",
-    department: "",
-    assignedStore: "",
-    status: "",
-  });
-
   const [isEditing, setIsEditing] = useState(false);
 
-  // =========================================================
-  // Get Currently Logged-in User
-  // =========================================================
-  const getCurrentUser = async () => {
-    try {
-      setLoading(true);
-
-      const response = await fetch("/api/adduser/me", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(
-          "Failed to get current user:",
-          data?.message || "Unauthorized",
-        );
-
-        setMydata(null);
-        return null;
-      }
-
-      if (!data?.user) {
-        console.error("User data not found in API response.");
-        setMydata(null);
-        return null;
-      }
-
-      const user = data.user;
-
-      setMydata(user);
-
-      // -------------------------------------------------------
-      // Format API data for the profile form
-      // -------------------------------------------------------
-      const formattedProfileData = {
-        fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-
-        email: user.email || "",
-
-        phone: user.phoneNumber || "",
-
-        location: user.district
-          ? `${user.district}${user.country ? `, ${user.country}` : ""}`
-          : user.country || "Not Available",
-
-        role: user.role || "",
-
-        department: user.department || "",
-
-        assignedStore: user.assignedWarehouse || "Not Assigned",
-
-        status: user.accountStatus || "",
-      };
-
-      setProfileData(formattedProfileData);
-      setFormData(formattedProfileData);
-
-      return user;
-    } catch (error) {
-      console.error("Get current user error:", error);
-      setMydata(null);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // =========================================================
-  // Load Current User
-  // =========================================================
-  useEffect(() => {
-    getCurrentUser();
-  }, []);
+  const {
+    mydata,
+    profileData,
+    setProfileData,
+    formData,
+    setFormData,
+    loading,
+    getCurrentUser,
+  } = useCurrentUser();
 
   // =========================================================
   // Handle Input Change
@@ -157,8 +65,6 @@ export default function UserProfile() {
     setProfileData(formData);
     setIsEditing(false);
   };
-
-  console.log(mydata?.role);
 
   /**
    *  Loading time skeleton UI
@@ -588,7 +494,7 @@ export default function UserProfile() {
                 />
                 Personal Information
               </h2>
-         
+
               {(mydata.role === "System Admin" || mydata.role === "Admin") && (
                 <button
                   type="button"
@@ -598,7 +504,6 @@ export default function UserProfile() {
                   Edit Profile
                 </button>
               )}
-        
             </div>
 
             {/* Form */}

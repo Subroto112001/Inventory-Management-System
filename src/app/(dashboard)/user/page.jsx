@@ -1,4 +1,6 @@
 "use client";
+import useUsers from "@/dataProvider/userData";
+import useWarehouses from "@/dataProvider/wareHousedata";
 import React, { useState, useEffect } from "react";
 import {
   MdPersonAdd,
@@ -27,51 +29,21 @@ const defaultFormState = {
 
 const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState([]);
-  const [warehouses, setWarehouses] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
   const [formData, setFormData] = useState(defaultFormState);
-
+  const { users, loading, fetchUsers, error } = useUsers();
   // Delete confirmation modal state
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const { warehouses, loadingWarehouses, fetchWarehouses } = useWarehouses();
 
-  // প্রথমবার লোডে ইউজার ও ওয়্যারহাউজ লিস্ট আনা হচ্ছে
   useEffect(() => {
     fetchUsers();
     fetchWarehouses();
   }, []);
-
-  // user will fetch there
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/adduser");
-      const data = await res.json();
-      console.log("Fetched users:", data.users);
-      if (res.ok) setUsers(data.users);
-    } catch (err) {
-      console.error("Failed to load users:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // warehouse will fetch there
-  const fetchWarehouses = async () => {
-    try {
-      const res = await fetch("/api/warehouses");
-      const data = await res.json();
-      if (res.ok) setWarehouses(data.warehouses || []);
-    } catch (err) {
-      console.error("Failed to load warehouses:", err);
-    }
-  };
 
   // modal open and close function
   const handleOpenAddModal = () => {
@@ -127,7 +99,7 @@ const UsersPage = () => {
         const data = await res.json();
 
         if (!res.ok) {
-          setFormError(data.message || "একটা সমস্যা হয়েছে");
+          setFormError(data.message || "There was an issue updating the user, Contact with your Admin");
           setSubmitting(false);
           return;
         }
@@ -144,7 +116,7 @@ const UsersPage = () => {
         const data = await res.json();
 
         if (!res.ok) {
-          setFormError(data.message || "একটা সমস্যা হয়েছে");
+          setFormError(data.message || "There was an issue adding the user, Contact with your Admin");
           setSubmitting(false);
           return;
         }
@@ -154,13 +126,16 @@ const UsersPage = () => {
 
       handleCloseModal();
     } catch (err) {
-      setFormError("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+      setFormError("There was an issue with the server, please try again later");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Delete বাটনে ক্লিক করলে শুধু কনফার্মেশন পপ-আপ খুলবে
+  /**
+   * Delete a user
+   */
+  console.log(error);
   const handleDeleteUser = (user) => {
     setDeleteTarget(user);
   };
@@ -181,13 +156,13 @@ const UsersPage = () => {
       const res = await fetch(`/api/adduser/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json();
-        alert(data.message || "User delete করা যায়নি");
+        alert(data.message || "User delete failed, please try again later");
         return;
       }
       setUsers((prev) => prev.filter((u) => u.id !== id));
       setDeleteTarget(null);
     } catch (err) {
-      alert("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+      alert("There was an issue with the server, please try again later");
     } finally {
       setDeleting(false);
     }
@@ -421,7 +396,7 @@ const UsersPage = () => {
                         colSpan="6"
                         className="px-6 py-8 text-center text-gray-500"
                       >
-                        লোড হচ্ছে...
+                        Loading users...
                       </td>
                     </tr>
                   ) : filteredUsers.length > 0 ? (
@@ -501,7 +476,7 @@ const UsersPage = () => {
                         colSpan="6"
                         className="px-6 py-8 text-center text-gray-500"
                       >
-                        No users found matching "{searchTerm}"
+                        {error}
                       </td>
                     </tr>
                   )}
@@ -512,6 +487,7 @@ const UsersPage = () => {
         </main>
 
         {/* Add / Edit User Modal */}
+
         {isModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm p-4"

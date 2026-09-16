@@ -10,16 +10,26 @@ import { FaClipboardUser } from "react-icons/fa6";
 import { FcSalesPerformance } from "react-icons/fc";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { LuBuilding2, LuCar, LuLayoutDashboard } from "react-icons/lu";
-import { MdLocalOffer, MdOutlineProductionQuantityLimits } from "react-icons/md";
+import {
+  MdLocalOffer,
+  MdOutlineProductionQuantityLimits,
+} from "react-icons/md";
 import { PiWarehouse } from "react-icons/pi";
 import { VscGraph } from "react-icons/vsc";
+import useCurrentUser from "@/dataProvider/getMe";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const { mydata, loading } = useCurrentUser(); 
 
   const menuItems = [
     { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
-    { name: "Users", icon: <FaRegUser />, link: "/user" },
+    {
+      name: "Users",
+      icon: <FaRegUser />,
+      link: "/user",
+      allowedRoles: ["Admin", "SuperAdmin"], 
+    },
     {
       name: "Products",
       icon: <MdOutlineProductionQuantityLimits />,
@@ -56,6 +66,18 @@ const Sidebar = () => {
     { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
   ];
 
+  // ইউজারের রোলের ভিত্তিতে মেনু ফিল্টার করা
+  const filteredMenuItems = menuItems.filter((item) => {
+    // যদি কোনো আইটেমের জন্য allowedRoles না থাকে, তবে সবাই দেখতে পাবে
+    if (!item.allowedRoles) return true;
+
+    // ইউজার ডেটা লোড হওয়ার আগে বা রোল না থাকলে হাইড রাখতে পারেন
+    if (!mydata || !mydata.role) return false;
+
+    // ইউজারের রোল যদি allowedRoles-এর মধ্যে থাকে তবে দেখাবে
+    return item.allowedRoles.includes(mydata.role);
+  });
+
   return (
     <nav
       className="bg-white h-full border-r border-gray-100 print:hidden"
@@ -83,35 +105,40 @@ const Sidebar = () => {
 
         {/* Semantic list wrapper */}
         <ul className="mt-4 flex flex-col gap-2">
-          {menuItems.map((item, index) => {
-            const isActive = pathname === item.link;
+          {loading ? (
+            // চাইলে এখানে লোডিং স্টেট দেখাতে পারেন
+            <p className="text-sm text-gray-400 px-2">Loading menu...</p>
+          ) : (
+            filteredMenuItems.map((item, index) => {
+              const isActive = pathname === item.link;
 
-            return (
-              <li key={index}>
-                <Link
-                  href={item.link}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`p-2 cursor-pointer transition-all rounded-md flex items-center gap-2 group ${
-                    isActive
-                      ? "bg-[#611F69] text-white font-medium shadow-sm"
-                      : "text-gray-700 bg-white hover:bg-[#611F69] hover:text-white"
-                  }`}
-                >
-                  <span
-                    className={`text-xl transition-all ${
+              return (
+                <li key={index}>
+                  <Link
+                    href={item.link}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`p-2 cursor-pointer transition-all rounded-md flex items-center gap-2 group ${
                       isActive
-                        ? "text-white"
-                        : "text-[#611F69] group-hover:text-white"
+                        ? "bg-[#611F69] text-white font-medium shadow-sm"
+                        : "text-gray-700 bg-white hover:bg-[#611F69] hover:text-white"
                     }`}
-                    aria-hidden="true"
                   >
-                    {item.icon}
-                  </span>
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            );
-          })}
+                    <span
+                      className={`text-xl transition-all ${
+                        isActive
+                          ? "text-white"
+                          : "text-[#611F69] group-hover:text-white"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {item.icon}
+                    </span>
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })
+          )}
         </ul>
       </div>
     </nav>

@@ -20,6 +20,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
+    
     const {
       name,
       email,
@@ -168,7 +169,7 @@ export async function GET(request) {
     const authenticatedUser = await requireAuth(request);
 
     if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ message: "You are unauthorized to access this resource" }, { status: 403 });
     }
     await connectMongoDB();
     const users = await User.find().sort({ createdAt: -1 }).lean();
