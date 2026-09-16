@@ -74,10 +74,7 @@ const productSchema = new Schema(
     // --- Media ---
     image: {
       public_id: { type: String },
-      url: {
-        type: String,
-        match: [/^https?:\/\/.+/, "Please provide a valid image URL"],
-      },
+      url: String,
     },
 
     // --- Relations & Status ---

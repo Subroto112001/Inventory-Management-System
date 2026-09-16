@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
+  },
   reactCompiler: true,
   async headers() {
     return [
@@ -20,3 +28,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+

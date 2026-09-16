@@ -29,6 +29,16 @@ The application rejects missing or short secrets and does not use a fallback key
 
 The existing `MONGODB_URI` and `MONGODB_DB` variables are also required for database access.
 
+Product image uploads require a Cloudinary account. Add the server-only credentials to `.env.local`:
+
+```env
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
+
+Find these values in the Cloudinary dashboard under **Product environment settings**. Restart the Next.js development server after changing `.env.local`.
+
 ## Invitation Email Setup
 
 Public registration is disabled. A System Admin creates each user from the User Management page, and the user receives a six digit code by email before setting a password.

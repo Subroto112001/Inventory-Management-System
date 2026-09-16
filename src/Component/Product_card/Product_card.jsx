@@ -45,6 +45,8 @@ const ProductCard = ({
         alt={name}
         className="object-cover rounded-md mb-4"
         loading="lazy"
+        width={350}
+        height={350}
       />
 
       <div className="flex flex-col gap-2 mt-5">

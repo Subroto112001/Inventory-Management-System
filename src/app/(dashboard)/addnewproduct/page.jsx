@@ -1,5 +1,7 @@
+
 "use client";
 
+import ProductCard from "@/Component/Product_card/Product_card";
 import ColorButton from "@/Component/Button/ColorButton";
 import TransparentButton from "@/Component/Button/TransparentButton";
 import { IconProvider } from "@/Provider/IconProvider";
@@ -12,12 +14,15 @@ import {
   MdClose,
   MdImage,
 } from "react-icons/md";
-import { Html5QrcodeScanner } from "html5-qrcode";
 
 // ==========================================
-// Camera Scanner Modal Component (Strict Mode & Speed Optimized)
+// Camera Scanner Modal Component
 // ==========================================
-const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
+const CameraScannerModal = ({
+  isOpen,
+  onClose,
+  onScanSuccess,
+}) => {
   const [isClient, setIsClient] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const scannerRef = useRef(null);
@@ -34,7 +39,10 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
     isScanningComplete.current = false;
 
     import("html5-qrcode").then(({ Html5Qrcode }) => {
-      const html5QrCode = new Html5Qrcode("camera-reader");
+      const html5QrCode = new Html5Qrcode(
+        "camera-reader"
+      );
+
       scannerRef.current = html5QrCode;
 
       html5QrCode
@@ -42,32 +50,55 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
           { facingMode: "environment" },
           {
             fps: 15,
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
+            qrbox: (
+              viewfinderWidth,
+              viewfinderHeight
+            ) => {
               const minEdgePercentage = 0.7;
-              const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-              const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-              return { width: qrboxSize, height: qrboxSize };
+
+              const minEdgeSize = Math.min(
+                viewfinderWidth,
+                viewfinderHeight
+              );
+
+              const qrboxSize = Math.floor(
+                minEdgeSize * minEdgePercentage
+              );
+
+              return {
+                width: qrboxSize,
+                height: qrboxSize,
+              };
             },
             aspectRatio: 1.0,
           },
           (decodedText) => {
             if (!isScanningComplete.current) {
               isScanningComplete.current = true;
-              if (navigator.vibrate) navigator.vibrate(200);
+
+              if (navigator.vibrate) {
+                navigator.vibrate(200);
+              }
 
               onScanSuccess(decodedText);
 
-              html5QrCode.stop().catch(console.error);
+              html5QrCode
+                .stop()
+                .catch(console.error);
             }
           },
-          (errorMessage) => {
+          () => {
             // Ignore background scan errors
-          },
+          }
         )
         .catch((err) => {
-          console.error("Camera start error:", err);
+          console.error(
+            "Camera start error:",
+            err
+          );
+
           setCameraError(
-            "Camera blocked or not found. Please allow camera access.",
+            "Camera blocked or not found. Please allow camera access."
           );
         });
     });
@@ -84,7 +115,11 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
         } catch (e) {}
       }
     };
-  }, [isOpen, isClient, onScanSuccess]);
+  }, [
+    isOpen,
+    isClient,
+    onScanSuccess,
+  ]);
 
   if (!isOpen || !isClient) return null;
 
@@ -96,6 +131,8 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
       aria-labelledby="scanner-dialog-title"
     >
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+
+        {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-white">
           <h2
             id="scanner-dialog-title"
@@ -105,25 +142,35 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
               className="text-[#611F69] text-xl"
               aria-hidden="true"
             />
+
             Scan Barcode / QR
           </h2>
+
           <button
             onClick={() => {
               isScanningComplete.current = true;
+
               if (scannerRef.current) {
                 try {
-                  scannerRef.current.stop().catch(() => {});
+                  scannerRef.current
+                    .stop()
+                    .catch(() => {});
                 } catch (e) {}
               }
+
               onClose();
             }}
             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
             aria-label="Close scanner"
           >
-            <MdClose className="text-2xl" aria-hidden="true" />
+            <MdClose
+              className="text-2xl"
+              aria-hidden="true"
+            />
           </button>
         </div>
 
+        {/* Camera */}
         <div className="p-4 bg-black relative min-h-[300px] flex items-center justify-center">
           {cameraError ? (
             <div className="text-red-500 text-center text-sm p-4 bg-red-50 rounded-lg font-medium">
@@ -137,10 +184,13 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
           )}
         </div>
 
+        {/* Footer */}
         <div className="p-4 bg-gray-50 border-t border-gray-100 text-sm text-gray-700 text-center font-medium">
           Hold the barcode steady{" "}
-          <span className="text-[#611F69] font-bold">4-6 inches</span> away from
-          the camera.
+          <span className="text-[#611F69] font-bold">
+            4-6 inches
+          </span>{" "}
+          away from the camera.
         </div>
       </div>
     </div>
@@ -148,7 +198,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
 };
 
 // ==========================================
-// Main Page Component
+// Default Form State
 // ==========================================
 const defaultFormState = {
   productName: "",
@@ -162,159 +212,455 @@ const defaultFormState = {
   discount: "",
   initialStock: "",
   lowStockAlert: "",
+  productPicture: null,
 };
 
+// ==========================================
+// Main Page Component
+// ==========================================
 const Page = () => {
-  const [formData, setFormData] = useState(defaultFormState);
+  const [formData, setFormData] =
+    useState(defaultFormState);
 
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [publishError, setPublishError] = useState("");
+  const [
+    isScannerOpen,
+    setIsScannerOpen,
+  ] = useState(false);
 
-  // Product list state (GET)
-  const [products, setProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [
+    submitting,
+    setSubmitting,
+  ] = useState(false);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  const [
+    publishError,
+    setPublishError,
+  ] = useState("");
 
+  const [
+    products,
+    setProducts,
+  ] = useState([]);
+
+  const [
+    loadingProducts,
+    setLoadingProducts,
+  ] = useState(true);
+
+  // ==========================================
+  // Fetch Products
+  // ==========================================
   const fetchProducts = async () => {
     setLoadingProducts(true);
+
     try {
-      const res = await fetch("/api/products", { cache: "no-store" });
+      const res = await fetch(
+        "/api/product",
+        {
+          cache: "no-store",
+        }
+      );
+
       const data = await res.json();
-      if (res.ok) setProducts(data.products || []);
-      else console.error("Failed to load products:", data.message);
+
+      if (res.ok) {
+        setProducts(
+          data.products || []
+        );
+      } else {
+        console.error(
+          "Failed to load products:",
+          data.message
+        );
+      }
     } catch (err) {
-      console.error("Failed to load products:", err);
+      console.error(
+        "Failed to load products:",
+        err
+      );
     } finally {
       setLoadingProducts(false);
     }
   };
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // ==========================================
+  // Handle Input Change
+  // ==========================================
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const {
+      name,
+      value,
+      type,
+      files,
+    } = e.target;
+
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === "file" ? files[0] : value,
+
+      [name]:
+        type === "file"
+          ? files?.[0] || null
+          : value,
     }));
+
+    // Clear previous error when user changes input
+    if (publishError) {
+      setPublishError("");
+    }
   };
 
+  // ==========================================
+  // Generate SKU
+  // ==========================================
   const handleGenerateSKU = () => {
-    const randomSKU = `PRD-${Math.floor(100000000 + Math.random() * 900000000)}`;
+    const randomSKU = `PRD-${Math.floor(
+      100000000 +
+        Math.random() * 900000000
+    )}`;
+
     setFormData((prevData) => ({
       ...prevData,
       productSKU: randomSKU,
     }));
   };
 
-  const handleScanSuccess = (decodedText) => {
+  // ==========================================
+  // Barcode / QR Scan Success
+  // ==========================================
+  const handleScanSuccess = (
+    decodedText
+  ) => {
     setFormData((prevData) => ({
       ...prevData,
       productSKU: decodedText,
     }));
+
     setIsScannerOpen(false);
   };
 
+  // ==========================================
+  // Input Fields
+  // ==========================================
   const input_fields = [
-    { label: "Product Name", name: "productName", type: "text" },
-    { label: "Product SKU", name: "productSKU", type: "text" },
-    { label: "Price", name: "price", type: "number" },
-    { label: "Brand Name", name: "brandName", type: "text" },
-    { label: "Unit", name: "unit", type: "text" },
-    { label: "Quantity", name: "quantity", type: "number" },
-    { label: "Wholesale Price", name: "wholesalePrice", type: "number" },
-    { label: "Discount", name: "discount", type: "number" },
-    { label: "Initial Stock", name: "initialStock", type: "number" },
-    { label: "Low Stock Alert", name: "lowStockAlert", type: "number" },
-    { label: "Upload Product Picture", name: "productPicture", type: "file" },
+    {
+      label: "Product Name",
+      name: "productName",
+      type: "text",
+    },
+    {
+      label: "Product SKU",
+      name: "productSKU",
+      type: "text",
+    },
+    {
+      label: "Price",
+      name: "price",
+      type: "number",
+    },
+    {
+      label: "Brand Name",
+      name: "brandName",
+      type: "text",
+    },
+    {
+      label: "Unit",
+      name: "unit",
+      type: "text",
+    },
+    {
+      label: "Quantity",
+      name: "quantity",
+      type: "number",
+    },
+    {
+      label: "Wholesale Price",
+      name: "wholesalePrice",
+      type: "number",
+    },
+    {
+      label: "Discount",
+      name: "discount",
+      type: "number",
+    },
+    {
+      label: "Initial Stock",
+      name: "initialStock",
+      type: "number",
+    },
+    {
+      label: "Low Stock Alert",
+      name: "lowStockAlert",
+      type: "number",
+    },
+    {
+      label: "Upload Product Picture",
+      name: "productPicture",
+      type: "file",
+    },
   ];
 
-  // Product publish → POST /api/products
+  // ==========================================
+  // Publish Product
+  // ==========================================
   const handlePublish = async () => {
     setPublishError("");
 
-    if (!formData.productName || !formData.productSKU) {
-      setPublishError("Please fill in the required fields (Name & SKU).");
+    // Required fields
+    if (
+      !formData.productName ||
+      !formData.productSKU
+    ) {
+      setPublishError(
+        "Please fill in the required fields (Name & SKU)."
+      );
       return;
     }
-    if (!formData.price) {
-      setPublishError("Price is required.");
+
+    if (
+      formData.price === "" ||
+      formData.price === null ||
+      formData.price === undefined
+    ) {
+      setPublishError(
+        "Price is required."
+      );
+      return;
+    }
+
+    // ==========================================
+    // Validate Image
+    // ==========================================
+    if (
+      formData.productPicture &&
+      !formData.productPicture.type?.startsWith(
+        "image/"
+      )
+    ) {
+      setPublishError(
+        "Please select a valid image file."
+      );
+      return;
+    }
+
+    // Optional file size validation
+    if (
+      formData.productPicture &&
+      formData.productPicture.size >
+        10 * 1024 * 1024
+    ) {
+      setPublishError(
+        "Image size cannot exceed 10MB."
+      );
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // productPicture একটা File object, এখনো কোনো স্টোরেজে আপলোড হওয়ার
-      // ব্যবস্থা নেই — তাই আপাতত বাদ দিয়ে বাকি ডাটা পাঠানো হচ্ছে
-      const { productPicture, ...payload } = formData;
+      // ==========================================
+      // Create FormData
+      // ==========================================
+      const data = new FormData();
 
-      const res = await fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      data.append(
+        "productName",
+        formData.productName
+      );
 
-      const data = await res.json();
+      data.append(
+        "productSKU",
+        formData.productSKU
+      );
 
+      data.append(
+        "price",
+        formData.price
+      );
+
+      data.append(
+        "brandName",
+        formData.brandName || ""
+      );
+
+      data.append(
+        "unit",
+        formData.unit || ""
+      );
+
+      data.append(
+        "quantity",
+        formData.quantity || "0"
+      );
+
+      data.append(
+        "description",
+        formData.description || ""
+      );
+
+      data.append(
+        "wholesalePrice",
+        formData.wholesalePrice || ""
+      );
+
+      data.append(
+        "discount",
+        formData.discount || "0"
+      );
+
+      data.append(
+        "initialStock",
+        formData.initialStock || "0"
+      );
+
+      data.append(
+        "lowStockAlert",
+        formData.lowStockAlert || "0"
+      );
+
+      // ==========================================
+      // Product Image
+      // ==========================================
+      if (formData.productPicture) {
+        data.append(
+          "image",
+          formData.productPicture
+        );
+      }
+
+      // ==========================================
+      // Send Request
+      // ==========================================
+      const res = await fetch(
+        "/api/product",
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+
+      const responseData =
+        await res.json();
+
+      // ==========================================
+      // Handle Error
+      // ==========================================
       if (!res.ok) {
-        setPublishError(data.message || "কিছু একটা সমস্যা হয়েছে");
+        setPublishError(
+          responseData.message ||
+            "Something went wrong while publishing the product."
+        );
+
         return;
       }
 
-      alert("Product published successfully!");
+      // ==========================================
+      // Success
+      // ==========================================
+      alert(
+        "Product published successfully!"
+      );
 
-      // ফর্ম রিসেট
-      setFormData(defaultFormState);
+      // Reset form
+      setFormData({
+        ...defaultFormState,
+      });
 
-      // লিস্ট রিফ্রেশ করা হচ্ছে যাতে নতুন প্রোডাক্ট সাথে সাথে দেখা যায়
-      fetchProducts();
+      // Refresh product list
+      await fetchProducts();
+
     } catch (err) {
-      console.error("Publish Product Error:", err);
-      setPublishError("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+      console.error(
+        "Publish Product Error:",
+        err
+      );
+
+      setPublishError(
+        "Server error. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
+  // ==========================================
+  // Render
+  // ==========================================
   return (
-    <main className="p-5" id="main-content">
+    <main
+      className="p-5"
+      id="main-content"
+    >
+      {/* ====================================== */}
+      {/* Scanner Modal */}
+      {/* ====================================== */}
+
       <CameraScannerModal
         isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onScanSuccess={handleScanSuccess}
+        onClose={() =>
+          setIsScannerOpen(false)
+        }
+        onScanSuccess={
+          handleScanSuccess
+        }
       />
 
       <div>
+        {/* ====================================== */}
+        {/* Back Link */}
+        {/* ====================================== */}
+
         <Link
           href="/products"
           className="inline-flex gap-2 items-center text-gray-700 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
           aria-label="Go back to products page"
         >
-          <span className="text-2xl text-[#611F69]" aria-hidden="true">
-            {IconProvider?.leftIcon || "←"}
+          <span
+            className="text-2xl text-[#611F69]"
+            aria-hidden="true"
+          >
+            {IconProvider?.leftIcon ||
+              "←"}
           </span>
-          <span className="text-[16px] font-medium">Back To Products</span>
+
+          <span className="text-[16px] font-medium">
+            Back To Products
+          </span>
         </Link>
+
+        {/* ====================================== */}
+        {/* Page Header */}
+        {/* ====================================== */}
 
         <header className="mt-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-[24px] font-semibold text-gray-900 m-0">
               Add New Product
             </h1>
+
             <p className="text-gray-600 m-0 text-sm">
-              Fill in the details to add a new product to your inventory
+              Fill in the details to add a
+              new product to your inventory
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3" aria-label="Product actions">
+          <div
+            className="flex flex-wrap gap-3"
+            aria-label="Product actions"
+          >
             <TransparentButton value="Cancel" />
+
             <TransparentButton value="Save As Draft" />
           </div>
         </header>
       </div>
+
+      {/* ====================================== */}
+      {/* Product Information */}
+      {/* ====================================== */}
 
       <section
         className="flex flex-col border border-gray-200 rounded-md p-5 mt-6 bg-white shadow-sm"
@@ -327,6 +673,7 @@ const Page = () => {
           Product Information
         </h2>
 
+        {/* Error */}
         {publishError && (
           <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {publishError}
@@ -334,85 +681,166 @@ const Page = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {input_fields.map((item, index) => {
-            if (item.name === "productSKU") {
+          {input_fields.map(
+            (item, index) => {
+
+              // ==================================
+              // SKU Field
+              // ==================================
+
+              if (
+                item.name ===
+                "productSKU"
+              ) {
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col gap-1 md:col-span-2 lg:col-span-1"
+                  >
+                    <label
+                      htmlFor={item.name}
+                      className="text-gray-700 font-medium text-sm"
+                    >
+                      {item.label}{" "}
+                      (Scan or Generate)
+                    </label>
+
+                    <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                      <div className="relative flex-1 w-full">
+                        <MdQrCodeScanner
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]"
+                          aria-hidden="true"
+                        />
+
+                        <input
+                          id={item.name}
+                          name={item.name}
+                          type="text"
+                          value={
+                            formData[
+                              item.name
+                            ]
+                          }
+                          onChange={
+                            handleChange
+                          }
+                          className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all bg-gray-50"
+                          placeholder="Type, scan or generate..."
+                        />
+                      </div>
+
+                      {/* Camera */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsScannerOpen(
+                            true
+                          )
+                        }
+                        className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                        aria-label="Open camera to scan barcode"
+                        title="Use Camera to Scan"
+                      >
+                        <MdCameraAlt
+                          className="text-[18px]"
+                          aria-hidden="true"
+                        />
+
+                        <span className="hidden sm:inline">
+                          Camera
+                        </span>
+                      </button>
+
+                      {/* Generate */}
+                      <button
+                        type="button"
+                        onClick={
+                          handleGenerateSKU
+                        }
+                        className="flex items-center justify-center gap-1 px-3 py-2 bg-[#611F69]/10 text-[#611F69] border border-[#611F69]/20 rounded-md hover:bg-[#611F69]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                        aria-label="Auto Generate SKU"
+                        title="Auto Generate SKU"
+                      >
+                        <MdAutoFixHigh
+                          className="text-[18px]"
+                          aria-hidden="true"
+                        />
+
+                        <span className="hidden sm:inline">
+                          Generate
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              // ==================================
+              // Normal Fields
+              // ==================================
+
               return (
                 <div
                   key={index}
-                  className="flex flex-col gap-1 md:col-span-2 lg:col-span-1"
+                  className="flex flex-col gap-1"
                 >
                   <label
                     htmlFor={item.name}
                     className="text-gray-700 font-medium text-sm"
                   >
-                    {item.label} (Scan or Generate)
+                    {item.label}
                   </label>
-                  <div className="flex flex-wrap sm:flex-nowrap gap-2">
-                    <div className="relative flex-1 w-full">
-                      <MdQrCodeScanner
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]"
-                        aria-hidden="true"
-                      />
-                      <input
-                        id={item.name}
-                        name={item.name}
-                        type="text"
-                        value={formData[item.name]}
-                        onChange={handleChange}
-                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all bg-gray-50"
-                        placeholder="Type, scan or generate..."
-                      />
-                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setIsScannerOpen(true)}
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
-                      aria-label="Open camera to scan barcode"
-                      title="Use Camera to Scan"
-                    >
-                      <MdCameraAlt className="text-[18px]" aria-hidden="true" />
-                      <span className="hidden sm:inline">Camera</span>
-                    </button>
+                  <input
+                    id={item.name}
+                    name={item.name}
+                    type={item.type}
+                    value={
+                      item.type ===
+                      "file"
+                        ? undefined
+                        : formData[
+                            item.name
+                          ]
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    accept={
+                      item.type === "file"
+                        ? "image/*"
+                        : undefined
+                    }
+                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all"
+                    placeholder={
+                      item.type ===
+                      "file"
+                        ? undefined
+                        : `Enter ${item.label.toLowerCase()}`
+                    }
+                  />
 
-                    <button
-                      type="button"
-                      onClick={handleGenerateSKU}
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-[#611F69]/10 text-[#611F69] border border-[#611F69]/20 rounded-md hover:bg-[#611F69]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
-                      aria-label="Auto Generate SKU"
-                      title="Auto Generate SKU"
-                    >
-                      <MdAutoFixHigh
-                        className="text-[18px]"
-                        aria-hidden="true"
-                      />
-                      <span className="hidden sm:inline">Generate</span>
-                    </button>
-                  </div>
+                  {/* Show selected file name */}
+                  {item.type ===
+                    "file" &&
+                    formData.productPicture && (
+                      <p className="text-xs text-gray-500 mt-1 truncate">
+                        Selected:{" "}
+                        {
+                          formData
+                            .productPicture
+                            .name
+                        }
+                      </p>
+                    )}
                 </div>
               );
             }
+          )}
 
-            return (
-              <div key={index} className="flex flex-col gap-1">
-                <label
-                  htmlFor={item.name}
-                  className="text-gray-700 font-medium text-sm"
-                >
-                  {item.label}
-                </label>
-                <input
-                  id={item.name}
-                  name={item.name}
-                  type={item.type}
-                  value={item.type === "file" ? undefined : formData[item.name]}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all"
-                  placeholder={`Enter ${item.label.toLowerCase()}`}
-                />
-              </div>
-            );
-          })}
+          {/* ==================================== */}
+          {/* Description */}
+          {/* ==================================== */}
 
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
             <label
@@ -421,11 +849,16 @@ const Page = () => {
             >
               Description
             </label>
+
             <textarea
               id="description"
               name="description"
-              value={formData.description}
-              onChange={handleChange}
+              value={
+                formData.description
+              }
+              onChange={
+                handleChange
+              }
               rows="4"
               className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all resize-y"
               placeholder="Enter comprehensive product description..."
@@ -433,19 +866,30 @@ const Page = () => {
           </div>
         </div>
 
+        {/* ====================================== */}
+        {/* Publish Button */}
+        {/* ====================================== */}
+
         <div className="mt-6 flex justify-end">
           <ColorButton
-            value={submitting ? "Publishing..." : "Publish Product"}
-            onClick={handlePublish}
+            value={
+              submitting
+                ? "Publishing..."
+                : "Publish Product"
+            }
+            onClick={
+              handlePublish
+            }
             disabled={submitting}
             aria-label="Publish the new product to inventory"
           />
         </div>
       </section>
 
-      {/* ========================================== */}
-      {/* Product List Section (GET) */}
-      {/* ========================================== */}
+      {/* ====================================== */}
+      {/* Product List */}
+      {/* ====================================== */}
+
       <section
         className="flex flex-col border border-gray-200 rounded-md p-5 mt-6 bg-white shadow-sm"
         aria-labelledby="product-list-heading"
@@ -457,8 +901,11 @@ const Page = () => {
           >
             All Products
           </h2>
+
           <span className="text-sm text-gray-500">
-            {loadingProducts ? "" : `${products.length} item(s)`}
+            {loadingProducts
+              ? ""
+              : `${products.length} item(s)`}
           </span>
         </div>
 
@@ -466,56 +913,93 @@ const Page = () => {
           <p className="text-gray-500 text-sm text-center py-8">
             Loading products...
           </p>
-        ) : products.length === 0 ? (
+        ) : products.length ===
+          0 ? (
           <p className="text-gray-500 text-sm text-center py-8">
-            No products found. Add your first product above.
+            No products found. Add your
+            first product above.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-              >
-                {/* Placeholder image, image upload not connected yet */}
-                <div className="w-full h-36 bg-gray-100 flex items-center justify-center">
-                  <MdImage
-                    className="text-gray-300 text-5xl"
-                    aria-hidden="true"
-                  />
-                </div>
+            {products.map(
+              (product) => (
+                <div
+                  key={product.id}
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  {/* ================================= */}
+                  {/* Product Image */}
+                  {/* ================================= */}
 
-                <div className="p-3">
-                  <h3 className="font-semibold text-gray-900 text-sm truncate">
-                    {product.productName}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    SKU: {product.productSKU}
-                  </p>
-
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-[#611F69] font-bold text-sm">
-                      ৳{product.price}
-                    </span>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        product.currentStock > product.lowStockAlert
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      Stock: {product.currentStock}
-                    </span>
+                  <div className="w-full h-36 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {product.image ? (
+                      <img
+                        src={
+                          product.image
+                        }
+                        alt={
+                          product.productName
+                        }
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <MdImage
+                        className="text-gray-300 text-5xl"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
 
-                  {product.brandName && (
-                    <p className="text-xs text-gray-500 mt-1.5">
-                      Brand: {product.brandName}
+                  {/* Product Info */}
+                  <div className="p-3">
+                    <h3 className="font-semibold text-gray-900 text-sm truncate">
+                      {
+                        product.productName
+                      }
+                    </h3>
+
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      SKU:{" "}
+                      {
+                        product.productSKU
+                      }
                     </p>
-                  )}
+
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-[#611F69] font-bold text-sm">
+                        ৳
+                        {
+                          product.price
+                        }
+                      </span>
+
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          product.currentStock >
+                          product.lowStockAlert
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        Stock:{" "}
+                        {
+                          product.currentStock
+                        }
+                      </span>
+                    </div>
+
+                    {product.brandName && (
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        Brand:{" "}
+                        {
+                          product.brandName
+                        }
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         )}
       </section>
@@ -524,3 +1008,4 @@ const Page = () => {
 };
 
 export default Page;
+
