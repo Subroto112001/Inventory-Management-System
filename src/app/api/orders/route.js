@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// GET: সব অর্ডার ফেচ করার জন্য
+
 export async function GET(request) {
   try {
     if (!(await requireAuth(request))) {

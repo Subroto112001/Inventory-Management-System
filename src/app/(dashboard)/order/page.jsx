@@ -1,5 +1,6 @@
 "use client";
 
+import useOrders from "@/dataProvider/useOrders";
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   MdReceiptLong,
@@ -534,31 +535,10 @@ export default function OrdersDashboard() {
   const filterRef = useRef(null);
   const sortRef = useRef(null);
 
-  const [orders, setOrders] = useState([]);
-  const [loadingOrders, setLoadingOrders] = useState(true);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchOrders = async () => {
-    setLoadingOrders(true);
-    try {
-      const res = await fetch("/api/orders", { cache: "no-store" });
-      const data = await res?.json();
-
-      if (res.ok) {
-        setOrders(data?.orders || []);
-      } else {
-        console.error("Failed to load orders:", data.message);
-      }
-    } catch (err) {
-      console.error("Failed to load orders:", err);
-    } finally {
-      setLoadingOrders(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+ const { orders, loadingOrders, error: ordersError, fetchOrders } = useOrders();
 
   console.log(orders);
 
