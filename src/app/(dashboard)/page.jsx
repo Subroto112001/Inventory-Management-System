@@ -32,6 +32,7 @@ import {
 } from "react-icons/md";
 import CustomerdataProvider from "@/dataProvider/CustomerdataProvider";
 import Link from "next/link";
+import OfferdataProvider from "@/dataProvider/OfferdataProvider";
 
 const formatCurrency = (value) =>
   `$${(Number(value) || 0).toLocaleString("en-US", {
@@ -98,7 +99,9 @@ const Page = () => {
 
   const { customers, loadingCustomers, fetchCustomers } =
     CustomerdataProvider();
-
+  
+  const { offers, loadingOffers, fetchOffers } = OfferdataProvider();
+  console.log("offer",offers);
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setLoadError("");
@@ -311,29 +314,8 @@ const Page = () => {
   // ------------------------------------------------------------
   // Offers
   // ------------------------------------------------------------
+const offerList = offers
 
-  const offerList = useMemo(() => {
-    const allOffers = [];
-
-    products.forEach((product) => {
-      const productOffers = Array.isArray(product.offers) ? product.offers : [];
-
-      productOffers.forEach((offer, index) => {
-        allOffers.push({
-          ...offer,
-
-          productName: product.productName || product.name || "Unknown Product",
-
-          productSKU: product.productSKU || product.SKU || "—",
-
-          offerKey:
-            offer?._id || offer?.id || `${product.id || product._id}-${index}`,
-        });
-      });
-    });
-
-    return allOffers;
-  }, [products]);
 
   // ------------------------------------------------------------
   // Customers
