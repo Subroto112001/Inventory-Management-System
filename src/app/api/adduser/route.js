@@ -20,7 +20,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    
+
     const {
       name,
       email,
@@ -164,17 +164,19 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
- 
   try {
     const authenticatedUser = await requireAuth(request);
 
     if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "You are unauthorized to access this resource" }, { status: 403 });
+      return NextResponse.json(
+        { message: "You are unauthorized to access this resource" },
+        { status: 403 },
+      );
     }
-    await connectMongoDB();
-    const users = await User.find().sort({ createdAt: -1 }).lean();
 
-    console.log("Fetched users:", users);
+    await connectMongoDB();
+
+    const users = await User.find().sort({ createdAt: -1 }).lean();
 
     const result = users.map((user) => ({
       id: user._id.toString(),
@@ -190,7 +192,6 @@ export async function GET(request) {
         : "",
       assignedWarehouseName: "",
     }));
-    console.log("Fetched users:", result);
 
     return NextResponse.json({ success: true, users: result }, { status: 200 });
   } catch (error) {

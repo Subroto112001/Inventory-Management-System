@@ -6,7 +6,12 @@ const { Schema, Types } = mongoose;
 
 const SYSTEM_ROLES = [
   "System Admin",
+  "Admin",
   "Warehouse Manager",
+  "Junior HR",
+  "Assistant HR",
+  "Senior HR",
+  "Manager",
   "Inventory Clerk",
   "Auditor",
   "Forklift Operator",
@@ -50,7 +55,10 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Password is required"],
       select: false,
-      // পাসওয়ার্ড কমপক্ষে ৮ ক্যারেক্টার, ১টি বড় হাতের অক্ষর, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা হতে হবে
+      /**
+       * Password validation: at least 8 characters, one uppercase, one lowercase, one number
+       * */
+
       match: [
         /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
         "Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, and one number",
@@ -64,8 +72,10 @@ const userSchema = new Schema(
       },
     },
 
-    // --- Inventory Management Specific Fields ---
-    // UI-এর "System Role" dropdown এর সাথে মিল রেখে single enum করা হলো
+    /**
+     * Inventory Management Specific Fields
+     * */
+
     role: {
       type: String,
       enum: {
@@ -76,7 +86,10 @@ const userSchema = new Schema(
       default: "Inventory Clerk",
     },
 
-    // নতুন ফিল্ড — UI-এর "Department" dropdown
+    /**
+     * The department to which the user belongs.
+     */
+
     department: {
       type: String,
       enum: {

@@ -536,8 +536,6 @@ export default function OrdersDashboard() {
   const sortRef = useRef(null);
 
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
  const { orders, loadingOrders, error: ordersError, fetchOrders } = useOrders();
 
   console.log(orders);
