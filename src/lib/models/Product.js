@@ -49,6 +49,8 @@ const productSchema = new Schema(
       default: 0,
     },
 
+    discountOffer: { type: Types.ObjectId, ref: "Offer", default: null },
+
     // --- Stock / Inventory ---
     quantity: {
       type: Number,
