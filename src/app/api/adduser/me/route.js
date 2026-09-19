@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 
 export async function GET(request) {
   try {
-      const user = await getAuthenticatedUser(request);
-      
+    const user = await getAuthenticatedUser(request);
+
     if (!user) {
       return NextResponse.json(
         {
@@ -13,9 +13,7 @@ export async function GET(request) {
         },
         { status: 401 },
       );
-      }
-      
-      console.log(user);
+    }
 
     return NextResponse.json(
       {

@@ -16,6 +16,7 @@ import {
 import { PiWarehouse } from "react-icons/pi";
 import { VscGraph } from "react-icons/vsc";
 import useCurrentUser from "@/dataProvider/getMe";
+import { TbBrandBumble } from "react-icons/tb";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -55,6 +56,11 @@ const Sidebar = () => {
       name: "Offers",
       icon: <MdLocalOffer />,
       link: "/offers",
+    },
+    {
+      name: "Brands",
+      icon: <TbBrandBumble />,
+      link: "/brands",
     },
     {
       name: "Warehouse",
