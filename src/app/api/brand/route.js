@@ -1,314 +1,327 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
-import Product from "@/lib/models/Product";
-import Offer from "@/lib/models/Offer";
+import Brand from "@/lib/models/Brand";
 import { requireAuth } from "@/lib/auth";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
-// =========================
-// GET PRODUCTS
-// =========================
+/**
+ * GET /api/brand
+ * Fetch all brands
+ */
 export async function GET(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
     await connectMongoDB();
 
-    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    const user = await requireAuth(request);
 
-    const productIds = products.map((product) => product._id);
-
-    const now = new Date();
-
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
-
-    const todayEnd = new Date(now);
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const offers = await Offer.find({
-      isActive: true,
-      startDate: { $lte: todayEnd },
-      endDate: { $gte: todayStart },
-      $or: [
-        { applyTo: "All Products" },
+    if (!user) {
+      return NextResponse.json(
         {
-          applyTo: "Specific Products",
-          products: { $in: productIds },
+          success: false,
+          message: "Unauthorized",
         },
-      ],
-    })
-      .select(
-        "offerName offerCode discountType discountValue maxDiscountAmount applyTo products startDate endDate usageLimit usageCount",
-      )
-      .lean();
+        { status: 401 },
+      );
+    }
 
-    const usableOffers = offers.filter(
-      (offer) =>
-        offer.startDate <= todayEnd &&
-        offer.endDate >= todayStart &&
-        (offer.usageLimit === undefined ||
-          offer.usageLimit === null ||
-          offer.usageCount < offer.usageLimit),
+    const { searchParams } = new URL(request.url);
+
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status")?.trim() || "";
+    const page = Math.max(Number(searchParams.get("page")) || 1, 1);
+    const limit = Math.min(
+      Math.max(Number(searchParams.get("limit")) || 20, 1),
+      100,
     );
 
-    const result = products.map((p) => ({
-      id: p._id.toString(),
-      productName: p.productName,
-      productSKU: p.productSKU,
-      brandName: p.brandName || "",
-      description: p.description || "",
-      unit: p.unit || "",
-      price: p.price,
-      wholesalePrice: p.wholesalePrice ?? "",
-      discount: p.discount ?? 0,
-      quantity: p.quantity ?? 0,
-      initialStock: p.initialStock ?? 0,
-      currentStock: p.currentStock ?? 0,
-      lowStockAlert: p.lowStockAlert ?? 0,
+    const skip = (page - 1) * limit;
 
-      // Cloudinary image
-      image: p.image?.url || "",
+    const filter = {};
 
-      isActive: p.isActive,
+    if (search) {
+      filter.$or = [
+        { brandName: { $regex: search, $options: "i" } },
+        { brandCode: { $regex: search, $options: "i" } },
+        { contactPerson: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
 
-      offers: usableOffers
-        .filter(
-          (offer) =>
-            offer.applyTo === "All Products" ||
-            offer.products.some((productId) => productId.equals(p._id)),
-        )
-        .map((offer) => ({
-          id: offer._id.toString(),
-          offerName: offer.offerName,
-          offerCode: offer.offerCode || "",
-          discountType: offer.discountType,
-          discountValue: offer.discountValue,
-          maxDiscountAmount: offer.maxDiscountAmount ?? null,
-          applyTo: offer.applyTo,
-          startDate: offer.startDate,
-          endDate: offer.endDate,
-        })),
-    }));
+    if (status) {
+      filter.status = status;
+    }
+
+    const [brands, total] = await Promise.all([
+      Brand.find(filter)
+        .populate("createdBy", "firstName lastName email")
+        .populate("updatedBy", "firstName lastName email")
+        .populate("productCount")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      Brand.countDocuments(filter),
+    ]);
 
     return NextResponse.json(
       {
         success: true,
-        products: result,
+        message: "Brands fetched successfully",
+        brands,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          hasNextPage: page < Math.ceil(total / limit),
+          hasPreviousPage: page > 1,
+        },
       },
       { status: 200 },
     );
   } catch (error) {
-    console.error("Fetch Products API Error:", error);
+    console.error("GET /api/brand error:", error);
 
     return NextResponse.json(
       {
-        message: "Internal server error",
+        success: false,
+        message: error?.message || "Failed to fetch brands",
       },
       { status: 500 },
     );
   }
 }
 
-// =========================
-// POST PRODUCT
-// =========================
+/**
+ * POST /api/brand
+ * Create a new brand
+ */
 export async function POST(request) {
   try {
-    // -------------------------
-    // Authentication
-    // -------------------------
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    await connectMongoDB();
 
-    // -------------------------
-    // Read FormData
-    // -------------------------
-    const formData = await request.formData();
+    const user = await requireAuth(request);
 
-    const productName = formData.get("productName");
-    const productSKU = formData.get("productSKU");
-    const price = formData.get("price");
-    const brandName = formData.get("brandName");
-    const unit = formData.get("unit");
-    const quantity = formData.get("quantity");
-    const description = formData.get("description");
-    const wholesalePrice = formData.get("wholesalePrice");
-    const discount = formData.get("discount");
-    const initialStock = formData.get("initialStock");
-    const lowStockAlert = formData.get("lowStockAlert");
-
-    // Image from FormData
-    const image = formData.get("image");
-
-    // -------------------------
-    // Required fields
-    // -------------------------
-    if (!productName || !productSKU || price === null || price === "") {
+    if (!user) {
       return NextResponse.json(
         {
-          message: "Product name, SKU, and price are required!",
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 },
+      );
+    }
+
+    // ---------------------------------------------------------
+    // Frontend is sending multipart/form-data
+    // ---------------------------------------------------------
+
+    const formData = await request.formData();
+
+    const brandName = formData.get("brandName");
+    const brandCode = formData.get("brandCode");
+    const description = formData.get("description");
+    const contactPerson = formData.get("contactPerson");
+    const email = formData.get("email");
+    const phoneNumber = formData.get("phoneNumber");
+    const website = formData.get("website");
+    const address = formData.get("address");
+    const district = formData.get("district");
+    const country = formData.get("country");
+    const status = formData.get("status");
+
+    const logoFile = formData.get("logo");
+
+    // ---------------------------------------------------------
+    // Required validation
+    // ---------------------------------------------------------
+
+    if (!brandName?.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Brand name is required",
         },
         { status: 400 },
       );
     }
 
-    // -------------------------
-    // Validate image
-    // -------------------------
-    if (image && typeof image !== "string") {
-      if (!image.type?.startsWith("image/")) {
+    // ---------------------------------------------------------
+    // Duplicate brand name
+    // ---------------------------------------------------------
+
+    const escapedBrandName = brandName
+      .trim()
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const existingBrandName = await Brand.findOne({
+      brandName: {
+        $regex: `^${escapedBrandName}$`,
+        $options: "i",
+      },
+    });
+
+    if (existingBrandName) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "A brand with this name already exists",
+        },
+        { status: 409 },
+      );
+    }
+
+    // ---------------------------------------------------------
+    // Duplicate brand code
+    // ---------------------------------------------------------
+
+    const normalizedBrandCode = brandCode?.trim()
+      ? brandCode.trim().toUpperCase()
+      : undefined;
+
+    if (normalizedBrandCode) {
+      const existingBrandCode = await Brand.findOne({
+        brandCode: normalizedBrandCode,
+      });
+
+      if (existingBrandCode) {
         return NextResponse.json(
           {
-            message: "Only image files are allowed!",
+            success: false,
+            message: "A brand with this code already exists",
           },
-          { status: 400 },
+          { status: 409 },
         );
       }
     }
 
-    await connectMongoDB();
+    // ---------------------------------------------------------
+    // Logo upload
+    // ---------------------------------------------------------
 
-    // -------------------------
-    // Check duplicate SKU
-    // -------------------------
-    const normalizedSKU = productSKU.toUpperCase();
+    let logo;
 
-    const existingProduct = await Product.findOne({
-      productSKU: normalizedSKU,
-    });
+    if (
+      logoFile &&
+      typeof logoFile === "object" &&
+      typeof logoFile.arrayBuffer === "function" &&
+      logoFile.size > 0
+    ) {
+      const uploadedLogo = await uploadImageToCloudinary(logoFile, "brands");
 
-    if (existingProduct) {
-      return NextResponse.json(
-        {
-          message: "A product with this SKU already exists!",
-        },
-        { status: 409 },
-      );
+      if (uploadedLogo) {
+        logo = {
+          public_id: uploadedLogo.publicId,
+          url: uploadedLogo.url,
+        };
+      }
     }
 
-    // -------------------------
-    // Upload image
-    // -------------------------
-    let uploadedImage = null;
+    // ---------------------------------------------------------
+    // Create Brand
+    // ---------------------------------------------------------
 
-    if (image && typeof image !== "string" && image.size > 0) {
-      uploadedImage = await uploadImageToCloudinary(image, "products");
-    }
+    const brand = await Brand.create({
+      brandName: brandName.trim(),
 
-    // -------------------------
-    // Stock
-    // -------------------------
-    const parsedInitialStock = Number(initialStock) || 0;
+      brandCode: normalizedBrandCode,
 
-    // -------------------------
-    // Create Product
-    // -------------------------
-    const newProduct = await Product.create({
-      productName: productName.trim(),
+      description: description?.trim() || undefined,
 
-      productSKU: normalizedSKU,
+      logo,
 
-      price: Number(price),
+      contactPerson: contactPerson?.trim() || undefined,
 
-      brandName: brandName || "",
+      email: email?.trim()?.toLowerCase() || undefined,
 
-      unit: unit || "",
+      phoneNumber: phoneNumber?.trim() || undefined,
 
-      quantity: Number(quantity) || 0,
+      website: website?.trim() || undefined,
 
-      description: description || "",
+      address: address?.trim() || undefined,
 
-      wholesalePrice:
-        wholesalePrice === "" || wholesalePrice === null
-          ? undefined
-          : Number(wholesalePrice),
+      district: district?.trim() || undefined,
 
-      discount: Number(discount) || 0,
+      country: country?.trim() || "Bangladesh",
 
-      initialStock: parsedInitialStock,
+      status: status === "Inactive" ? "Inactive" : "Active",
 
-      currentStock: parsedInitialStock,
-
-      lowStockAlert: Number(lowStockAlert) || 0,
-
-      // Cloudinary
-      image: uploadedImage
-        ? {
-            public_id: uploadedImage.publicId,
-            url: uploadedImage.url,
-          }
-        : undefined,
+      createdBy: user._id || user.id,
     });
 
-    // -------------------------
-    // Response
-    // -------------------------
+    // ---------------------------------------------------------
+    // Populate created brand
+    // ---------------------------------------------------------
+
+    const populatedBrand = await Brand.findById(brand._id)
+      .populate("createdBy", "firstName lastName email")
+      .populate("updatedBy", "firstName lastName email")
+      .lean();
+
+    // ---------------------------------------------------------
+    // Success response
+    // ---------------------------------------------------------
+
     return NextResponse.json(
       {
-        message: "Product published successfully!",
         success: true,
-
-        product: {
-          id: newProduct._id.toString(),
-          productName: newProduct.productName,
-          productSKU: newProduct.productSKU,
-          price: newProduct.price,
-
-          image: newProduct.image
-            ? {
-                public_id: newProduct.image.public_id,
-                url: newProduct.image.url,
-              }
-            : null,
-        },
+        message: "Brand created successfully",
+        brand: populatedBrand,
       },
       { status: 201 },
     );
   } catch (error) {
-    console.error("Add Product API Error:", error);
+    console.error("POST /api/brand error:", error);
 
+    // ---------------------------------------------------------
     // Mongoose validation error
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((val) => val.message);
+    // ---------------------------------------------------------
+
+    if (error?.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => ({
+        field: err.path,
+        message: err.message,
+      }));
 
       return NextResponse.json(
         {
-          message: messages.join(", "),
+          success: false,
+          message: "Brand validation failed",
+          errors,
         },
         { status: 400 },
       );
     }
 
-    // Duplicate SKU
-    if (error.code === 11000) {
+    // ---------------------------------------------------------
+    // Duplicate key error
+    // ---------------------------------------------------------
+
+    if (error?.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern || {})[0];
+
       return NextResponse.json(
         {
-          message: "A product with this SKU already exists!",
+          success: false,
+          message: duplicateField
+            ? `${duplicateField} already exists`
+            : "A brand with this information already exists",
         },
         { status: 409 },
       );
     }
 
-    if (error.statusCode === 403) {
-      return NextResponse.json(
-        {
-          message:
-            "Cloudinary rejected the upload because this API key lacks upload permission. Update the key permissions or use an upload-enabled key.",
-        },
-        { status: 502 },
-      );
-    }
+    // ---------------------------------------------------------
+    // General error
+    // ---------------------------------------------------------
 
     return NextResponse.json(
       {
-        message: "Internal server error",
+        success: false,
+        message: error?.message || "Failed to create brand",
       },
       { status: 500 },
     );

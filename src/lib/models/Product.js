@@ -17,10 +17,10 @@ const productSchema = new Schema(
       required: [true, "Product SKU is required"],
       uppercase: true,
     },
-    brandName: {
-      type: String,
-      trim: true,
-      maxlength: [100, "Brand name cannot exceed 100 characters"],
+    brand: {
+      type: Types.ObjectId,
+      ref: "Brand",
+      default: null,
     },
     description: {
       type: String,

@@ -808,7 +808,7 @@ const Page = () => {
               </p>
 
               <Link
-                href="/brand"
+                href="/brands"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 transition hover:text-blue-700"
               >
                 Manage Brands
