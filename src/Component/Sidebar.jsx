@@ -1,177 +1,386 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BiPurchaseTagAlt, BiSolidOffer } from "react-icons/bi";
 import { CgShutterstock } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
 import { HiOutlineDocumentReport } from "react-icons/hi";
-import { LuBuilding2, LuCar, LuLayoutDashboard } from "react-icons/lu";
+import {
+  LuBuilding2,
+  LuCar,
+  LuChevronLeft,
+  LuLayoutDashboard,
+  LuSearch,
+} from "react-icons/lu";
 import {
   MdLocalOffer,
   MdOutlineProductionQuantityLimits,
 } from "react-icons/md";
 import { PiWarehouse } from "react-icons/pi";
+import { TbBrandBumble } from "react-icons/tb";
 import { VscGraph } from "react-icons/vsc";
 import useCurrentUser from "@/dataProvider/getMe";
-import { TbBrandBumble } from "react-icons/tb";
+
+const STORAGE_KEY = "sidebar-collapsed";
+
+/**
+ * Menu is grouped so the list is easier to scan.
+ * Routes and role rules are unchanged from the original sidebar.
+ */
+const MENU_GROUPS = [
+  {
+    title: "Overview",
+    items: [
+      { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
+      { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
+    ],
+  },
+  {
+    title: "Inventory",
+    items: [
+      {
+        name: "Products",
+        icon: <MdOutlineProductionQuantityLimits />,
+        link: "/products",
+      },
+      { name: "Stock", icon: <CgShutterstock />, link: "/stock" },
+      { name: "Warehouse", icon: <PiWarehouse />, link: "/warehouse" },
+      { name: "Brands", icon: <TbBrandBumble />, link: "/brands" },
+    ],
+  },
+  {
+    title: "Sales and purchasing",
+    items: [
+      { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/order" },
+      { name: "Sales", icon: <VscGraph />, link: "/create_neworder" },
+      { name: "Procurement (PO)", icon: <LuCar />, link: "/procurement" },
+      { name: "Promotions", icon: <BiSolidOffer />, link: "/promotions" },
+      { name: "Offers", icon: <MdLocalOffer />, link: "/offers" },
+    ],
+  },
+  {
+    title: "People",
+    items: [
+      { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
+      {
+        name: "Users",
+        icon: <FaRegUser />,
+        link: "/user",
+        allowedRoles: ["Admin", "System Admin"],
+      },
+    ],
+  },
+];
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { mydata, loading } = useCurrentUser();
 
-  const menuItems = [
-    { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
-    {
-      name: "Users",
-      icon: <FaRegUser />,
-      link: "/user",
-      allowedRoles: ["Admin", "System Admin"],
-    },
-    {
-      name: "Products",
-      icon: <MdOutlineProductionQuantityLimits />,
-      link: "/products",
-    },
-    { name: "Stock", icon: <CgShutterstock />, link: "/stock" },
-    { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/order" },
-    {
-      name: "Sales",
-      icon: <VscGraph />,
-      link: "/create_neworder",
-    },
-    {
-      name: "Procurement (PO)",
-      icon: <LuCar />,
-      link: "/procurement",
-    },
-    {
-      name: "Promotions",
-      icon: <BiSolidOffer />,
-      link: "/promotions",
-    },
-    {
-      name: "Offers",
-      icon: <MdLocalOffer />,
-      link: "/offers",
-    },
-    {
-      name: "Brands",
-      icon: <TbBrandBumble />,
-      link: "/brands",
-    },
-    {
-      name: "Warehouse",
-      icon: <PiWarehouse />,
-      link: "/warehouse",
-    },
-    { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
-    { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
-  ];
+  const [collapsed, setCollapsed] = useState(false);
+  const [query, setQuery] = useState("");
+  const [tip, setTip] = useState(null); // { label, top }
+  const searchRef = useRef(null);
+
+  // Restore the saved collapsed state after mount (avoids hydration mismatch)
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
+    } catch {
+      /* storage unavailable, keep default */
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    setTip(null);
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
+
+  // Ctrl/Cmd + K focuses the search box (expands the sidebar first)
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCollapsed(false);
+        setTimeout(() => searchRef.current?.focus(), 200);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const role = mydata?.role;
+  const displayName = mydata?.name || role || "Account";
 
   /**
-   * Filter menu items based on user role
+   * Filter by role first, then by the search text.
+   * Groups with no visible items are dropped.
    */
-  const filteredMenuItems = menuItems.filter((item) => {
-    // If item has no role restrictions
-    if (!item.allowedRoles) return true;
+  
+  const visibleGroups = useMemo(() => {
+    const q = query.trim().toLowerCase();
 
-    // If user data or role is missing
-    if (!mydata || !mydata.role) return false;
+    return MENU_GROUPS.map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (item.allowedRoles && (!role || !item.allowedRoles.includes(role))) {
+          return false;
+        }
+        return q ? item.name.toLowerCase().includes(q) : true;
+      }),
+    })).filter((group) => group.items.length > 0);
+  }, [role, query]);
 
-    // Check if user's role matches allowed roles
-    return item.allowedRoles.includes(mydata.role);
-  });
+  const isActive = (link) =>
+    link === "/"
+      ? pathname === "/"
+      : pathname === link || pathname.startsWith(`${link}/`);
+
+  const showTip = (e, label) => {
+    if (!collapsed) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTip({ label, top: rect.top + rect.height / 2 });
+  };
+
+  const onSearchKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setQuery("");
+      e.currentTarget.blur();
+    }
+    if (e.key === "Enter" && visibleGroups[0]?.items[0]) {
+      router.push(visibleGroups[0].items[0].link);
+      setQuery("");
+    }
+  };
+
+  const labelClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 motion-reduce:transition-none ${
+    collapsed ? "w-0 opacity-0" : "opacity-100"
+  }`;
 
   return (
     <nav
-      className="bg-white h-full border-r border-gray-100 print:hidden"
       aria-label="Sidebar Navigation"
+      className={`relative h-full shrink-0 border-r border-gray-100 bg-white transition-[width] duration-300 ease-out motion-reduce:transition-none print:hidden ${
+        collapsed ? "w-[76px]" : "w-64"
+      }`}
     >
-      <div className="p-5">
-        <div>
-          <div className="border-b border-gray-100">
-            <div className="flex items-center gap-2 p-4 mb-3 text-white rounded-md">
-              <span
-                className="text-xl p-3 bg-white text-[#611F69] rounded-md"
-                aria-hidden="true"
-              >
-                <LuBuilding2 />
-              </span>
-              <div>
-                <span className="text-[18px] text-[#611F69] font-medium">
-                  Skyirpto Product
-                </span>
-                <p className="text-gray-400 text-[14px]">Operation</p>
-              </div>
-            </div>
+      {/* Collapse toggle sits on the sidebar edge */}
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-expanded={!collapsed}
+        className="absolute -right-3 top-8 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-[#611F69] hover:bg-[#611F69] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/40"
+      >
+        <LuChevronLeft
+          className={`text-sm transition-transform duration-300 motion-reduce:transition-none ${
+            collapsed ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      <div className="flex h-full flex-col p-3">
+        {/* Brand */}
+        <div
+          className={`flex items-center gap-3 rounded-xl bg-[#611F69] p-3 text-white ${
+            collapsed ? "justify-center" : ""
+          }`}
+        >
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-xl text-[#611F69]"
+            aria-hidden="true"
+          >
+            <LuBuilding2 />
+          </span>
+          <div className={labelClass}>
+            <p className="text-[17px] font-medium leading-tight">
+              Skyirpto Product
+            </p>
+            <p className="text-[13px] text-white/70">Operation</p>
           </div>
         </div>
 
-        {/* Semantic list wrapper */}
-        <ul className="mt-4 flex flex-col gap-2" aria-busy={loading}>
+        {/* Search */}
+        <div className="mt-3">
+          {collapsed ? (
+            <button
+              type="button"
+              onClick={() => {
+                setCollapsed(false);
+                setTimeout(() => searchRef.current?.focus(), 200);
+              }}
+              onMouseEnter={(e) => showTip(e, "Search menu")}
+              onMouseLeave={() => setTip(null)}
+              aria-label="Search menu"
+              className="flex w-full items-center justify-center rounded-xl p-2.5 text-xl text-gray-500 transition-colors hover:bg-[#611F69]/10 hover:text-[#611F69] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/40"
+            >
+              <LuSearch />
+            </button>
+          ) : (
+            <label className="group flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 transition-colors focus-within:border-[#611F69] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#611F69]/15">
+              <LuSearch
+                className="shrink-0 text-gray-400 transition-colors group-focus-within:text-[#611F69]"
+                aria-hidden="true"
+              />
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={onSearchKeyDown}
+                placeholder="Search menu"
+                aria-label="Search menu"
+                className="min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
+              />
+              <kbd className="hidden rounded border border-gray-200 bg-white px-1.5 text-[11px] text-gray-400 sm:block">
+                Ctrl K
+              </kbd>
+            </label>
+          )}
+        </div>
+
+        {/* Menu */}
+        <div
+          className="mt-3 flex-1 overflow-y-auto overflow-x-hidden pr-0.5 [scrollbar-width:thin]"
+          aria-busy={loading}
+          onScroll={() => setTip(null)}
+        >
           {loading ? (
-            /* Skeleton Loading UI with A11y attributes */
-            <React.Fragment>
+            <ul className="flex flex-col gap-2">
               <li className="sr-only" role="status" aria-live="polite">
                 Loading navigation menu...
               </li>
               {Array.from({ length: 8 }).map((_, index) => (
                 <li
                   key={index}
-                  className="flex items-center gap-3 p-2.5 rounded-md animate-pulse bg-gray-50/80"
+                  className="flex animate-pulse items-center gap-3 rounded-xl bg-gray-50 p-2.5"
                   aria-hidden="true"
                 >
-                  {/* Skeleton Icon */}
-                  <div className="w-5 h-5 bg-gray-200 rounded-md shrink-0" />
-                  {/* Skeleton Text with natural varying widths */}
-                  <div
-                    className={`h-4 bg-gray-200 rounded-md ${
-                      index % 3 === 0
-                        ? "w-28"
-                        : index % 2 === 0
-                          ? "w-20"
-                          : "w-24"
-                    }`}
-                  />
+                  <div className="h-5 w-5 shrink-0 rounded-md bg-gray-200" />
+                  {!collapsed && (
+                    <div
+                      className={`h-4 rounded-md bg-gray-200 ${
+                        index % 3 === 0
+                          ? "w-28"
+                          : index % 2 === 0
+                            ? "w-20"
+                            : "w-24"
+                      }`}
+                    />
+                  )}
                 </li>
               ))}
-            </React.Fragment>
+            </ul>
+          ) : visibleGroups.length === 0 ? (
+            <p className="px-3 py-6 text-center text-sm text-gray-400">
+              {collapsed ? "–" : `No menu items match "${query}"`}
+            </p>
           ) : (
-            filteredMenuItems.map((item, index) => {
-              const isActive = pathname === item.link;
-
-              return (
-                <li key={index}>
-                  <Link
-                    href={item.link}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`p-2 cursor-pointer transition-all rounded-md flex items-center gap-2 group ${
-                      isActive
-                        ? "bg-[#611F69] text-white font-medium shadow-sm"
-                        : "text-gray-700 bg-white hover:bg-[#611F69] hover:text-white"
-                    }`}
-                  >
-                    <span
-                      className={`text-xl transition-all ${
-                        isActive
-                          ? "text-white"
-                          : "text-[#611F69] group-hover:text-white"
-                      }`}
+            visibleGroups.map((group, groupIndex) => (
+              <div key={group.title} className={groupIndex > 0 ? "mt-4" : ""}>
+                {collapsed ? (
+                  groupIndex > 0 && (
+                    <div
+                      className="mx-3 mb-2 h-px bg-gray-100"
                       aria-hidden="true"
-                    >
-                      {item.icon}
-                    </span>
-                    <span>{item.name}</span>
-                  </Link>
-                </li>
-              );
-            })
+                    />
+                  )
+                ) : (
+                  <p className="mb-1.5 px-3 text-xs font-medium text-gray-400">
+                    {group.title}
+                  </p>
+                )}
+
+                <ul className="flex flex-col gap-1">
+                  {group.items.map((item) => {
+                    const active = isActive(item.link);
+
+                    return (
+                      <li key={item.link}>
+                        <Link
+                          href={item.link}
+                          aria-current={active ? "page" : undefined}
+                          onMouseEnter={(e) => showTip(e, item.name)}
+                          onMouseLeave={() => setTip(null)}
+                          onFocus={(e) => showTip(e, item.name)}
+                          onBlur={() => setTip(null)}
+                          className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/40 motion-reduce:transition-none ${
+                            collapsed ? "justify-center" : ""
+                          } ${
+                            active
+                              ? "bg-[#611F69] font-medium text-white shadow-md shadow-[#611F69]/25"
+                              : "text-gray-600 hover:bg-[#611F69]/10 hover:text-[#611F69]"
+                          }`}
+                        >
+                          <span
+                            className={`shrink-0 text-xl transition-transform duration-200 group-hover:scale-110 motion-reduce:transition-none ${
+                              active ? "text-white" : "text-[#611F69]"
+                            }`}
+                            aria-hidden="true"
+                          >
+                            {item.icon}
+                          </span>
+                          <span className={labelClass}>{item.name}</span>
+                          {active && !collapsed && (
+                            <span
+                              className="ml-auto h-1.5 w-1.5 rounded-full bg-white"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))
           )}
-        </ul>
+        </div>
+
+        {/* Signed-in user */}
+        <div
+          className={`mt-3 flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-2.5 ${
+            collapsed ? "justify-center" : ""
+          }`}
+        >
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#611F69]/10 text-sm font-medium text-[#611F69]"
+            aria-hidden="true"
+          >
+            {loading ? "" : displayName.charAt(0).toUpperCase()}
+          </span>
+          <div className={`min-w-0 ${labelClass}`}>
+            <p className="truncate text-sm font-medium text-gray-800">
+              {loading ? "Loading..." : displayName}
+            </p>
+            {role && mydata?.name && (
+              <p className="truncate text-xs text-gray-500">{role}</p>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Tooltip for collapsed mode (fixed so the scroll area can't clip it) */}
+      {collapsed && tip && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed left-[84px] z-50 -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2.5 py-1.5 text-xs text-white shadow-lg"
+          style={{ top: tip.top }}
+        >
+          {tip.label}
+        </div>
+      )}
     </nav>
   );
 };
