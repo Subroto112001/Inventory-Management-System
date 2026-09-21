@@ -1,7 +1,7 @@
+
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import "../../css/Dashboard.css";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   MdAdd,
@@ -16,15 +16,88 @@ import {
   MdMoreVert,
   MdArrowForward,
   MdRefresh,
-  MdErrorOutline,
   MdClose,
 } from "react-icons/md";
+
+const dummyCategories = [
+  {
+    _id: "cat-001",
+    categoryName: "Electronics",
+    categoryCode: "ELEC-001",
+    description: "Smartphones, laptops, tablets and electronic accessories.",
+    image:
+      "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=200&q=80",
+    productCount: 48,
+    lowStockCount: 6,
+    status: "Active",
+    createdAt: "2026-01-12T10:30:00.000Z",
+  },
+  {
+    _id: "cat-002",
+    categoryName: "Clothing",
+    categoryCode: "CLO-002",
+    description: "Men's and women's clothing, fashion and accessories.",
+    image:
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=200&q=80",
+    productCount: 76,
+    lowStockCount: 4,
+    status: "Active",
+    createdAt: "2026-01-18T08:20:00.000Z",
+  },
+  {
+    _id: "cat-003",
+    categoryName: "Home & Kitchen",
+    categoryCode: "HOME-003",
+    description: "Furniture, kitchen appliances and home essentials.",
+    image:
+      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=200&q=80",
+    productCount: 35,
+    lowStockCount: 8,
+    status: "Active",
+    createdAt: "2026-02-03T14:15:00.000Z",
+  },
+  {
+    _id: "cat-004",
+    categoryName: "Beauty & Personal Care",
+    categoryCode: "BEAUTY-004",
+    description: "Skincare, cosmetics and personal care products.",
+    image:
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=200&q=80",
+    productCount: 29,
+    lowStockCount: 3,
+    status: "Active",
+    createdAt: "2026-02-11T09:45:00.000Z",
+  },
+  {
+    _id: "cat-005",
+    categoryName: "Sports & Fitness",
+    categoryCode: "SPORT-005",
+    description: "Sports equipment, fitness gear and accessories.",
+    image:
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=80",
+    productCount: 21,
+    lowStockCount: 5,
+    status: "Active",
+    createdAt: "2026-03-01T11:00:00.000Z",
+  },
+  {
+    _id: "cat-006",
+    categoryName: "Books",
+    categoryCode: "BOOK-006",
+    description: "Educational books, novels and other reading materials.",
+    image:
+      "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=200&q=80",
+    productCount: 54,
+    lowStockCount: 2,
+    status: "Active",
+    createdAt: "2026-03-08T13:10:00.000Z",
+  },
+];
 
 const Page = () => {
   const [categories, setCategories] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -34,42 +107,25 @@ const Page = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // ------------------------------------------------------------
-  // Fetch Categories
+  // Load Dummy Categories
   // ------------------------------------------------------------
 
-  const fetchCategories = useCallback(async () => {
+  const fetchCategories = () => {
     setIsLoading(true);
-    setLoadError("");
 
-    try {
-      const response = await fetch("/api/category", {
-        cache: "no-store",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to load categories");
-      }
-
-      setCategories(data.categories || []);
-    } catch (error) {
-      console.error("Category fetch error:", error);
-
-      setLoadError(
-        error.message || "Something went wrong while loading categories.",
-      );
-    } finally {
+    // Simulate API loading
+    setTimeout(() => {
+      setCategories(dummyCategories);
       setIsLoading(false);
-    }
-  }, []);
+    }, 500);
+  };
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []);
 
   // ------------------------------------------------------------
-  // Close dropdown when clicking outside
+  // Close Dropdown When Clicking Outside
   // ------------------------------------------------------------
 
   useEffect(() => {
@@ -125,7 +181,7 @@ const Page = () => {
         category?.productCount ??
           category?.productsCount ??
           category?.totalProducts ??
-          0,
+          0
       ) || 0
     );
   };
@@ -136,7 +192,7 @@ const Page = () => {
         category?.lowStockCount ??
           category?.lowStockProducts ??
           category?.lowStock ??
-          0,
+          0
       ) || 0
     );
   };
@@ -156,28 +212,28 @@ const Page = () => {
   };
 
   // ------------------------------------------------------------
-  // Category Statistics
+  // Statistics
   // ------------------------------------------------------------
 
   const categoryStats = useMemo(() => {
     const totalCategories = categories.length;
 
     const activeCategories = categories.filter(
-      (category) => getCategoryStatus(category) === "Active",
+      (category) => getCategoryStatus(category) === "Active"
     ).length;
 
     const inactiveCategories = categories.filter(
-      (category) => getCategoryStatus(category) === "Inactive",
+      (category) => getCategoryStatus(category) === "Inactive"
     ).length;
 
     const totalProducts = categories.reduce(
       (total, category) => total + getProductCount(category),
-      0,
+      0
     );
 
     const totalLowStock = categories.reduce(
       (total, category) => total + getLowStockCount(category),
-      0,
+      0
     );
 
     return {
@@ -190,7 +246,7 @@ const Page = () => {
   }, [categories]);
 
   // ------------------------------------------------------------
-  // Filtered Categories
+  // Filter Categories
   // ------------------------------------------------------------
 
   const filteredCategories = useMemo(() => {
@@ -207,7 +263,8 @@ const Page = () => {
 
       const status = getCategoryStatus(category);
 
-      const matchesStatus = statusFilter === "All" || status === statusFilter;
+      const matchesStatus =
+        statusFilter === "All" || status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
@@ -217,7 +274,7 @@ const Page = () => {
   // Delete Category
   // ------------------------------------------------------------
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!deleteCategory) return;
 
     const categoryId = getCategoryId(deleteCategory);
@@ -226,83 +283,73 @@ const Page = () => {
 
     setIsDeleting(true);
 
-    try {
-      const response = await fetch(`/api/category/${categoryId}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to delete category");
-      }
-
+    // Simulate delete request
+    setTimeout(() => {
       setCategories((prev) =>
-        prev.filter((category) => getCategoryId(category) !== categoryId),
+        prev.filter(
+          (category) => getCategoryId(category) !== categoryId
+        )
       );
 
       setDeleteCategory(null);
-    } catch (error) {
-      console.error("Delete category error:", error);
-
-      alert(error.message || "Failed to delete category.");
-    } finally {
       setIsDeleting(false);
-    }
+    }, 500);
   };
 
   // ------------------------------------------------------------
-  // Loading UI
+  // Loading
   // ------------------------------------------------------------
 
   if (isLoading) {
     return (
-      <div className="h-screen w-full overflow-hidden bg-gray-50/50 p-6">
-        <main className="dashboard-main h-full w-full overflow-y-auto">
-          <div className="flex items-center justify-between mb-6 animate-pulse">
-            <div className="flex flex-col gap-2">
-              <div className="h-8 w-52 bg-gray-200 rounded-md" />
+      <div className="h-screen w-full overflow-hidden bg-gray-50 p-4 sm:p-6">
+        <main className="h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {/* Header Skeleton */}
 
-              <div className="h-4 w-72 bg-gray-200 rounded-md" />
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2">
+              <div className="h-8 w-52 animate-pulse rounded-md bg-gray-200" />
+
+              <div className="h-4 w-72 max-w-full animate-pulse rounded-md bg-gray-200" />
             </div>
 
-            <div className="h-10 w-36 bg-gray-200 rounded-md" />
+            <div className="h-10 w-36 animate-pulse rounded-md bg-gray-200" />
           </div>
 
           {/* KPI Skeleton */}
 
-          <div className="kpi-grid mb-6">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="card animate-pulse p-4 flex flex-col justify-between"
+                className="flex min-h-[140px] animate-pulse flex-col justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col gap-2">
-                    <div className="h-3 w-28 bg-gray-200 rounded" />
+                    <div className="h-3 w-28 rounded bg-gray-200" />
 
-                    <div className="h-7 w-16 bg-gray-200 rounded" />
+                    <div className="h-7 w-16 rounded bg-gray-200" />
                   </div>
 
-                  <div className="w-10 h-10 bg-gray-200 rounded-md" />
+                  <div className="h-10 w-10 rounded-lg bg-gray-200" />
                 </div>
 
-                <div className="h-3 w-28 bg-gray-200 rounded mt-4" />
+                <div className="mt-4 h-3 w-28 rounded bg-gray-200" />
               </div>
             ))}
           </div>
 
           {/* Table Skeleton */}
 
-          <section className="table-section animate-pulse">
-            <div className="table-header">
+          <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-2">
-                <div className="h-5 w-40 bg-gray-200 rounded" />
+                <div className="h-5 w-40 animate-pulse rounded bg-gray-200" />
 
-                <div className="h-3 w-64 bg-gray-200 rounded" />
+                <div className="h-3 w-64 max-w-full animate-pulse rounded bg-gray-200" />
               </div>
 
-              <div className="h-10 w-64 bg-gray-200 rounded" />
+              <div className="h-10 w-64 max-w-full animate-pulse rounded bg-gray-200" />
             </div>
 
             <div className="p-4">
@@ -310,7 +357,7 @@ const Page = () => {
                 {Array.from({ length: 7 }).map((_, index) => (
                   <div
                     key={index}
-                    className="h-12 w-full bg-gray-200/60 rounded"
+                    className="h-12 w-full animate-pulse rounded bg-gray-200/60"
                   />
                 ))}
               </div>
@@ -322,128 +369,101 @@ const Page = () => {
   }
 
   // ------------------------------------------------------------
-  // Error UI
-  // ------------------------------------------------------------
-
-  if (loadError) {
-    return (
-      <div className="flex flex-row h-screen items-center justify-center overflow-hidden">
-        <div className="flex flex-col items-center gap-3 text-center max-w-sm">
-          <MdErrorOutline size={36} className="text-error" aria-hidden="true" />
-
-          <p className="text-h3 text-on-surface">Couldn't load categories</p>
-
-          <p className="text-body text-secondary">{loadError}</p>
-
-          <button
-            onClick={fetchCategories}
-            className="btn-primary text-label-sm flex items-center gap-1"
-          >
-            <MdRefresh size={16} aria-hidden="true" />
-            Try again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ------------------------------------------------------------
   // Dashboard
   // ------------------------------------------------------------
 
   return (
-    <div className="h-screen w-full overflow-hidden">
-      <div className="flex flex-row h-full overflow-hidden">
-        <main className="dashboard-main h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="h-screen w-full overflow-hidden bg-gray-50">
+      <main className="h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="w-full p-4 sm:p-6 lg:p-7">
+
           {/* ------------------------------------------------ */}
           {/* Header */}
           {/* ------------------------------------------------ */}
 
-          <header className="dashboard-header">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="icon-box icon-box-tertiary">
-                  <MdCategory size={24} />
-                </div>
+          <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#611F69]/10 text-[#611F69]">
+                <MdCategory size={24} />
+              </div>
 
-                <div>
-                  <h1 id="category-heading" className="text-h1">
-                    Category Management
-                  </h1>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+                  Category Management
+                </h1>
 
-                  <p className="text-body">
-                    Organize products and manage your inventory categories.
-                  </p>
-                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  Organize products and manage your inventory categories.
+                </p>
               </div>
             </div>
 
             <Link
               href="/create_category"
-              className="btn-primary text-label-sm flex items-center gap-1"
-              aria-label="Add new category"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#611F69] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#501854] active:scale-[0.98] sm:w-auto"
             >
-              <MdAdd size={20} aria-hidden="true" />
+              <MdAdd size={20} />
               Add Category
             </Link>
           </header>
 
           {/* ------------------------------------------------ */}
-          {/* KPI Cards */}
+          {/* Statistics */}
           {/* ------------------------------------------------ */}
 
-          <section aria-label="Category Statistics" className="kpi-grid mb-6">
-            {/* Total Categories */}
+          <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-            <article className="card">
-              <div className="card-header">
+            {/* Total */}
+
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-label-sm text-secondary uppercase">
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Total Categories
                   </h2>
 
-                  <p className="text-h2 text-on-surface">
-                    {categoryStats.totalCategories.toLocaleString()}
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {categoryStats.totalCategories}
                   </p>
                 </div>
 
-                <div className="icon-box icon-box-tertiary" aria-hidden="true">
-                  <MdCategory size={24} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#611F69]/10 text-[#611F69]">
+                  <MdCategory size={23} />
                 </div>
               </div>
 
-              <div className="trend-info">
-                <span className="text-label-sm text-secondary">
+              <div className="mt-5">
+                <span className="text-xs text-gray-500">
                   Product organization
                 </span>
               </div>
             </article>
 
-            {/* Active Categories */}
+            {/* Active */}
 
-            <article className="card">
-              <div className="card-header">
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-label-sm text-secondary uppercase">
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Active Categories
                   </h2>
 
-                  <p className="text-h2 text-on-surface">
-                    {categoryStats.activeCategories.toLocaleString()}
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {categoryStats.activeCategories}
                   </p>
                 </div>
 
-                <div className="icon-box icon-box-primary" aria-hidden="true">
-                  <MdCheckCircle size={24} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600">
+                  <MdCheckCircle size={23} />
                 </div>
               </div>
 
-              <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-up">
+              <div className="mt-5 flex items-center gap-2">
+                <span className="rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
                   Active
                 </span>
 
-                <span className="text-label-sm text-secondary">
+                <span className="text-xs text-gray-500">
                   available for inventory
                 </span>
               </div>
@@ -451,25 +471,25 @@ const Page = () => {
 
             {/* Products */}
 
-            <article className="card">
-              <div className="card-header">
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-label-sm text-secondary uppercase">
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Categorized Products
                   </h2>
 
-                  <p className="text-h2 text-on-surface">
-                    {categoryStats.totalProducts.toLocaleString()}
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {categoryStats.totalProducts}
                   </p>
                 </div>
 
-                <div className="icon-box icon-box-tertiary" aria-hidden="true">
-                  <MdInventory2 size={24} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#611F69]/10 text-[#611F69]">
+                  <MdInventory2 size={23} />
                 </div>
               </div>
 
-              <div className="trend-info">
-                <span className="text-label-sm text-secondary">
+              <div className="mt-5">
+                <span className="text-xs text-gray-500">
                   Products across categories
                 </span>
               </div>
@@ -477,29 +497,29 @@ const Page = () => {
 
             {/* Low Stock */}
 
-            <article className="card">
-              <div className="card-header">
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-label-sm text-secondary uppercase">
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Low Stock Items
                   </h2>
 
-                  <p className="text-h2 text-on-surface">
-                    {categoryStats.totalLowStock.toLocaleString()}
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {categoryStats.totalLowStock}
                   </p>
                 </div>
 
-                <div className="icon-box icon-box-warning" aria-hidden="true">
-                  <MdWarning size={24} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
+                  <MdWarning size={23} />
                 </div>
               </div>
 
-              <div className="trend-info">
-                <span className="badge-trend text-label-sm trend-warning">
+              <div className="mt-5 flex items-center gap-2">
+                <span className="rounded-full bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700">
                   Needs attention
                 </span>
 
-                <span className="text-label-sm text-secondary">
+                <span className="text-xs text-gray-500">
                   across categories
                 </span>
               </div>
@@ -507,33 +527,33 @@ const Page = () => {
           </section>
 
           {/* ------------------------------------------------ */}
-          {/* Category Table */}
+          {/* Table */}
           {/* ------------------------------------------------ */}
 
-          <section className="table-section">
-            <header className="table-header">
+          <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+
+            {/* Table Header */}
+
+            <header className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2
-                  id="category-table-heading"
-                  className="text-h3 text-on-surface"
-                >
+                <h2 className="text-lg font-semibold text-gray-900">
                   Inventory Categories
                 </h2>
 
-                <p className="text-label-sm text-secondary">
+                <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                   Manage product classification and category availability.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="badge-trend text-label-sm flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600">
                   <MdCategory size={14} />
                   {filteredCategories.length} Categories
                 </span>
 
                 <Link
                   href="/create_category"
-                  className="btn-primary text-label-sm flex items-center gap-1"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#611F69] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#501854]"
                 >
                   <MdAdd size={17} />
                   Add Category
@@ -541,43 +561,42 @@ const Page = () => {
               </div>
             </header>
 
-            {/* Search + Filter */}
+            {/* Search */}
 
-            <div className="px-4 pb-4">
-              <div className="flex flex-col md:flex-row gap-3">
-                {/* Search */}
+            <div className="border-b border-gray-100 p-4">
+              <div className="flex flex-col gap-3 md:flex-row">
 
-                <div className="relative flex-1">
+                <div className="relative min-w-0 flex-1">
                   <MdSearch
                     size={20}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   />
 
                   <input
                     type="search"
                     value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
+                    onChange={(event) =>
+                      setSearchTerm(event.target.value)
+                    }
                     placeholder="Search category..."
-                    aria-label="Search categories"
-                    className="w-full h-10 pl-10 pr-4 rounded-md border border-gray-200 bg-white text-sm text-gray-700 outline-none focus:border-[#611F69] focus:ring-1 focus:ring-[#611F69]/20"
+                    className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#611F69] focus:ring-2 focus:ring-[#611F69]/10"
                   />
                 </div>
 
-                {/* Status Filter */}
+                {/* Filter */}
 
                 <div className="relative">
                   <MdFilterList
                     size={19}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   />
 
                   <select
                     value={statusFilter}
-                    onChange={(event) => setStatusFilter(event.target.value)}
-                    aria-label="Filter categories by status"
-                    className="h-10 pl-10 pr-8 min-w-[150px] rounded-md border border-gray-200 bg-white text-sm text-gray-700 outline-none focus:border-[#611F69] focus:ring-1 focus:ring-[#611F69]/20"
+                    onChange={(event) =>
+                      setStatusFilter(event.target.value)
+                    }
+                    className="h-10 w-full min-w-[150px] appearance-none rounded-lg border border-gray-200 bg-white pl-10 pr-9 text-sm text-gray-700 outline-none focus:border-[#611F69] focus:ring-2 focus:ring-[#611F69]/10"
                   >
                     <option value="All">All Status</option>
                     <option value="Active">Active</option>
@@ -590,9 +609,8 @@ const Page = () => {
                 <button
                   type="button"
                   onClick={fetchCategories}
-                  className="btn-icon border border-gray-200 rounded-md"
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-gray-600 transition hover:bg-gray-50 hover:text-[#611F69]"
                   title="Refresh categories"
-                  aria-label="Refresh categories"
                 >
                   <MdRefresh size={21} />
                 </button>
@@ -601,123 +619,136 @@ const Page = () => {
 
             {/* Table */}
 
-            <div className="table-responsive [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              <table
-                className="data-table"
-                aria-labelledby="category-table-heading"
-              >
+            <div className="w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <table className="w-full min-w-[950px] text-left">
+
                 <thead>
-                  <tr className="text-label-sm">
-                    <th scope="col">Category</th>
+                  <tr className="border-b border-gray-100 bg-gray-50/70 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-5 py-3.5">
+                      Category
+                    </th>
 
-                    <th scope="col">Description</th>
+                    <th className="px-5 py-3.5">
+                      Description
+                    </th>
 
-                    <th scope="col" className="text-center">
+                    <th className="px-5 py-3.5 text-center">
                       Products
                     </th>
 
-                    <th scope="col" className="text-center">
+                    <th className="px-5 py-3.5 text-center">
                       Low Stock
                     </th>
 
-                    <th scope="col" className="text-center">
+                    <th className="px-5 py-3.5 text-center">
                       Status
                     </th>
 
-                    <th scope="col">Created</th>
+                    <th className="px-5 py-3.5">
+                      Created
+                    </th>
 
-                    <th scope="col" className="text-center">
+                    <th className="px-5 py-3.5 text-center">
                       Action
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="text-body">
+                <tbody className="divide-y divide-gray-100 text-sm">
+
                   {filteredCategories.length > 0 ? (
                     filteredCategories.map((category) => {
-                      const categoryId = getCategoryId(category);
+                      const categoryId =
+                        getCategoryId(category);
 
-                      const categoryName = getCategoryName(category);
+                      const categoryName =
+                        getCategoryName(category);
 
-                      const productCount = getProductCount(category);
+                      const productCount =
+                        getProductCount(category);
 
-                      const lowStockCount = getLowStockCount(category);
+                      const lowStockCount =
+                        getLowStockCount(category);
 
-                      const status = getCategoryStatus(category);
+                      const status =
+                        getCategoryStatus(category);
 
                       return (
-                        <tr key={categoryId || categoryName}>
+                        <tr
+                          key={categoryId}
+                          className="transition hover:bg-gray-50/70"
+                        >
                           {/* Category */}
 
-                          <td>
+                          <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-[#611F69]/10 text-[#611F69] flex items-center justify-center shrink-0">
-                                <MdCategory size={19} />
+                              {/* Category Image */}
+                              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
+                                {category.image ? (
+                                  <img
+                                    src={category.image}
+                                    alt={categoryName}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center text-[#611F69]">
+                                    <MdCategory size={20} />
+                                  </div>
+                                )}
                               </div>
 
-                              <div>
-                                <div
-                                  style={{
-                                    fontWeight: 600,
-                                  }}
-                                >
+                              {/* Category Info */}
+                              <div className="min-w-0">
+                                <div className="truncate font-semibold text-gray-800">
                                   {categoryName}
                                 </div>
 
-                                {category?.categoryCode && (
-                                  <div className="text-label-sm text-secondary">
-                                    {category.categoryCode}
-                                  </div>
-                                )}
+                                <div className="mt-0.5 text-xs text-gray-500">
+                                  {category.categoryCode}
+                                </div>
                               </div>
                             </div>
                           </td>
 
                           {/* Description */}
 
-                          <td>
+                          <td className="px-5 py-4">
                             <div
-                              className="text-secondary"
-                              style={{
-                                maxWidth: "280px",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                              title={getCategoryDescription(category)}
+                              className="max-w-[280px] truncate text-sm text-gray-500"
+                              title={category.description}
                             >
-                              {getCategoryDescription(category)}
+                              {category.description}
                             </div>
                           </td>
 
                           {/* Products */}
 
-                          <td className="text-center">
-                            <span className="badge-trend text-label-sm">
+                          <td className="px-5 py-4 text-center">
+                            <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
                               {productCount}
                             </span>
                           </td>
 
                           {/* Low Stock */}
 
-                          <td className="text-center">
+                          <td className="px-5 py-4 text-center">
                             {lowStockCount > 0 ? (
-                              <span className="badge-trend text-label-sm trend-warning">
+                              <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-medium text-yellow-700">
                                 {lowStockCount}
                               </span>
                             ) : (
-                              <span className="text-secondary">0</span>
+                              <span className="text-sm text-gray-400">0</span>
                             )}
                           </td>
 
                           {/* Status */}
 
-                          <td className="text-center">
+                          <td className="px-5 py-4 text-center">
                             <span
-                              className={`status-badge ${
+                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
                                 status === "Active"
-                                  ? "status-good"
-                                  : "status-low"
+                                  ? "bg-green-50 text-green-700"
+                                  : "bg-red-50 text-red-700"
                               }`}
                             >
                               {status}
@@ -726,22 +757,20 @@ const Page = () => {
 
                           {/* Created */}
 
-                          <td className="text-secondary">
+                          <td className="whitespace-nowrap px-5 py-4 text-sm text-gray-500">
                             {getCreatedDate(category)}
                           </td>
 
                           {/* Actions */}
 
-                          <td className="text-center">
+                          <td className="px-5 py-4 text-center">
                             <div
                               className="relative flex justify-center"
                               onClick={(event) => event.stopPropagation()}
                             >
                               <button
                                 type="button"
-                                className="btn-icon"
-                                aria-label={`More actions for ${categoryName}`}
-                                aria-expanded={openMenu === categoryId}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-800"
                                 onClick={(event) => {
                                   event.stopPropagation();
 
@@ -754,11 +783,11 @@ const Page = () => {
                               </button>
 
                               {openMenu === categoryId && (
-                                <div className="absolute right-0 top-9 z-50 w-44 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-left">
+                                <div className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-lg border border-gray-100 bg-white py-1 text-left shadow-xl">
                                   <Link
                                     href={`/category/${categoryId}/edit`}
                                     onClick={() => setOpenMenu(null)}
-                                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#611F69]"
+                                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-[#611F69]"
                                   >
                                     <MdEdit size={18} />
                                     Edit Category
@@ -770,7 +799,7 @@ const Page = () => {
                                       setOpenMenu(null);
                                       setDeleteCategory(category);
                                     }}
-                                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                                    className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50"
                                   >
                                     <MdDeleteOutline size={18} />
                                     Delete Category
@@ -786,65 +815,68 @@ const Page = () => {
                     <tr>
                       <td
                         colSpan={7}
-                        className="text-center text-secondary"
-                        style={{
-                          padding: "3rem 0",
-                        }}
+                        className="px-5 py-16 text-center"
                       >
                         <div className="flex flex-col items-center gap-2">
-                          <MdCategory size={40} className="text-gray-300" />
 
-                          <p className="text-body">
-                            {searchTerm || statusFilter !== "All"
+                          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-50">
+                            <MdCategory
+                              size={36}
+                              className="text-gray-300"
+                            />
+                          </div>
+
+                          <p className="mt-2 text-sm font-medium text-gray-700">
+                            {searchTerm ||
+                            statusFilter !== "All"
                               ? "No categories match your filters."
                               : "No categories found yet."}
                           </p>
 
-                          {!searchTerm && statusFilter === "All" && (
-                            <Link
-                              href="/create_category"
-                              className="btn-link text-label-sm flex items-center gap-1"
-                            >
-                              Create your first category
-                              <MdArrowForward size={16} />
-                            </Link>
-                          )}
+                          {!searchTerm &&
+                            statusFilter === "All" && (
+                              <Link
+                                href="/create_category"
+                                className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#611F69] hover:underline"
+                              >
+                                Create your first category
+                                <MdArrowForward size={16} />
+                              </Link>
+                            )}
+
                         </div>
                       </td>
                     </tr>
                   )}
+
                 </tbody>
               </table>
             </div>
           </section>
-        </main>
-      </div>
+        </div>
+      </main>
 
       {/* ------------------------------------------------ */}
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {/* ------------------------------------------------ */}
 
       {deleteCategory && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-category-title"
-        >
-          <div className="w-full max-w-md bg-white rounded-xl shadow-2xl">
-            {/* Modal Header */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]">
 
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
+
+            {/* Header */}
+
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
                   <MdDeleteOutline size={22} />
                 </div>
 
                 <div>
-                  <h3
-                    id="delete-category-title"
-                    className="text-lg font-semibold text-gray-900"
-                  >
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Delete Category
                   </h3>
 
@@ -852,52 +884,66 @@ const Page = () => {
                     This action requires confirmation.
                   </p>
                 </div>
+
               </div>
 
               <button
                 type="button"
-                onClick={() => setDeleteCategory(null)}
-                className="text-gray-400 hover:text-gray-700"
-                aria-label="Close delete dialog"
+                onClick={() =>
+                  setDeleteCategory(null)
+                }
+                disabled={isDeleting}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
               >
                 <MdClose size={22} />
               </button>
+
             </div>
 
-            {/* Modal Body */}
+            {/* Body */}
 
             <div className="px-5 py-5">
-              <p className="text-sm text-gray-600 leading-6">
+
+              <p className="text-sm leading-6 text-gray-600">
                 Are you sure you want to delete{" "}
-                <strong className="text-gray-900">
+                <strong className="font-semibold text-gray-900">
                   {getCategoryName(deleteCategory)}
                 </strong>
                 ?
               </p>
 
-              <div className="mt-4 p-3 rounded-lg bg-yellow-50 border border-yellow-100">
+              <div className="mt-4 rounded-lg border border-yellow-100 bg-yellow-50 p-3">
+
                 <div className="flex gap-2">
+
                   <MdWarning
                     size={19}
-                    className="text-yellow-600 shrink-0 mt-0.5"
+                    className="mt-0.5 shrink-0 text-yellow-600"
                   />
 
-                  <p className="text-xs text-yellow-800 leading-5">
-                    If this category is assigned to existing products, make sure
-                    those products are reassigned before deleting the category.
+                  <p className="text-xs leading-5 text-yellow-800">
+                    If this category is assigned to existing
+                    products, make sure those products are
+                    reassigned before deleting the category.
                   </p>
+
                 </div>
+
               </div>
+
             </div>
 
-            {/* Modal Footer */}
+            {/* Footer */}
 
-            <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100">
+            <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-5 py-4">
+
               <button
                 type="button"
-                onClick={() => setDeleteCategory(null)}
+                onClick={() =>
+                  setDeleteCategory(null)
+                }
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-md border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -906,13 +952,17 @@ const Page = () => {
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
               >
                 <MdDeleteOutline size={18} />
 
-                {isDeleting ? "Deleting..." : "Delete Category"}
+                {isDeleting
+                  ? "Deleting..."
+                  : "Delete Category"}
               </button>
+
             </div>
+
           </div>
         </div>
       )}
@@ -921,3 +971,4 @@ const Page = () => {
 };
 
 export default Page;
+
