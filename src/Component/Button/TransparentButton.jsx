@@ -1,11 +1,15 @@
+import Link from 'next/link';
 import React from 'react'
 
-const TransparentButton = ({value}) => {
+const TransparentButton = ({ value, path }) => {
   return (
-    <button className="border border-[#611F69] text-[#611F69] py-2 px-4 rounded-md bg-transparent hover:bg-[#611F69] hover:text-white cursor-pointer transition-all">
+    <Link
+      className="border border-[#611F69] text-[#611F69] py-2 px-4 rounded-md bg-transparent hover:bg-[#611F69] hover:text-white cursor-pointer transition-all"
+      href={path}
+    >
       {value}
-    </button>
+    </Link>
   );
-}
+};
 
 export default TransparentButton
