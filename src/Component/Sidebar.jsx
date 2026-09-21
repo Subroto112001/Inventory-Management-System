@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BiPurchaseTagAlt, BiSolidOffer } from "react-icons/bi";
+import { BiCategory, BiPurchaseTagAlt, BiSolidOffer } from "react-icons/bi";
 import { CgShutterstock } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
@@ -52,6 +52,7 @@ const MENU_GROUPS = [
       { name: "Stock", icon: <CgShutterstock />, link: "/stock" },
       { name: "Warehouse", icon: <PiWarehouse />, link: "/warehouse" },
       { name: "Brands", icon: <TbBrandBumble />, link: "/brands" },
+      { name: "Category", icon: <BiCategory />, link: "/category" },
     ],
   },
   {
@@ -184,7 +185,7 @@ const Sidebar = ({ showMobileButton = true }) => {
   }, []);
 
   const role = mydata?.role;
-  const displayName = mydata?.name || role || "Account";
+  const displayName = mydata?.firstName || mydata?.role || role || "Account";
 
   /**
    * Filter by role first, then by the search text.
