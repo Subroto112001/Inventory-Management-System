@@ -2,91 +2,70 @@ import mongoose from "mongoose";
 
 const { Schema, Types } = mongoose;
 
-const productSchema = new Schema(
+const categorySchema = new Schema(
   {
-    productName: {
+    // --- Basic Information ---
+    categoryName: {
       type: String,
       trim: true,
-      required: [true, "Product name is required"],
-      maxlength: [150, "Product name cannot exceed 150 characters"],
+      required: [true, "Category name is required"],
+      maxlength: [100, "Category name cannot exceed 100 characters"],
     },
-    productSKU: {
+
+    categoryCode: {
       type: String,
       trim: true,
-      unique: true,
-      required: [true, "Product SKU is required"],
       uppercase: true,
+      unique: true,
+      required: [true, "Category code is required"],
+      maxlength: [30, "Category code cannot exceed 30 characters"],
     },
-    brand: {
-      type: Types.ObjectId,
-      ref: "Brand",
-      default: null,
-    },
+
     description: {
       type: String,
       trim: true,
-      maxlength: [2000, "Description cannot exceed 2000 characters"],
-    },
-    unit: {
-      type: String,
-      trim: true, // e.g. "pcs", "kg", "box"
+      maxlength: [500, "Description cannot exceed 500 characters"],
     },
 
-    // --- Pricing ---
-    price: {
-      type: Number,
-      required: [true, "Price is required"],
-      min: [0, "Price cannot be negative"],
-    },
-    wholesalePrice: {
-      type: Number,
-      min: [0, "Wholesale price cannot be negative"],
-    },
-    discount: {
-      type: Number,
-      min: [0, "Discount cannot be negative"],
-      max: [100, "Discount cannot exceed 100%"],
-      default: 0,
-    },
-
-    discountOffer: { type: Types.ObjectId, ref: "Offer", default: null },
-
-    // --- Stock / Inventory ---
-    quantity: {
-      type: Number,
-      min: [0, "Quantity cannot be negative"],
-      default: 0,
-    },
-    initialStock: {
-      type: Number,
-      min: [0, "Initial stock cannot be negative"],
-      default: 0,
-    },
-    currentStock: {
-      type: Number,
-      min: [0, "Current stock cannot be negative"],
-      default: 0,
-    },
-    lowStockAlert: {
-      type: Number,
-      min: [0, "Low stock alert cannot be negative"],
-      default: 0,
-    },
-
-    // --- Media ---
+    // --- Category Image ---
     image: {
-      public_id: { type: String },
-      url: String,
+      public_id: {
+        type: String,
+        default: null,
+      },
+      url: {
+        type: String,
+        default: null,
+      },
     },
 
-    // --- Relations & Status ---
-    createdBy: { type: Types.ObjectId, ref: "User" },
-    isActive: { type: Boolean, default: true },
+    // --- Products inside this Category ---
+    products: [
+      {
+        type: Types.ObjectId,
+        ref: "Product",
+      },
+    ],
+
+    // --- Created By ---
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    // --- Status ---
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
-const Product =
-  mongoose.models.Product || mongoose.model("Product", productSchema);
+const Category =
+  mongoose.models.Category || mongoose.model("Category", categorySchema);
 
-export default Product;
+export default Category;

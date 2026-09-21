@@ -72,7 +72,11 @@ const productSchema = new Schema(
       min: [0, "Low stock alert cannot be negative"],
       default: 0,
     },
-
+    category: {
+      type: Types.ObjectId,
+      ref: "Category",
+      default: null,
+    },
     // --- Media ---
     image: {
       public_id: { type: String },
