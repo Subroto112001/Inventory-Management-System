@@ -306,15 +306,11 @@ export default function CreateCategoryPage() {
           </div>
         )}
 
-        {/* ================================================= */}
-        {/* FORM */}
-        {/* ================================================= */}
+        {/* -----------------------  FORM */}
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-            {/* ================================================= */}
-            {/* LEFT SIDE */}
-            {/* ================================================= */}
+            {/* -----------------------  Left side -----------------------  */}
 
             <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-100 px-6 py-5">
@@ -366,7 +362,7 @@ export default function CreateCategoryPage() {
                   </div>
                 </div>
 
-                {/* Category Code */}
+                {/* Category */}
 
                 <div>
                   <label
@@ -425,9 +421,7 @@ export default function CreateCategoryPage() {
               </div>
             </div>
 
-            {/* ================================================= */}
-            {/* RIGHT SIDE - IMAGE */}
-            {/* ================================================= */}
+            {/* Right Side - IMAGE Will be show there */}
 
             <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-100 px-6 py-5">
@@ -527,9 +521,10 @@ export default function CreateCategoryPage() {
             </div>
           </div>
 
-          {/* ================================================= */}
-          {/* ACTIONS */}
-          {/* ================================================= */}
+          {/****
+           *Action Button
+           *
+           */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Link
