@@ -130,9 +130,7 @@ export default function CreateCategoryPage() {
     });
   };
 
-  // =====================================================
   // REMOVE IMAGE
-  // =====================================================
 
   const handleRemoveImage = () => {
     if (imagePreview) {
@@ -147,9 +145,7 @@ export default function CreateCategoryPage() {
     }
   };
 
-  // =====================================================
   // RESET FORM
-  // =====================================================
 
   const resetForm = () => {
     setFormData({
@@ -161,9 +157,7 @@ export default function CreateCategoryPage() {
     handleRemoveImage();
   };
 
-  // =====================================================
   // CREATE CATEGORY
-  // =====================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -174,9 +168,7 @@ export default function CreateCategoryPage() {
       text: "",
     });
 
-    // -------------------------
     // Frontend Validation
-    // -------------------------
 
     if (!formData.categoryName.trim()) {
       setMessage({
@@ -226,9 +218,7 @@ export default function CreateCategoryPage() {
     try {
       setLoading(true);
 
-      // =================================================
       // CREATE FORMDATA
-      // =================================================
 
       const data = new FormData();
 
@@ -243,9 +233,7 @@ export default function CreateCategoryPage() {
         data.append("image", image);
       }
 
-      // =================================================
       // POST API
-      // =================================================
 
       const response = await fetch("/api/category", {
         method: "POST",
@@ -255,17 +243,13 @@ export default function CreateCategoryPage() {
       // Try to read JSON response
       const result = await response.json();
 
-      // =================================================
       // API ERROR
-      // =================================================
 
       if (!response.ok) {
         throw new Error(result?.message || "Failed to create category.");
       }
 
-      // =================================================
       // SUCCESS
-      // =================================================
 
       setMessage({
         type: "success",
@@ -294,9 +278,7 @@ export default function CreateCategoryPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f8] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        {/* ================================================= */}
         {/* HEADER */}
-        {/* ================================================= */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -319,9 +301,7 @@ export default function CreateCategoryPage() {
           </div>
         </div>
 
-        {/* ================================================= */}
         {/* MESSAGE */}
-        {/* ================================================= */}
 
         {message.text && (
           <div

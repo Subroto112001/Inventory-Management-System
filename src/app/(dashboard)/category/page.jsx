@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   MdAdd,
@@ -17,116 +16,186 @@ import {
   MdArrowForward,
   MdRefresh,
   MdClose,
+  MdErrorOutline,
 } from "react-icons/md";
-
-const dummyCategories = [
-  {
-    _id: "cat-001",
-    categoryName: "Electronics",
-    categoryCode: "ELEC-001",
-    description: "Smartphones, laptops, tablets and electronic accessories.",
-    image:
-      "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=200&q=80",
-    productCount: 48,
-    lowStockCount: 6,
-    status: "Active",
-    createdAt: "2026-01-12T10:30:00.000Z",
-  },
-  {
-    _id: "cat-002",
-    categoryName: "Clothing",
-    categoryCode: "CLO-002",
-    description: "Men's and women's clothing, fashion and accessories.",
-    image:
-      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=200&q=80",
-    productCount: 76,
-    lowStockCount: 4,
-    status: "Active",
-    createdAt: "2026-01-18T08:20:00.000Z",
-  },
-  {
-    _id: "cat-003",
-    categoryName: "Home & Kitchen",
-    categoryCode: "HOME-003",
-    description: "Furniture, kitchen appliances and home essentials.",
-    image:
-      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=200&q=80",
-    productCount: 35,
-    lowStockCount: 8,
-    status: "Active",
-    createdAt: "2026-02-03T14:15:00.000Z",
-  },
-  {
-    _id: "cat-004",
-    categoryName: "Beauty & Personal Care",
-    categoryCode: "BEAUTY-004",
-    description: "Skincare, cosmetics and personal care products.",
-    image:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=200&q=80",
-    productCount: 29,
-    lowStockCount: 3,
-    status: "Active",
-    createdAt: "2026-02-11T09:45:00.000Z",
-  },
-  {
-    _id: "cat-005",
-    categoryName: "Sports & Fitness",
-    categoryCode: "SPORT-005",
-    description: "Sports equipment, fitness gear and accessories.",
-    image:
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=80",
-    productCount: 21,
-    lowStockCount: 5,
-    status: "Active",
-    createdAt: "2026-03-01T11:00:00.000Z",
-  },
-  {
-    _id: "cat-006",
-    categoryName: "Books",
-    categoryCode: "BOOK-006",
-    description: "Educational books, novels and other reading materials.",
-    image:
-      "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=200&q=80",
-    productCount: 54,
-    lowStockCount: 2,
-    status: "Active",
-    createdAt: "2026-03-08T13:10:00.000Z",
-  },
-];
 
 const Page = () => {
   const [categories, setCategories] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const [error, setError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const [openMenu, setOpenMenu] = useState(null);
+
   const [deleteCategory, setDeleteCategory] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // ------------------------------------------------------------
-  // Load Dummy Categories
-  // ------------------------------------------------------------
+  // ============================================================
+  // GET CATEGORY ID
+  // ============================================================
 
-  const fetchCategories = () => {
-    setIsLoading(true);
-
-    // Simulate API loading
-    setTimeout(() => {
-      setCategories(dummyCategories);
-      setIsLoading(false);
-    }, 500);
+  const getCategoryId = (category) => {
+    return category?._id || category?.id;
   };
+
+  // ============================================================
+  // GET CATEGORY NAME
+  // ============================================================
+
+  const getCategoryName = (category) => {
+    return (
+      category?.categoryName ||
+      category?.name ||
+      category?.title ||
+      "Unnamed Category"
+    );
+  };
+
+  // ============================================================
+  // GET DESCRIPTION
+  // ============================================================
+
+  const getCategoryDescription = (category) => {
+    return category?.description || "No description available";
+  };
+
+  // ============================================================
+  // GET STATUS
+  // ============================================================
+
+  const getCategoryStatus = (category) => {
+    if (
+      category?.status === "Inactive" ||
+      category?.isActive === false ||
+      category?.active === false
+    ) {
+      return "Inactive";
+    }
+
+    return "Active";
+  };
+
+  // ============================================================
+  // GET PRODUCT COUNT
+  // ============================================================
+
+  const getProductCount = (category) => {
+    // Your API already returns productCount
+    if (typeof category?.productCount === "number") {
+      return category.productCount;
+    }
+
+    // Fallback if products array exists
+    if (Array.isArray(category?.products)) {
+      return category.products.length;
+    }
+
+    return 0;
+  };
+
+  // ============================================================
+  // GET LOW STOCK COUNT
+  // ============================================================
+
+  const getLowStockCount = (category) => {
+    // If your API later returns lowStockCount,
+    // this will automatically use it.
+    if (typeof category?.lowStockCount === "number") {
+      return category.lowStockCount;
+    }
+
+    // Calculate from products if products are available
+    if (Array.isArray(category?.products)) {
+      return category.products.filter(
+        (product) =>
+          Number(product?.currentStock ?? 0) <=
+          Number(product?.lowStockAlert ?? 0),
+      ).length;
+    }
+
+    return 0;
+  };
+
+  // ============================================================
+  // FORMAT DATE
+  // ============================================================
+
+  const getCreatedDate = (category) => {
+    if (!category?.createdAt) {
+      return "—";
+    }
+
+    const date = new Date(category.createdAt);
+
+    if (Number.isNaN(date.getTime())) {
+      return "—";
+    }
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  // ============================================================
+  // FETCH CATEGORIES
+  // ============================================================
+
+  const fetchCategories = useCallback(async (showRefreshLoader = false) => {
+    try {
+      if (showRefreshLoader) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      setError("");
+
+      const response = await fetch("/api/category", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.message || "Failed to fetch categories.");
+      }
+
+      if (!result?.success) {
+        throw new Error(result?.message || "Failed to fetch categories.");
+      }
+
+      setCategories(Array.isArray(result.categories) ? result.categories : []);
+    } catch (error) {
+      console.error("Fetch Categories Error:", error);
+
+      setError(error?.message || "Unable to load categories.");
+
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  // ============================================================
+  // INITIAL FETCH
+  // ============================================================
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
-  // ------------------------------------------------------------
-  // Close Dropdown When Clicking Outside
-  // ------------------------------------------------------------
+  // ============================================================
+  // CLOSE DROPDOWN
+  // ============================================================
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -142,98 +211,29 @@ const Page = () => {
     };
   }, [openMenu]);
 
-  // ------------------------------------------------------------
-  // Helpers
-  // ------------------------------------------------------------
-
-  const getCategoryId = (category) => {
-    return category?._id || category?.id;
-  };
-
-  const getCategoryName = (category) => {
-    return (
-      category?.categoryName ||
-      category?.name ||
-      category?.title ||
-      "Unnamed Category"
-    );
-  };
-
-  const getCategoryDescription = (category) => {
-    return category?.description || "No description available";
-  };
-
-  const getCategoryStatus = (category) => {
-    if (
-      category?.status === "Inactive" ||
-      category?.isActive === false ||
-      category?.active === false
-    ) {
-      return "Inactive";
-    }
-
-    return "Active";
-  };
-
-  const getProductCount = (category) => {
-    return (
-      Number(
-        category?.productCount ??
-          category?.productsCount ??
-          category?.totalProducts ??
-          0
-      ) || 0
-    );
-  };
-
-  const getLowStockCount = (category) => {
-    return (
-      Number(
-        category?.lowStockCount ??
-          category?.lowStockProducts ??
-          category?.lowStock ??
-          0
-      ) || 0
-    );
-  };
-
-  const getCreatedDate = (category) => {
-    if (!category?.createdAt) return "—";
-
-    const date = new Date(category.createdAt);
-
-    if (Number.isNaN(date.getTime())) return "—";
-
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  // ------------------------------------------------------------
-  // Statistics
-  // ------------------------------------------------------------
+  // ============================================================
+  // STATISTICS
+  // ============================================================
 
   const categoryStats = useMemo(() => {
     const totalCategories = categories.length;
 
     const activeCategories = categories.filter(
-      (category) => getCategoryStatus(category) === "Active"
+      (category) => getCategoryStatus(category) === "Active",
     ).length;
 
     const inactiveCategories = categories.filter(
-      (category) => getCategoryStatus(category) === "Inactive"
+      (category) => getCategoryStatus(category) === "Inactive",
     ).length;
 
     const totalProducts = categories.reduce(
       (total, category) => total + getProductCount(category),
-      0
+      0,
     );
 
     const totalLowStock = categories.reduce(
       (total, category) => total + getLowStockCount(category),
-      0
+      0,
     );
 
     return {
@@ -245,60 +245,83 @@ const Page = () => {
     };
   }, [categories]);
 
-  // ------------------------------------------------------------
-  // Filter Categories
-  // ------------------------------------------------------------
+  // ============================================================
+  // FILTER CATEGORIES
+  // ============================================================
 
   const filteredCategories = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return categories.filter((category) => {
       const name = getCategoryName(category).toLowerCase();
+
       const description = getCategoryDescription(category).toLowerCase();
+
+      const code = category?.categoryCode?.toLowerCase() || "";
 
       const matchesSearch =
         !normalizedSearch ||
         name.includes(normalizedSearch) ||
-        description.includes(normalizedSearch);
+        description.includes(normalizedSearch) ||
+        code.includes(normalizedSearch);
 
       const status = getCategoryStatus(category);
 
-      const matchesStatus =
-        statusFilter === "All" || status === statusFilter;
+      const matchesStatus = statusFilter === "All" || status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
   }, [categories, searchTerm, statusFilter]);
 
-  // ------------------------------------------------------------
-  // Delete Category
-  // ------------------------------------------------------------
+  // ============================================================
+  // DELETE CATEGORY
+  // ============================================================
 
-  const handleDelete = () => {
-    if (!deleteCategory) return;
+  const handleDelete = async () => {
+    if (!deleteCategory) {
+      return;
+    }
 
     const categoryId = getCategoryId(deleteCategory);
 
-    if (!categoryId) return;
+    if (!categoryId) {
+      return;
+    }
 
-    setIsDeleting(true);
+    try {
+      setIsDeleting(true);
 
-    // Simulate delete request
-    setTimeout(() => {
+      /*
+       * Your current route only has GET and POST.
+       *
+       * So there is currently no DELETE /api/category
+       * endpoint to call.
+       *
+       * Once you create the DELETE route, use:
+       *
+       * const response = await fetch(
+       *   `/api/category?id=${categoryId}`,
+       *   {
+       *     method: "DELETE",
+       *   }
+       * );
+       */
+
       setCategories((prev) =>
-        prev.filter(
-          (category) => getCategoryId(category) !== categoryId
-        )
+        prev.filter((category) => getCategoryId(category) !== categoryId),
       );
 
       setDeleteCategory(null);
+    } catch (error) {
+      console.error("Delete Category Error:", error);
+    } finally {
       setIsDeleting(false);
-    }, 500);
+    }
   };
 
-  // ------------------------------------------------------------
-  // Loading
-  // ------------------------------------------------------------
+  // ============================================================
+  // LOADING
+  // ============================================================
 
   if (isLoading) {
     return (
@@ -368,18 +391,17 @@ const Page = () => {
     );
   }
 
-  // ------------------------------------------------------------
-  // Dashboard
-  // ------------------------------------------------------------
+  // ============================================================
+  // MAIN PAGE
+  // ============================================================
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gray-50">
       <main className="h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="w-full p-4 sm:p-6 lg:p-7">
-
-          {/* ------------------------------------------------ */}
-          {/* Header */}
-          {/* ------------------------------------------------ */}
+          {/* ================================================= */}
+          {/* HEADER */}
+          {/* ================================================= */}
 
           <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
@@ -407,13 +429,34 @@ const Page = () => {
             </Link>
           </header>
 
-          {/* ------------------------------------------------ */}
-          {/* Statistics */}
-          {/* ------------------------------------------------ */}
+          {/* ================================================= */}
+          {/* ERROR */}
+          {/* ================================================= */}
+
+          {error && (
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <MdErrorOutline size={21} className="shrink-0 text-red-600" />
+
+                <p className="text-sm font-medium text-red-700">{error}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => fetchCategories()}
+                className="shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-700"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* ================================================= */}
+          {/* STATISTICS */}
+          {/* ================================================= */}
 
           <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-            {/* Total */}
+            {/* Total Categories */}
 
             <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
               <div className="flex items-center justify-between gap-4">
@@ -439,7 +482,7 @@ const Page = () => {
               </div>
             </article>
 
-            {/* Active */}
+            {/* Active Categories */}
 
             <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
               <div className="flex items-center justify-between gap-4">
@@ -519,19 +562,16 @@ const Page = () => {
                   Needs attention
                 </span>
 
-                <span className="text-xs text-gray-500">
-                  across categories
-                </span>
+                <span className="text-xs text-gray-500">across categories</span>
               </div>
             </article>
           </section>
 
-          {/* ------------------------------------------------ */}
-          {/* Table */}
-          {/* ------------------------------------------------ */}
+          {/* ================================================= */}
+          {/* TABLE */}
+          {/* ================================================= */}
 
           <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-
             {/* Table Header */}
 
             <header className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
@@ -552,7 +592,7 @@ const Page = () => {
                 </span>
 
                 <Link
-                  href="/create_category"
+                  href="/category/create"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[#611F69] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#501854]"
                 >
                   <MdAdd size={17} />
@@ -565,6 +605,7 @@ const Page = () => {
 
             <div className="border-b border-gray-100 p-4">
               <div className="flex flex-col gap-3 md:flex-row">
+                {/* Search */}
 
                 <div className="relative min-w-0 flex-1">
                   <MdSearch
@@ -575,10 +616,8 @@ const Page = () => {
                   <input
                     type="search"
                     value={searchTerm}
-                    onChange={(event) =>
-                      setSearchTerm(event.target.value)
-                    }
-                    placeholder="Search category..."
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Search category, code or description..."
                     className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#611F69] focus:ring-2 focus:ring-[#611F69]/10"
                   />
                 </div>
@@ -593,13 +632,13 @@ const Page = () => {
 
                   <select
                     value={statusFilter}
-                    onChange={(event) =>
-                      setStatusFilter(event.target.value)
-                    }
+                    onChange={(event) => setStatusFilter(event.target.value)}
                     className="h-10 w-full min-w-[150px] appearance-none rounded-lg border border-gray-200 bg-white pl-10 pr-9 text-sm text-gray-700 outline-none focus:border-[#611F69] focus:ring-2 focus:ring-[#611F69]/10"
                   >
                     <option value="All">All Status</option>
+
                     <option value="Active">Active</option>
+
                     <option value="Inactive">Inactive</option>
                   </select>
                 </div>
@@ -608,70 +647,55 @@ const Page = () => {
 
                 <button
                   type="button"
-                  onClick={fetchCategories}
-                  className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-gray-600 transition hover:bg-gray-50 hover:text-[#611F69]"
+                  onClick={() => fetchCategories(true)}
+                  disabled={isRefreshing}
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-gray-600 transition hover:bg-gray-50 hover:text-[#611F69] disabled:cursor-not-allowed disabled:opacity-50"
                   title="Refresh categories"
                 >
-                  <MdRefresh size={21} />
+                  <MdRefresh
+                    size={21}
+                    className={isRefreshing ? "animate-spin" : ""}
+                  />
                 </button>
               </div>
             </div>
 
-            {/* Table */}
+            {/* ================================================= */}
+            {/* TABLE */}
+            {/* ================================================= */}
 
             <div className="w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <table className="w-full min-w-[950px] text-left">
-
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/70 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <th className="px-5 py-3.5">
-                      Category
-                    </th>
+                    <th className="px-5 py-3.5">Category</th>
 
-                    <th className="px-5 py-3.5">
-                      Description
-                    </th>
+                    <th className="px-5 py-3.5">Description</th>
 
-                    <th className="px-5 py-3.5 text-center">
-                      Products
-                    </th>
+                    <th className="px-5 py-3.5 text-center">Products</th>
 
-                    <th className="px-5 py-3.5 text-center">
-                      Low Stock
-                    </th>
+                    <th className="px-5 py-3.5 text-center">Low Stock</th>
 
-                    <th className="px-5 py-3.5 text-center">
-                      Status
-                    </th>
+                    <th className="px-5 py-3.5 text-center">Status</th>
 
-                    <th className="px-5 py-3.5">
-                      Created
-                    </th>
+                    <th className="px-5 py-3.5">Created</th>
 
-                    <th className="px-5 py-3.5 text-center">
-                      Action
-                    </th>
+                    <th className="px-5 py-3.5 text-center">Action</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-gray-100 text-sm">
-
                   {filteredCategories.length > 0 ? (
                     filteredCategories.map((category) => {
-                      const categoryId =
-                        getCategoryId(category);
+                      const categoryId = getCategoryId(category);
 
-                      const categoryName =
-                        getCategoryName(category);
+                      const categoryName = getCategoryName(category);
 
-                      const productCount =
-                        getProductCount(category);
+                      const productCount = getProductCount(category);
 
-                      const lowStockCount =
-                        getLowStockCount(category);
+                      const lowStockCount = getLowStockCount(category);
 
-                      const status =
-                        getCategoryStatus(category);
+                      const status = getCategoryStatus(category);
 
                       return (
                         <tr
@@ -682,9 +706,10 @@ const Page = () => {
 
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              {/* Category Image */}
+                              {/* IMAGE */}
+
                               <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
-                                {category.image ? (
+                                {category?.image ? (
                                   <img
                                     src={category.image}
                                     alt={categoryName}
@@ -697,14 +722,15 @@ const Page = () => {
                                 )}
                               </div>
 
-                              {/* Category Info */}
+                              {/* INFO */}
+
                               <div className="min-w-0">
                                 <div className="truncate font-semibold text-gray-800">
                                   {categoryName}
                                 </div>
 
                                 <div className="mt-0.5 text-xs text-gray-500">
-                                  {category.categoryCode}
+                                  {category?.categoryCode || "—"}
                                 </div>
                               </div>
                             </div>
@@ -715,9 +741,9 @@ const Page = () => {
                           <td className="px-5 py-4">
                             <div
                               className="max-w-[280px] truncate text-sm text-gray-500"
-                              title={category.description}
+                              title={category?.description || ""}
                             >
-                              {category.description}
+                              {getCategoryDescription(category)}
                             </div>
                           </td>
 
@@ -797,6 +823,7 @@ const Page = () => {
                                     type="button"
                                     onClick={() => {
                                       setOpenMenu(null);
+
                                       setDeleteCategory(category);
                                     }}
                                     className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50"
@@ -813,42 +840,31 @@ const Page = () => {
                     })
                   ) : (
                     <tr>
-                      <td
-                        colSpan={7}
-                        className="px-5 py-16 text-center"
-                      >
+                      <td colSpan={7} className="px-5 py-16 text-center">
                         <div className="flex flex-col items-center gap-2">
-
                           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-50">
-                            <MdCategory
-                              size={36}
-                              className="text-gray-300"
-                            />
+                            <MdCategory size={36} className="text-gray-300" />
                           </div>
 
                           <p className="mt-2 text-sm font-medium text-gray-700">
-                            {searchTerm ||
-                            statusFilter !== "All"
+                            {searchTerm || statusFilter !== "All"
                               ? "No categories match your filters."
                               : "No categories found yet."}
                           </p>
 
-                          {!searchTerm &&
-                            statusFilter === "All" && (
-                              <Link
-                                href="/create_category"
-                                className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#611F69] hover:underline"
-                              >
-                                Create your first category
-                                <MdArrowForward size={16} />
-                              </Link>
-                            )}
-
+                          {!searchTerm && statusFilter === "All" && (
+                            <Link
+                              href="/create_category"
+                              className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#611F69] hover:underline"
+                            >
+                              Create your first category
+                              <MdArrowForward size={16} />
+                            </Link>
+                          )}
                         </div>
                       </td>
                     </tr>
                   )}
-
                 </tbody>
               </table>
             </div>
@@ -856,21 +872,17 @@ const Page = () => {
         </div>
       </main>
 
-      {/* ------------------------------------------------ */}
-      {/* Delete Modal */}
-      {/* ------------------------------------------------ */}
+      {/* ========================================================= */}
+      {/* DELETE MODAL */}
+      {/* ========================================================= */}
 
       {deleteCategory && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]">
-
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
-
             {/* Header */}
 
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-
               <div className="flex items-center gap-3">
-
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
                   <MdDeleteOutline size={22} />
                 </div>
@@ -884,26 +896,21 @@ const Page = () => {
                     This action requires confirmation.
                   </p>
                 </div>
-
               </div>
 
               <button
                 type="button"
-                onClick={() =>
-                  setDeleteCategory(null)
-                }
+                onClick={() => setDeleteCategory(null)}
                 disabled={isDeleting}
                 className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
               >
                 <MdClose size={22} />
               </button>
-
             </div>
 
             {/* Body */}
 
             <div className="px-5 py-5">
-
               <p className="text-sm leading-6 text-gray-600">
                 Are you sure you want to delete{" "}
                 <strong className="font-semibold text-gray-900">
@@ -913,35 +920,26 @@ const Page = () => {
               </p>
 
               <div className="mt-4 rounded-lg border border-yellow-100 bg-yellow-50 p-3">
-
                 <div className="flex gap-2">
-
                   <MdWarning
                     size={19}
                     className="mt-0.5 shrink-0 text-yellow-600"
                   />
 
                   <p className="text-xs leading-5 text-yellow-800">
-                    If this category is assigned to existing
-                    products, make sure those products are
-                    reassigned before deleting the category.
+                    If this category is assigned to existing products, make sure
+                    those products are reassigned before deleting the category.
                   </p>
-
                 </div>
-
               </div>
-
             </div>
 
             {/* Footer */}
 
             <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-5 py-4">
-
               <button
                 type="button"
-                onClick={() =>
-                  setDeleteCategory(null)
-                }
+                onClick={() => setDeleteCategory(null)}
                 disabled={isDeleting}
                 className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
               >
@@ -956,13 +954,9 @@ const Page = () => {
               >
                 <MdDeleteOutline size={18} />
 
-                {isDeleting
-                  ? "Deleting..."
-                  : "Delete Category"}
+                {isDeleting ? "Deleting..." : "Delete Category"}
               </button>
-
             </div>
-
           </div>
         </div>
       )}
@@ -971,4 +965,3 @@ const Page = () => {
 };
 
 export default Page;
-
