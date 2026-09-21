@@ -11,7 +11,6 @@ import {
   MdImage,
   MdCheckCircle,
   MdErrorOutline,
-  MdDeleteOutline,
 } from "react-icons/md";
 
 export default function CreateCategoryPage() {
@@ -28,6 +27,7 @@ export default function CreateCategoryPage() {
   const [imagePreview, setImagePreview] = useState("");
 
   const [loading, setLoading] = useState(false);
+
   const [message, setMessage] = useState({
     type: "",
     text: "",
@@ -66,7 +66,7 @@ export default function CreateCategoryPage() {
   };
 
   // =====================================================
-  // HANDLE CATEGORY CODE
+  // CATEGORY CODE
   // =====================================================
 
   const handleCategoryCodeChange = (e) => {
@@ -76,10 +76,17 @@ export default function CreateCategoryPage() {
       ...prev,
       categoryCode: value,
     }));
+
+    if (message.text) {
+      setMessage({
+        type: "",
+        text: "",
+      });
+    }
   };
 
   // =====================================================
-  // HANDLE IMAGE
+  // IMAGE SELECT
   // =====================================================
 
   const handleImageChange = (e) => {
@@ -87,7 +94,7 @@ export default function CreateCategoryPage() {
 
     if (!file) return;
 
-    // Validate image
+    // Check image type
     if (!file.type.startsWith("image/")) {
       setMessage({
         type: "error",
@@ -97,7 +104,7 @@ export default function CreateCategoryPage() {
       return;
     }
 
-    // 5MB limit
+    // Maximum 5MB
     if (file.size > 5 * 1024 * 1024) {
       setMessage({
         type: "error",
@@ -107,15 +114,15 @@ export default function CreateCategoryPage() {
       return;
     }
 
-    // Remove old preview
+    // Remove previous object URL
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
 
-    const preview = URL.createObjectURL(file);
+    const previewUrl = URL.createObjectURL(file);
 
     setImage(file);
-    setImagePreview(preview);
+    setImagePreview(previewUrl);
 
     setMessage({
       type: "",
@@ -141,19 +148,34 @@ export default function CreateCategoryPage() {
   };
 
   // =====================================================
-  // SUBMIT
+  // RESET FORM
+  // =====================================================
+
+  const resetForm = () => {
+    setFormData({
+      categoryName: "",
+      categoryCode: "",
+      description: "",
+    });
+
+    handleRemoveImage();
+  };
+
+  // =====================================================
+  // CREATE CATEGORY
   // =====================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Clear previous message
     setMessage({
       type: "",
       text: "",
     });
 
     // -------------------------
-    // Validation
+    // Frontend Validation
     // -------------------------
 
     if (!formData.categoryName.trim()) {
@@ -183,7 +205,16 @@ export default function CreateCategoryPage() {
       return;
     }
 
-    if (formData.description.length > 500) {
+    if (formData.categoryCode.trim().length > 30) {
+      setMessage({
+        type: "error",
+        text: "Category code cannot exceed 30 characters.",
+      });
+
+      return;
+    }
+
+    if (formData.description.trim().length > 500) {
       setMessage({
         type: "error",
         text: "Description cannot exceed 500 characters.",
@@ -192,64 +223,68 @@ export default function CreateCategoryPage() {
       return;
     }
 
-    // -------------------------
-    // Create FormData
-    // -------------------------
-
-    const data = new FormData();
-
-    data.append("categoryName", formData.categoryName.trim());
-
-    data.append("categoryCode", formData.categoryCode.trim().toUpperCase());
-
-    data.append("description", formData.description.trim());
-
-    if (image) {
-      data.append("image", image);
-    }
-
     try {
       setLoading(true);
+
+      // =================================================
+      // CREATE FORMDATA
+      // =================================================
+
+      const data = new FormData();
+
+      data.append("categoryName", formData.categoryName.trim());
+
+      data.append("categoryCode", formData.categoryCode.trim().toUpperCase());
+
+      data.append("description", formData.description.trim());
+
+      // Add image only if selected
+      if (image) {
+        data.append("image", image);
+      }
+
+      // =================================================
+      // POST API
+      // =================================================
 
       const response = await fetch("/api/category", {
         method: "POST",
         body: data,
       });
 
+      // Try to read JSON response
       const result = await response.json();
 
+      // =================================================
+      // API ERROR
+      // =================================================
+
       if (!response.ok) {
-        throw new Error(result.message || "Failed to create category.");
+        throw new Error(result?.message || "Failed to create category.");
       }
 
-      // -------------------------
-      // Success
-      // -------------------------
+      // =================================================
+      // SUCCESS
+      // =================================================
 
       setMessage({
         type: "success",
-        text: result.message || "Category created successfully!",
+        text: result?.message || "Category created successfully!",
       });
 
       // Reset form
-      setFormData({
-        categoryName: "",
-        categoryCode: "",
-        description: "",
-      });
+      resetForm();
 
-      handleRemoveImage();
-
-      // Redirect after success
+      // Redirect after 1 second
       setTimeout(() => {
-        router.push("/dashboard/category");
-      }, 1200);
+        router.push("/category");
+      }, 1000);
     } catch (error) {
       console.error("Create Category Error:", error);
 
       setMessage({
         type: "error",
-        text: error.message || "Something went wrong. Please try again.",
+        text: error?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -306,11 +341,15 @@ export default function CreateCategoryPage() {
           </div>
         )}
 
-        {/* -----------------------  FORM */}
+        {/* ================================================= */}
+        {/* FORM */}
+        {/* ================================================= */}
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-            {/* -----------------------  Left side -----------------------  */}
+            {/* ================================================= */}
+            {/* CATEGORY INFORMATION */}
+            {/* ================================================= */}
 
             <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-100 px-6 py-5">
@@ -332,7 +371,7 @@ export default function CreateCategoryPage() {
               </div>
 
               <div className="space-y-6 p-6">
-                {/* Category Name */}
+                {/* CATEGORY NAME */}
 
                 <div>
                   <label
@@ -362,7 +401,7 @@ export default function CreateCategoryPage() {
                   </div>
                 </div>
 
-                {/* Category */}
+                {/* CATEGORY CODE */}
 
                 <div>
                   <label
@@ -386,11 +425,11 @@ export default function CreateCategoryPage() {
                   />
 
                   <p className="mt-1.5 text-xs text-gray-400">
-                    Use a short unique code for this category.
+                    Use a unique code for this category.
                   </p>
                 </div>
 
-                {/* Description */}
+                {/* DESCRIPTION */}
 
                 <div>
                   <div className="mb-2 flex items-center justify-between">
@@ -413,7 +452,7 @@ export default function CreateCategoryPage() {
                     onChange={handleChange}
                     placeholder="Write a short description about this category..."
                     maxLength={500}
-                    rows={6}
+                    rows={7}
                     disabled={loading}
                     className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#611F69] focus:bg-white focus:ring-4 focus:ring-[#611F69]/10 disabled:cursor-not-allowed disabled:opacity-60"
                   />
@@ -421,7 +460,9 @@ export default function CreateCategoryPage() {
               </div>
             </div>
 
-            {/* Right Side - IMAGE Will be show there */}
+            {/* ================================================= */}
+            {/* IMAGE */}
+            {/* ================================================= */}
 
             <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-100 px-6 py-5">
@@ -435,7 +476,7 @@ export default function CreateCategoryPage() {
               <div className="p-6">
                 {imagePreview ? (
                   <div>
-                    {/* Image Preview */}
+                    {/* PREVIEW */}
 
                     <div className="group relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
                       <img
@@ -444,40 +485,34 @@ export default function CreateCategoryPage() {
                         className="h-full w-full object-cover"
                       />
 
-                      {/* Remove */}
-
                       <button
                         type="button"
                         onClick={handleRemoveImage}
                         disabled={loading}
                         className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-gray-600 shadow-md transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed"
-                        aria-label="Remove image"
                       >
                         <MdClose size={20} />
                       </button>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <MdImage
-                          className="shrink-0 text-[#611F69]"
-                          size={20}
-                        />
+                    {/* FILE NAME */}
 
-                        <span className="truncate text-sm font-medium text-gray-700">
-                          {image?.name}
-                        </span>
-                      </div>
+                    <div className="mt-4 flex items-center gap-2">
+                      <MdImage size={20} className="shrink-0 text-[#611F69]" />
 
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        disabled={loading}
-                        className="ml-3 shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600 disabled:opacity-50"
-                      >
-                        Remove
-                      </button>
+                      <span className="truncate text-sm font-medium text-gray-700">
+                        {image?.name}
+                      </span>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      disabled={loading}
+                      className="mt-3 text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-50"
+                    >
+                      Remove image
+                    </button>
                   </div>
                 ) : (
                   <button
@@ -508,8 +543,6 @@ export default function CreateCategoryPage() {
                   </button>
                 )}
 
-                {/* Hidden File Input */}
-
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -521,10 +554,9 @@ export default function CreateCategoryPage() {
             </div>
           </div>
 
-          {/****
-           *Action Button
-           *
-           */}
+          {/* ================================================= */}
+          {/* ACTION BUTTONS */}
+          {/* ================================================= */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Link
