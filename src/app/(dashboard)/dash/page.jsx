@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import "../../css/Dashboard.css";
+import "../../../css/Dashboard.css";
 import {
   LineChart,
   Line,
