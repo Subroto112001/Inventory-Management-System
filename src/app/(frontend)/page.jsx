@@ -1,314 +1,303 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import {
-  MdFavorite,
-  MdKeyboardArrowLeft,
-  MdKeyboardArrowRight,
-  MdStar,
-  MdStarBorder,
-  MdLocalShipping,
-  MdSecurity,
-  MdReplay,
-  MdSupportAgent,
-  MdFlashOn,
-  MdArrowForward,
-  MdAddShoppingCart,
-  MdEmail,
+  MdSearch,
+  MdMenu,
+  MdShoppingBag,
   MdFavoriteBorder,
+  MdStar,
+  MdLocalShipping,
+  MdVerifiedUser,
+  MdAutorenew,
+  MdAddShoppingCart,
+  MdPhoneInTalk,
+  MdLocationOn,
+  MdSyncAlt,
+  MdPersonOutline,
+  MdCreditCard,
+  MdBolt,
 } from "react-icons/md";
+
+/* =========================================================
+   DESIGN SYSTEM & TYPOGRAPHY
+========================================================= */
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif';
 
 /* =========================================================
    DUMMY DATA
 ========================================================= */
-
-const heroSlides = [
-  {
-    id: 1,
-    title: "Upgrade Your Everyday",
-    subtitle: "Latest products. Better prices. Smarter shopping.",
-    discount: "UP TO 40% OFF",
-    button: "Shop Now",
-    image:
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    id: 2,
-    title: "Big Season Sale",
-    subtitle: "Discover amazing deals across our latest collections.",
-    discount: "SAVE UP TO 50%",
-    button: "Explore Deals",
-    image:
-      "https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    id: 3,
-    title: "New Arrivals Are Here",
-    subtitle: "Fresh styles and new technology just landed.",
-    discount: "NEW COLLECTION",
-    button: "Discover Now",
-    image:
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1800&q=85",
-  },
-];
-
 const categories = [
   {
     id: 1,
-    name: "Electronics",
-    count: "120+ Products",
+    name: "Phones",
+    slug: "phones",
+    count: "120+ Items",
     image:
-      "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=500&q=80",
+      "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: 2,
-    name: "Fashion",
-    count: "250+ Products",
+    name: "Laptops",
+    slug: "laptops",
+    count: "85+ Items",
     image:
-      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=500&q=80",
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: 3,
-    name: "Beauty",
-    count: "90+ Products",
+    name: "Smart Watches",
+    slug: "smart-watches",
+    count: "60+ Items",
     image:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&q=80",
+      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: 4,
-    name: "Home & Living",
-    count: "180+ Products",
+    name: "Audio & Headphones",
+    slug: "audio",
+    count: "110+ Items",
     image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=500&q=80",
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: 5,
+    name: "Tablets",
+    slug: "tablets",
+    count: "45+ Items",
+    image:
+      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: 6,
     name: "Accessories",
-    count: "150+ Products",
+    slug: "accessories",
+    count: "300+ Items",
     image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80",
-  },
-  {
-    id: 6,
-    name: "Sports",
-    count: "80+ Products",
-    image:
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=500&q=80",
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80",
   },
 ];
 
-const products = [
+const topBrands = [
   {
     id: 1,
-    name: "Premium Wireless Headphones",
-    category: "Electronics",
-    price: 89,
-    oldPrice: 129,
-    discount: 31,
-    rating: 4.8,
-    reviews: 124,
-    image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=85",
-    badge: "Hot Deal",
+    name: "Apple",
+    logo: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=200&q=80",
   },
   {
     id: 2,
-    name: "Classic Minimal Watch",
-    category: "Accessories",
-    price: 64,
-    oldPrice: 89,
-    discount: 28,
-    rating: 4.7,
-    reviews: 87,
-    image:
-      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=700&q=85",
-    badge: "Best Seller",
+    name: "Samsung",
+    logo: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=200&q=80",
   },
   {
     id: 3,
-    name: "Modern Running Shoes",
-    category: "Sports",
-    price: 75,
-    oldPrice: 105,
-    discount: 29,
-    rating: 4.9,
-    reviews: 203,
-    image:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=85",
-    badge: "Popular",
+    name: "Google",
+    logo: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?auto=format&fit=crop&w=200&q=80",
   },
   {
     id: 4,
-    name: "Premium Everyday Backpack",
-    category: "Fashion",
-    price: 49,
-    oldPrice: 69,
-    discount: 29,
-    rating: 4.6,
-    reviews: 64,
-    image:
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=700&q=85",
-    badge: "New",
+    name: "Xiaomi",
+    logo: "https://images.unsplash.com/photo-1550029402-226115b7c579?auto=format&fit=crop&w=200&q=80",
   },
   {
     id: 5,
-    name: "Smart Fitness Watch",
-    category: "Electronics",
-    price: 119,
-    oldPrice: 159,
-    discount: 25,
-    rating: 4.8,
-    reviews: 156,
-    image:
-      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=700&q=85",
-    badge: "Hot Deal",
+    name: "Sony",
+    logo: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=200&q=80",
   },
   {
     id: 6,
-    name: "Premium Cotton T-Shirt",
-    category: "Fashion",
-    price: 29,
-    oldPrice: 39,
-    discount: 26,
-    rating: 4.5,
-    reviews: 91,
-    image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=85",
-    badge: "New",
-  },
-  {
-    id: 7,
-    name: "Portable Bluetooth Speaker",
-    category: "Electronics",
-    price: 55,
-    oldPrice: 79,
-    discount: 30,
-    rating: 4.7,
-    reviews: 118,
-    image:
-      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=700&q=85",
-    badge: "Best Seller",
-  },
-  {
-    id: 8,
-    name: "Premium Skincare Set",
-    category: "Beauty",
-    price: 42,
-    oldPrice: 59,
-    discount: 29,
-    rating: 4.8,
-    reviews: 76,
-    image:
-      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=700&q=85",
-    badge: "Popular",
+    name: "Anker",
+    logo: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=200&q=80",
   },
 ];
 
-const seasonalOffers = [
+const flashSaleProducts = [
   {
-    id: 1,
-    title: "Summer Collection",
-    subtitle: "Fresh styles for your everyday look",
-    discount: "30% OFF",
-    button: "Shop Fashion",
+    id: 101,
+    name: "Flagship Smartphone 5G - 256GB Titanium",
+    category: "Phones",
+    price: 142500,
+    oldPrice: 155000,
+    discount: "8% OFF",
+    rating: 4.9,
+    reviews: 320,
     image:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1000&q=85",
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=85",
   },
   {
-    id: 2,
-    title: "Tech Essentials",
-    subtitle: "Upgrade your setup with smarter technology",
-    discount: "UP TO 45% OFF",
-    button: "Shop Electronics",
+    id: 102,
+    name: "Ultra Thin Pro Laptop 14-inch M-Series",
+    category: "Laptops",
+    price: 128000,
+    oldPrice: 138000,
+    discount: "৳10,000 OFF",
+    rating: 4.8,
+    reviews: 142,
     image:
-      "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=1000&q=85",
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=85",
+  },
+  {
+    id: 103,
+    name: "Fitness Smart Watch Series 9 GPS",
+    category: "Smart Watches",
+    price: 46500,
+    oldPrice: 52000,
+    discount: "11% OFF",
+    rating: 4.7,
+    reviews: 89,
+    image:
+      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=85",
+  },
+  {
+    id: 104,
+    name: "Wireless ANC Earbuds Pro Type-C",
+    category: "Audio & Headphones",
+    price: 24500,
+    oldPrice: 28000,
+    discount: "12% OFF",
+    rating: 4.9,
+    reviews: 512,
+    image:
+      "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=85",
+  },
+];
+
+const featuredProducts = [
+  {
+    id: 201,
+    name: "NextGen Tablet 11-inch High Refresh Rate",
+    category: "Tablets",
+    price: 78500,
+    oldPrice: 84000,
+    rating: 4.8,
+    reviews: 64,
+    badge: "New Arrival",
+    image:
+      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=85",
+  },
+  {
+    id: 202,
+    name: "Ultra AI Smartphone 12GB/512GB",
+    category: "Phones",
+    price: 129000,
+    oldPrice: 139000,
+    rating: 4.9,
+    reviews: 210,
+    badge: "Official",
+    image:
+      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=85",
+  },
+  {
+    id: 203,
+    name: "Fast Charging 10000mAh Magnetic Power Bank",
+    category: "Accessories",
+    price: 6200,
+    oldPrice: 7500,
+    rating: 4.7,
+    reviews: 95,
+    badge: "Popular",
+    image:
+      "https://images.unsplash.com/photo-1609592424074-8b6528d223f6?auto=format&fit=crop&w=600&q=85",
+  },
+  {
+    id: 204,
+    name: "Pure Android Camera Phone 128GB",
+    category: "Phones",
+    price: 89500,
+    oldPrice: 98000,
+    rating: 4.8,
+    reviews: 178,
+    badge: "Best Value",
+    image:
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=85",
   },
 ];
 
 /* =========================================================
-   PRODUCT CARD
+   COMPONENTS
 ========================================================= */
-
-const ProductCard = ({ product, isFavorite, onFavorite, onAddCart }) => {
+const ProductCard = ({ product }) => {
   return (
-    <article className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl">
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+    <article
+      className="group flex flex-col rounded-xl bg-white p-3.5 transition-all duration-300 hover:shadow-xl ring-1 ring-[#E2E8F0] hover:ring-[#4F46E5]/40"
+      aria-labelledby={`product-title-${product.id}`}
+    >
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#F8FAFC] p-4 flex items-center justify-center">
         <img
           src={product.image}
           alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
         />
 
-        <div className="absolute left-3 top-3">
-          <span className="rounded-full bg-[#1D4ED8] px-3 py-1.5 text-[11px] font-bold text-white shadow-sm">
+        {product.discount && (
+          <span className="absolute left-2.5 top-2.5 rounded-md bg-[#EF4444] px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
+            {product.discount}
+          </span>
+        )}
+
+        {product.badge && !product.discount && (
+          <span className="absolute left-2.5 top-2.5 rounded-md bg-[#0F172A] px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
             {product.badge}
           </span>
-        </div>
+        )}
 
-        <div className="absolute right-3 top-3">
-          <button
-            type="button"
-            onClick={() => onFavorite(product.id)}
-            aria-label="Add to wishlist"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-gray-600 shadow-md backdrop-blur transition hover:bg-white hover:text-red-500"
-          >
-            {isFavorite ? (
-              <MdFavorite size={19} className="text-red-500" />
-            ) : (
-              <MdFavoriteBorder size={19} />
-            )}
-          </button>
-        </div>
-
-        <div className="absolute inset-x-3 bottom-3 translate-y-16 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={() => onAddCart(product)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-950 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#1D4ED8]"
-          >
-            <MdAddShoppingCart size={18} />
-            Add to Cart
-          </button>
-        </div>
+        <button
+          type="button"
+          aria-label={`Add ${product.name} to wishlist`}
+          className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#0F172A] backdrop-blur-sm transition-colors hover:bg-white hover:text-[#EF4444] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
+        >
+          <MdFavoriteBorder size={18} />
+        </button>
       </div>
 
-      <div className="p-4">
-        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400">
+      <div className="flex flex-1 flex-col pt-3">
+        <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider">
           {product.category}
         </p>
 
         <Link
           href={`/products/${product.id}`}
-          className="block min-h-[44px] text-sm font-semibold leading-5 text-gray-900 transition hover:text-[#1D4ED8]"
+          id={`product-title-${product.id}`}
+          className="mt-1 text-[14px] font-semibold text-[#0F172A] line-clamp-2 transition hover:text-[#4F46E5] focus-visible:outline-none focus-visible:underline"
         >
           {product.name}
         </Link>
 
-        <div className="mt-2 flex items-center gap-1">
-          <MdStar className="text-amber-400" size={16} />
-
-          <span className="text-xs font-semibold text-gray-700">
+        <div
+          className="mt-2 flex items-center gap-1"
+          aria-label={`Rating: ${product.rating} stars`}
+        >
+          <MdStar className="text-[#F59E0B]" size={14} aria-hidden="true" />
+          <span className="text-[12px] font-semibold text-[#0F172A]">
             {product.rating}
           </span>
-
-          <span className="text-xs text-gray-400">({product.reviews})</span>
+          <span className="text-[11px] text-[#64748B]">
+            ({product.reviews})
+          </span>
         </div>
 
-        <div className="mt-3 flex items-end justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-gray-950">
-              ${product.price}
+        <div className="mt-auto pt-3 flex items-end justify-between border-t border-[#F1F5F9]">
+          <div>
+            <span className="text-[16px] font-bold text-[#0F172A]">
+              ৳{product.price.toLocaleString("en-BD")}
             </span>
-
-            <span className="text-xs text-gray-400 line-through">
-              ${product.oldPrice}
-            </span>
+            {product.oldPrice > product.price && (
+              <span className="ml-1.5 text-[12px] text-[#94A3B8] line-through">
+                ৳{product.oldPrice.toLocaleString("en-BD")}
+              </span>
+            )}
           </div>
 
-          <span className="text-xs font-bold text-emerald-600">
-            -{product.discount}%
-          </span>
+          <button
+            type="button"
+            aria-label={`Add ${product.name} to cart`}
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F1F5F9] text-[#0F172A] transition hover:bg-[#4F46E5] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
+          >
+            <MdAddShoppingCart size={18} aria-hidden="true" />
+          </button>
         </div>
       </div>
     </article>
@@ -316,721 +305,682 @@ const ProductCard = ({ product, isFavorite, onFavorite, onAddCart }) => {
 };
 
 /* =========================================================
-   MAIN PAGE
+   MAIN E-COMMERCE HOMEPAGE (Electric Tech Theme)
 ========================================================= */
-
 export default function EcommerceHomePage() {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [favorites, setFavorites] = useState([]);
-  const [cartCount, setCartCount] = useState(0);
-  const [search, setSearch] = useState("");
+  const mainNavLinks = [
+    { label: "Phones", href: "/category/phones" },
+    { label: "Laptops", href: "/category/laptops" },
+    { label: "Tablets", href: "/category/tablets" },
+    { label: "Smart Watches", href: "/category/smart-watches" },
+    { label: "Audio", href: "/category/audio" },
+    { label: "Accessories", href: "/category/accessories" },
+    { label: "Gaming", href: "/category/gaming" },
+    { label: "Deals & Offers", href: "/offers" },
+  ];
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: 2,
-    hours: 12,
-    minutes: 45,
-    seconds: 30,
-  });
-
-  /* ---------------------------------------------------------
-     HERO AUTO SLIDER
-  --------------------------------------------------------- */
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  /* ---------------------------------------------------------
-     COUNTDOWN
-  --------------------------------------------------------- */
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        let { days, hours, minutes, seconds } = prev;
-
-        if (seconds > 0) {
-          seconds -= 1;
-        } else {
-          seconds = 59;
-
-          if (minutes > 0) {
-            minutes -= 1;
-          } else {
-            minutes = 59;
-
-            if (hours > 0) {
-              hours -= 1;
-            } else {
-              hours = 23;
-
-              if (days > 0) {
-                days -= 1;
-              }
-            }
-          }
-        }
-
-        return {
-          days,
-          hours,
-          minutes,
-          seconds,
-        };
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  /* ---------------------------------------------------------
-     FAVORITES
-  --------------------------------------------------------- */
-
-  const toggleFavorite = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
   };
-
-  /* ---------------------------------------------------------
-     CART
-  --------------------------------------------------------- */
-
-  const addToCart = () => {
-    setCartCount((prev) => prev + 1);
-  };
-
-  /* ---------------------------------------------------------
-     SEARCH
-  --------------------------------------------------------- */
-
-  const filteredProducts = useMemo(() => {
-    if (!search.trim()) return products;
-
-    const query = search.toLowerCase();
-
-    return products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query),
-    );
-  }, [search]);
-
-  const slide = heroSlides[activeSlide];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div
+      className="min-h-screen bg-[#F8FAFC] text-[#0F172A] selection:bg-[#4F46E5] selection:text-white"
+      style={{ fontFamily: FONT_STACK }}
+    >
+      {/* Skip to Content for Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-[#0F172A] focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+      >
+        Skip to main content
+      </a>
+
       {/* =====================================================
-          TOP ANNOUNCEMENT
+          1. TOP ANNOUNCEMENT BAR
       ===================================================== */}
-
-      <div className="bg-gray-950 px-4 py-2 text-center text-xs font-medium text-white">
-        Free shipping on orders over $75
-        <span className="mx-2 text-gray-500">•</span>
-        Easy 30-day returns
-      </div>
-
-     
-
-      <main>
-        {/* =====================================================
-            HERO
-        ===================================================== */}
-
-        <section className="relative overflow-hidden bg-gray-950">
-          <div className="relative min-h-[520px] sm:min-h-[580px] lg:min-h-[620px]">
-            {heroSlides.map((item, index) => (
-              <div
-                key={item.id}
-                className={`absolute inset-0 transition-opacity duration-700 ${
-                  index === activeSlide ? "z-10 opacity-100" : "z-0 opacity-0"
-                }`}
-              >
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-950/60 to-gray-950/20" />
-
-                <div className="relative z-10 mx-auto flex min-h-[520px] max-w-[1440px] items-center px-5 py-20 sm:min-h-[580px] sm:px-8 lg:min-h-[620px] lg:px-12">
-                  <div className="max-w-2xl">
-                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold tracking-wide text-white backdrop-blur-md">
-                      <MdFlashOn className="text-amber-400" />
-                      {item.discount}
-                    </div>
-
-                    <h1 className="max-w-2xl text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-7xl">
-                      {item.title}
-                    </h1>
-
-                    <p className="mt-6 max-w-xl text-base leading-7 text-gray-200 sm:text-lg">
-                      {item.subtitle}
-                    </p>
-
-                    <div className="mt-8 flex flex-wrap gap-3">
-                      <Link
-                        href="/shop"
-                        className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-gray-950 shadow-xl transition hover:bg-gray-100"
-                      >
-                        {item.button}
-                        <MdArrowForward size={18} />
-                      </Link>
-
-                      <Link
-                        href="/deals"
-                        className="inline-flex items-center rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
-                      >
-                        View Deals
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Hero arrows */}
-
-            <button
-              type="button"
-              onClick={() =>
-                setActiveSlide(
-                  (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
-                )
-              }
-              className="absolute left-4 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 sm:flex"
-              aria-label="Previous slide"
-            >
-              <MdKeyboardArrowLeft size={28} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                setActiveSlide((prev) => (prev + 1) % heroSlides.length)
-              }
-              className="absolute right-4 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 sm:flex"
-              aria-label="Next slide"
-            >
-              <MdKeyboardArrowRight size={28} />
-            </button>
-
-            {/* Indicators */}
-
-            <div className="absolute bottom-7 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
-              {heroSlides.map((item, index) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveSlide(index)}
-                  className={`h-2 rounded-full transition-all ${
-                    index === activeSlide ? "w-8 bg-white" : "w-2 bg-white/40"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
+      <div className="bg-[#0F172A] text-white text-[12px] py-1.5 border-b border-slate-800">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1 text-[#818CF8] font-semibold">
+              <MdPhoneInTalk size={14} /> Hotline: 09678-000111
+            </span>
+            <span className="hidden sm:inline-block text-slate-600">|</span>
+            <span className="hidden sm:flex items-center gap-1 text-slate-300">
+              <MdLocationOn size={14} /> Outlets: Dhanmondi, Banani, Jamuna
+              Future Park
+            </span>
           </div>
-        </section>
 
-        {/* =====================================================
-            TRUST FEATURES
-        ===================================================== */}
-
-        <section className="border-b border-gray-100 bg-white">
-          <div className="mx-auto grid max-w-[1440px] grid-cols-2 divide-x divide-gray-100 px-4 py-6 sm:px-6 lg:grid-cols-4 lg:px-8">
-            {[
-              {
-                icon: MdLocalShipping,
-                title: "Free Delivery",
-                text: "On orders over $75",
-              },
-              {
-                icon: MdSecurity,
-                title: "Secure Payment",
-                text: "100% protected checkout",
-              },
-              {
-                icon: MdReplay,
-                title: "Easy Returns",
-                text: "30-day return policy",
-              },
-              {
-                icon: MdSupportAgent,
-                title: "24/7 Support",
-                text: "We're here to help",
-              },
-            ].map((item, index) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.title}
-                  className={`flex items-center gap-3 px-4 py-3 ${
-                    index > 1 ? "hidden lg:flex" : ""
-                  }`}
-                >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1D4ED8]">
-                    <Icon size={23} />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">
-                      {item.title}
-                    </p>
-
-                    <p className="mt-0.5 text-xs text-gray-400">{item.text}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* =====================================================
-            CATEGORIES
-        ===================================================== */}
-
-        <section className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#1D4ED8]">
-                Explore
-              </p>
-
-              <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-                Shop by Category
-              </h2>
-
-              <p className="mt-2 text-sm text-gray-500">
-                Find everything you need in one place.
-              </p>
-            </div>
-
+          <div className="flex items-center gap-4 text-slate-300">
             <Link
-              href="/categories"
-              className="hidden items-center gap-1 text-sm font-bold text-gray-700 transition hover:text-[#1D4ED8] sm:flex"
+              href="/order-tracking"
+              className="hover:text-white transition"
             >
-              View All
-              <MdArrowForward size={18} />
+              Order Tracking
+            </Link>
+            <span className="text-slate-600">|</span>
+            <Link
+              href="/emi-info"
+              className="flex items-center gap-1 hover:text-white transition"
+            >
+              <MdCreditCard size={14} /> 0% EMI Available
             </Link>
           </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {categories.map((category) => (
+      {/* =====================================================
+          2. MAIN HEADER
+      ===================================================== */}
+      <header className="sticky top-0 z-50 border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6">
+          <button
+            type="button"
+            aria-label="Open mobile navigation menu"
+            className="flex h-10 w-10 items-center justify-center text-[#0F172A] lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] rounded-md"
+          >
+            <MdMenu size={24} />
+          </button>
+
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] rounded-md"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white">
+              <MdBolt size={20} />
+            </div>
+            <span className="text-[22px] font-black tracking-tight text-[#0F172A]">
+              Gadget<span className="text-[#4F46E5]">Pulse</span>
+            </span>
+          </Link>
+
+          {/* Search Bar */}
+          <div
+            role="search"
+            className="hidden flex-1 max-w-[560px] lg:flex items-center gap-2 rounded-full border border-[#CBD5E1] bg-[#F1F5F9] px-4 py-2 transition focus-within:border-[#4F46E5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#4F46E5]/20"
+          >
+            <MdSearch size={20} className="text-[#64748B]" aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Search for Smartphones, Laptops, Earbuds, Smart Watches..."
+              aria-label="Search products"
+              className="w-full bg-transparent text-[14px] outline-none placeholder:text-[#64748B]"
+            />
+            <button
+              type="submit"
+              className="rounded-full bg-[#0F172A] px-4 py-1 text-[12px] font-semibold text-white transition hover:bg-[#4F46E5]"
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Action Icons */}
+          <div className="flex items-center gap-4 sm:gap-6">
+            <Link
+              href="/compare"
+              aria-label="Compare products"
+              className="hidden sm:flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
+            >
+              <MdSyncAlt size={22} />
+              <span>Compare</span>
+            </Link>
+
+            <Link
+              href="/wishlist"
+              aria-label="Wishlist"
+              className="flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
+            >
+              <div className="relative">
+                <MdFavoriteBorder size={22} />
+                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#EF4444] text-[9px] font-bold text-white">
+                  0
+                </span>
+              </div>
+              <span className="hidden sm:inline">Wishlist</span>
+            </Link>
+
+            <Link
+              href="/cart"
+              aria-label="Shopping bag"
+              className="flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
+            >
+              <div className="relative">
+                <MdShoppingBag size={22} />
+                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#4F46E5] text-[9px] font-bold text-white">
+                  2
+                </span>
+              </div>
+              <span className="hidden sm:inline">Cart</span>
+            </Link>
+
+            <Link
+              href="/account"
+              aria-label="Account"
+              className="flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
+            >
+              <MdPersonOutline size={22} />
+              <span className="hidden sm:inline">Account</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Category Nav */}
+        <nav
+          aria-label="Category Menu"
+          className="hidden border-t border-[#E2E8F0] bg-white lg:block"
+        >
+          <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 sm:px-6">
+            {mainNavLinks.map((link) => (
               <Link
-                key={category.id}
-                href={`/category/${category.id}`}
-                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg"
+                key={link.label}
+                href={link.href}
+                className="py-2.5 text-[13px] font-medium text-[#0F172A] transition hover:text-[#4F46E5] focus-visible:outline-none focus-visible:underline"
               >
-                <div className="aspect-square overflow-hidden bg-gray-100">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-gray-900">
-                    {category.name}
-                  </h3>
-
-                  <p className="mt-1 text-xs text-gray-400">{category.count}</p>
-                </div>
+                {link.label}
               </Link>
             ))}
           </div>
+        </nav>
+      </header>
+
+      <main id="main-content" className="space-y-8 pb-16">
+        {/* =====================================================
+            3. HERO SECTION (Cyber-Tech Gradient)
+        ===================================================== */}
+        <section
+          aria-label="Promotions and Featured Offers"
+          className="pt-4 sm:pt-6"
+        >
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#312E81] lg:col-span-2 sm:min-h-[400px]">
+                <img
+                  src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1600&q=85"
+                  alt="Next-Gen Flagship Smartphone Banner"
+                  className="absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-overlay"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/80 to-transparent" />
+                <div className="relative z-10 flex h-full flex-col justify-end p-6 sm:p-10">
+                  <span className="text-[12px] font-bold uppercase tracking-widest text-[#818CF8]">
+                    Next-Gen Hardware
+                  </span>
+                  <h1 className="mt-2 text-[32px] font-black text-white sm:text-[44px] leading-tight">
+                    Flagship Tech Arrived
+                  </h1>
+                  <p className="mt-2 max-w-md text-[14px] text-slate-300">
+                    Sleek titanium builds, neural processing units, and
+                    high-performance displays. Official warranty included.
+                  </p>
+                  <div className="mt-6 flex items-center gap-4">
+                    <Link
+                      href="/shop"
+                      className="rounded-full bg-[#4F46E5] px-6 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#4338CA] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4F46E5]/50"
+                    >
+                      Explore Gear
+                    </Link>
+                    <span className="text-[16px] font-bold text-white">
+                      Starting ৳42,500
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Side Banners */}
+              <div className="flex flex-col gap-4">
+                <div className="relative flex-1 overflow-hidden rounded-2xl bg-[#0F172A] p-6 text-white min-h-[190px] border border-slate-800">
+                  <img
+                    src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"
+                    alt="Ultrabook Laptops"
+                    className="absolute inset-0 h-full w-full object-cover opacity-30"
+                  />
+                  <div className="relative z-10 flex h-full flex-col justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold uppercase text-[#F59E0B]">
+                        Featured Tech
+                      </span>
+                      <h2 className="text-[20px] font-bold">
+                        Pro Laptops & Rig Setup
+                      </h2>
+                    </div>
+                    <Link
+                      href="/shop"
+                      className="text-[13px] font-semibold text-[#818CF8] hover:underline"
+                    >
+                      Explore Laptops &rarr;
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="relative flex-1 overflow-hidden rounded-2xl bg-white p-6 text-[#0F172A] min-h-[190px] border border-[#E2E8F0]">
+                  <img
+                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80"
+                    alt="Premium Wireless Audio Gear"
+                    className="absolute right-0 top-0 h-full w-1/2 object-contain p-2"
+                  />
+                  <div className="relative z-10 flex h-full flex-col justify-between max-w-[60%]">
+                    <div>
+                      <span className="text-[11px] font-bold uppercase text-[#7C3AED]">
+                        High Fidelity
+                      </span>
+                      <h2 className="text-[20px] font-bold">
+                        Acoustics & Audio
+                      </h2>
+                    </div>
+                    <Link
+                      href="/shop"
+                      className="text-[13px] font-semibold text-[#4F46E5] hover:underline"
+                    >
+                      Up to 30% OFF &rarr;
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* =====================================================
-            HOT DEALS
+            4. TRUST BADGES
         ===================================================== */}
-
-        <section className="bg-gray-50">
-          <div className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-              <div>
-                <div className="flex items-center gap-2">
-                  <MdFlashOn className="text-amber-500" size={24} />
-
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">
-                    Limited Time
-                  </p>
-                </div>
-
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-                  Hot Deals
-                </h2>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  Grab these deals before they're gone.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {[
-                  ["02", "Days"],
-                  ["12", "Hours"],
-                  ["45", "Min"],
-                  ["30", "Sec"],
-                ].map(([number, label]) => (
-                  <div
-                    key={label}
-                    className="min-w-[52px] rounded-xl border border-gray-200 bg-white px-2 py-2 text-center shadow-sm"
-                  >
-                    <p className="text-lg font-black text-gray-950">
-                      {label === "Days"
-                        ? String(timeLeft.days).padStart(2, "0")
-                        : label === "Hours"
-                          ? String(timeLeft.hours).padStart(2, "0")
-                          : label === "Min"
-                            ? String(timeLeft.minutes).padStart(2, "0")
-                            : String(timeLeft.seconds).padStart(2, "0")}
-                    </p>
-
-                    <p className="text-[9px] font-semibold uppercase text-gray-400">
-                      {label}
-                    </p>
+        <section aria-label="Service Guarantees">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="grid grid-cols-2 gap-4 rounded-2xl bg-white p-6 border border-[#E2E8F0] md:grid-cols-4">
+              {[
+                {
+                  icon: MdVerifiedUser,
+                  title: "100% Authentic",
+                  desc: "Original Tech Guaranteed",
+                },
+                {
+                  icon: MdLocalShipping,
+                  title: "Fast Delivery",
+                  desc: "Express delivery islandwide",
+                },
+                {
+                  icon: MdAutorenew,
+                  title: "Easy Return",
+                  desc: "7 Days replacement policy",
+                },
+                {
+                  icon: MdCreditCard,
+                  title: "0% EMI Facility",
+                  desc: "Up to 36 months EMI option",
+                },
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
+                      <Icon size={22} aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h3 className="text-[13px] font-bold text-[#0F172A]">
+                        {item.title}
+                      </h3>
+                      <p className="text-[11px] text-[#64748B]">{item.desc}</p>
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
+          </div>
+        </section>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {products.slice(0, 4).map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={favorites.includes(product.id)}
-                  onFavorite={toggleFavorite}
-                  onAddCart={addToCart}
-                />
+        {/* =====================================================
+            5. BRANDS GRID
+        ===================================================== */}
+        <section aria-labelledby="top-brands-heading">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h2
+                id="top-brands-heading"
+                className="text-[20px] font-bold text-[#0F172A]"
+              >
+                Top Tech Brands
+              </h2>
+            </div>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+              {topBrands.map((brand) => (
+                <Link
+                  key={brand.id}
+                  href={`/brand/${brand.name.toLowerCase()}`}
+                  className="flex flex-col items-center justify-center rounded-xl bg-white p-4 border border-[#E2E8F0] transition hover:border-[#4F46E5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
+                >
+                  <img
+                    src={brand.logo}
+                    alt={`${brand.name} logo`}
+                    className="h-10 w-10 object-contain"
+                  />
+                  <span className="mt-2 text-[12px] font-semibold text-[#0F172A]">
+                    {brand.name}
+                  </span>
+                </Link>
               ))}
             </div>
           </div>
         </section>
 
         {/* =====================================================
-            SEASONAL OFFERS
+            6. FLASH SALE
         ===================================================== */}
-
-        <section className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <div className="mb-8">
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#1D4ED8]">
-              Special Offers
-            </p>
-
-            <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-              Seasonal Offers
-            </h2>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            {seasonalOffers.map((offer) => (
-              <div
-                key={offer.id}
-                className="group relative min-h-[300px] overflow-hidden rounded-3xl"
-              >
-                <img
-                  src={offer.image}
-                  alt={offer.title}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-950/50 to-transparent" />
-
-                <div className="relative z-10 flex min-h-[300px] max-w-md flex-col justify-center p-7 sm:p-10">
-                  <span className="mb-4 w-fit rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
-                    {offer.discount}
-                  </span>
-
-                  <h3 className="text-2xl font-black text-white sm:text-3xl">
-                    {offer.title}
-                  </h3>
-
-                  <p className="mt-3 text-sm leading-6 text-gray-200">
-                    {offer.subtitle}
-                  </p>
-
-                  <Link
-                    href="/shop"
-                    className="mt-6 flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-gray-950 transition hover:bg-gray-100"
+        <section aria-labelledby="flash-sale-heading">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="rounded-2xl bg-white p-6 border border-[#E2E8F0]">
+              <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center border-b border-[#F1F5F9] pb-4">
+                <div className="flex items-center gap-3">
+                  <h2
+                    id="flash-sale-heading"
+                    className="text-[22px] font-black text-[#0F172A]"
                   >
-                    {offer.button}
-                    <MdArrowForward size={18} />
+                    Flash Deals
+                  </h2>
+                  <span className="rounded-md bg-[#EF4444] px-2.5 py-1 text-[11px] font-bold text-white">
+                    Ending Soon
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-[13px] font-semibold text-[#0F172A]">
+                  <span>Ends In:</span>
+                  <div className="flex items-center gap-1 font-mono">
+                    <span className="rounded bg-[#0F172A] px-2 py-1 text-white">
+                      02
+                    </span>
+                    :
+                    <span className="rounded bg-[#0F172A] px-2 py-1 text-white">
+                      14
+                    </span>
+                    :
+                    <span className="rounded bg-[#0F172A] px-2 py-1 text-white">
+                      38
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {flashSaleProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================================
+            7. FEATURED CATEGORIES
+        ===================================================== */}
+        <section aria-labelledby="featured-categories-heading">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h2
+                id="featured-categories-heading"
+                className="text-[20px] font-bold text-[#0F172A]"
+              >
+                Featured Categories
+              </h2>
+              <Link
+                href="/categories"
+                className="text-[13px] font-semibold text-[#4F46E5] hover:underline"
+              >
+                View All Categories
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/category/${cat.slug}`}
+                  className="group flex flex-col items-center rounded-xl bg-white p-4 border border-[#E2E8F0] text-center transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
+                >
+                  <div className="h-20 w-20 overflow-hidden rounded-full bg-[#F8FAFC] p-2">
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
+                    />
+                  </div>
+                  <h3 className="mt-3 text-[13px] font-bold text-[#0F172A]">
+                    {cat.name}
+                  </h3>
+                  <p className="text-[11px] text-[#64748B]">{cat.count}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================================
+            8. POPULAR PRODUCTS
+        ===================================================== */}
+        <section aria-labelledby="popular-heading">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h2
+                id="popular-heading"
+                className="text-[20px] font-bold text-[#0F172A]"
+              >
+                Trending Electronics
+              </h2>
+              <Link
+                href="/shop"
+                className="text-[13px] font-semibold text-[#4F46E5] hover:underline"
+              >
+                See More
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================================
+            9. PROMO BANNERS
+        ===================================================== */}
+        <section aria-label="Special Offers and Services">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#0F172A] to-[#1E293B] p-6 text-white border border-slate-800">
+                <div>
+                  <span className="text-[11px] font-bold uppercase text-[#818CF8]">
+                    Trade-In Program
+                  </span>
+                  <h3 className="mt-1 text-[22px] font-bold">
+                    Exchange Your Old Device
+                  </h3>
+                  <p className="mt-1 text-[13px] text-slate-300">
+                    Upgrade your phone or laptop with maximum trade-in value.
+                  </p>
+                  <Link
+                    href="/exchange"
+                    className="mt-4 inline-block text-[13px] font-bold text-[#818CF8] hover:underline"
+                  >
+                    Get Instant Valuation &rarr;
                   </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* =====================================================
-            FEATURED PRODUCTS
-        ===================================================== */}
-
-        <section className="border-y border-gray-100 bg-white">
-          <div className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="mb-8 flex items-end justify-between gap-4">
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#1D4ED8]">
-                  Our Collection
-                </p>
-
-                <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-                  Featured Products
-                </h2>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  Handpicked products our customers love.
-                </p>
-              </div>
-
-              <Link
-                href="/shop"
-                className="hidden items-center gap-1 text-sm font-bold text-gray-700 hover:text-[#1D4ED8] sm:flex"
-              >
-                View All Products
-                <MdArrowForward size={18} />
-              </Link>
-            </div>
-
-            {search && (
-              <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                Showing results for <strong>&quot;{search}&quot;</strong>
-              </div>
-            )}
-
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {filteredProducts.slice(0, 8).map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    isFavorite={favorites.includes(product.id)}
-                    onFavorite={toggleFavorite}
-                    onAddCart={addToCart}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-                <MdSearch size={40} className="mx-auto text-gray-300" />
-
-                <h3 className="mt-3 font-bold text-gray-900">
-                  No products found
-                </h3>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Try searching for another product.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* =====================================================
-            PROMOTIONAL BANNER
-        ===================================================== */}
-
-        <section className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <div className="relative overflow-hidden rounded-3xl bg-gray-950">
-            <div className="absolute right-0 top-0 h-full w-1/2">
-              <img
-                src="https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1200&q=85"
-                alt="Shopping promotion"
-                className="h-full w-full object-cover opacity-70"
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/50 to-transparent" />
-            </div>
-
-            <div className="relative z-10 px-6 py-14 sm:px-10 lg:px-16 lg:py-20">
-              <div className="max-w-xl">
-                <span className="rounded-full bg-blue-500/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-300">
-                  Member Exclusive
-                </span>
-
-                <h2 className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl">
-                  Get extra savings on your next order.
-                </h2>
-
-                <p className="mt-4 text-sm leading-6 text-gray-300 sm:text-base">
-                  Join our shopping community and receive exclusive deals, early
-                  access to new products, and special member offers.
-                </p>
-
-                <Link
-                  href="/shop"
-                  className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-gray-950 transition hover:bg-gray-100"
-                >
-                  Start Shopping
-                  <MdArrowForward size={18} />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================
-            NEW ARRIVALS
-        ===================================================== */}
-
-        <section className="bg-gray-50">
-          <div className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="mb-8 flex items-end justify-between">
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#1D4ED8]">
-                  Just In
-                </p>
-
-                <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-                  New Arrivals
-                </h2>
-              </div>
-
-              <Link
-                href="/new-arrivals"
-                className="flex items-center gap-1 text-sm font-bold text-gray-700 hover:text-[#1D4ED8]"
-              >
-                Explore
-                <MdArrowForward size={18} />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {products.slice(4, 8).map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={favorites.includes(product.id)}
-                  onFavorite={toggleFavorite}
-                  onAddCart={addToCart}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================
-            WHY CHOOSE US
-        ===================================================== */}
-
-        <section className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#1D4ED8]">
-              Our Promise
-            </p>
-
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-              Shopping made simple
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-gray-500">
-              Everything you need for a smooth and reliable shopping experience.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                icon: MdLocalShipping,
-                title: "Fast Delivery",
-                text: "Reliable delivery directly to your doorstep.",
-              },
-              {
-                icon: MdSecurity,
-                title: "Secure Checkout",
-                text: "Your payment and personal information stay protected.",
-              },
-              {
-                icon: MdReplay,
-                title: "Easy Returns",
-                text: "Changed your mind? Return eligible products easily.",
-              },
-              {
-                icon: MdSupportAgent,
-                title: "Dedicated Support",
-                text: "Our support team is ready whenever you need us.",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-gray-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-[#1D4ED8]">
-                    <Icon size={25} />
-                  </div>
-
-                  <h3 className="mt-5 text-base font-bold text-gray-950">
-                    {item.title}
+              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#3730A3] p-6 text-white">
+                <div>
+                  <span className="text-[11px] font-bold uppercase text-indigo-200">
+                    Support & Service
+                  </span>
+                  <h3 className="mt-1 text-[22px] font-bold">
+                    Certified Tech Repair
                   </h3>
-
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {item.text}
+                  <p className="mt-1 text-[13px] text-indigo-100">
+                    Display replacement, battery fixes & hardware repair by
+                    specialists.
                   </p>
+                  <Link
+                    href="/repair"
+                    className="mt-4 inline-block text-[13px] font-bold text-white underline"
+                  >
+                    Book Service Appointment &rarr;
+                  </Link>
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </div>
         </section>
 
         {/* =====================================================
-            NEWSLETTER
+            10. SEO CONTENT SECTION
         ===================================================== */}
-
-        <section className="border-y border-gray-100 bg-white">
-          <div className="mx-auto max-w-[900px] px-4 py-14 text-center sm:px-6 lg:py-20">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#1D4ED8]">
-              <MdEmail size={28} />
-            </div>
-
-            <h2 className="mt-5 text-2xl font-black text-gray-950 sm:text-3xl">
-              Stay in the loop
-            </h2>
-
-            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-gray-500">
-              Subscribe to get the latest products, exclusive offers, and
-              seasonal deals delivered to your inbox.
-            </p>
-
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="mx-auto mt-7 flex max-w-xl flex-col gap-3 sm:flex-row"
-            >
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="h-12 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#1D4ED8] focus:bg-white focus:ring-4 focus:ring-blue-50"
-              />
-
-              <button
-                type="submit"
-                className="h-12 rounded-xl bg-gray-950 px-6 text-sm font-bold text-white transition hover:bg-[#1D4ED8]"
+        <section aria-labelledby="about-store-heading" className="pt-4">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <div className="rounded-2xl bg-white p-6 sm:p-8 border border-[#E2E8F0]">
+              <h2
+                id="about-store-heading"
+                className="text-[18px] font-bold text-[#0F172A]"
               >
-                Subscribe
-              </button>
-            </form>
-
-            <p className="mt-3 text-[11px] text-gray-400">
-              No spam. Unsubscribe anytime.
-            </p>
+                GadgetPulse - Premium Tech & Gadget Store in Bangladesh
+              </h2>
+              <p className="mt-3 text-[13px] leading-relaxed text-[#64748B]">
+                GadgetPulse is your ultimate destination for authentic consumer
+                electronics and gadgets. We bring you official and international
+                warranty products from top global technology brands, including
+                smartphones, laptops, audio gear, smart home accessories, and
+                wearable technology. Enjoy safe online ordering with fast
+                delivery, official brand warranties, and flexible 0% EMI
+                options.
+              </p>
+            </div>
           </div>
         </section>
       </main>
 
-     
+      {/* =====================================================
+          11. FOOTER
+      ===================================================== */}
+      <footer className="border-t border-[#E2E8F0] bg-white text-[#0F172A]">
+        <div className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#4F46E5] text-white">
+                  <MdBolt size={18} />
+                </div>
+                <span className="text-[20px] font-black tracking-tight text-[#0F172A]">
+                  Gadget<span className="text-[#4F46E5]">Pulse</span>
+                </span>
+              </div>
+              <p className="mt-3 text-[13px] text-[#64748B]">
+                Your trusted e-commerce platform for original gadgets and tech
+                solutions.
+              </p>
+              <div className="mt-4 space-y-2 text-[13px]">
+                <p className="font-semibold text-[#0F172A]">
+                  Hotline: <span className="text-[#4F46E5]">09678-000111</span>
+                </p>
+                <p className="text-[#64748B]">Email: support@gadgetpulse.com</p>
+                <p className="text-[#64748B]">
+                  Hours: 10:00 AM - 8:00 PM (Everyday)
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-[14px] font-bold text-[#0F172A] uppercase tracking-wider">
+                Our Outlets
+              </h3>
+              <ul className="mt-3 space-y-2 text-[13px] text-[#64748B]">
+                <li>
+                  <strong className="text-[#0F172A]">Dhanmondi:</strong> Level
+                  3, Shimanto Square, Dhaka
+                </li>
+                <li>
+                  <strong className="text-[#0F172A]">Bashundhara:</strong> Level
+                  5, Jamuna Future Park
+                </li>
+                <li>
+                  <strong className="text-[#0F172A]">Banani:</strong> Road 11,
+                  Block C, Dhaka
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-[14px] font-bold text-[#0F172A] uppercase tracking-wider">
+                Customer Care
+              </h3>
+              <ul className="mt-3 space-y-2 text-[13px] text-[#64748B]">
+                <li>
+                  <Link href="/about" className="hover:text-[#4F46E5]">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/warranty-policy"
+                    className="hover:text-[#4F46E5]"
+                  >
+                    Warranty Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/replacement-policy"
+                    className="hover:text-[#4F46E5]"
+                  >
+                    Replacement Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/emi-terms" className="hover:text-[#4F46E5]">
+                    EMI Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy-policy" className="hover:text-[#4F46E5]">
+                    Privacy Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-[14px] font-bold text-[#0F172A] uppercase tracking-wider">
+                Stay Connected
+              </h3>
+              <p className="mt-3 text-[13px] text-[#64748B]">
+                Subscribe to get daily discount codes & news updates.
+              </p>
+              <form
+                onSubmit={handleNewsletterSubmit}
+                className="mt-3 flex items-center gap-2"
+              >
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  aria-label="Email address for newsletter"
+                  className="w-full rounded-lg border border-[#CBD5E1] bg-[#F1F5F9] px-3 py-2 text-[13px] outline-none focus:border-[#4F46E5]"
+                />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-[#0F172A] px-4 py-2 text-[13px] font-bold text-white transition hover:bg-[#4F46E5]"
+                >
+                  Join
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#E2E8F0] pt-6 text-[12px] text-[#94A3B8] sm:flex-row">
+            <p>
+              © {new Date().getFullYear()} GadgetPulse Inc. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
+              <span>bKash / Nagad / Visa / Mastercard Accepted</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

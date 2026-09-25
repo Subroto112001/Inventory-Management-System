@@ -11,11 +11,11 @@ const leagueSpartan = League_Spartan({
 export default function FrontendLayout({ children }) {
   return (
     <div className={leagueSpartan.className}>
-      <FrontHeader />
+      {/* <FrontHeader /> */}
 
       <main>{children}</main>
 
-      <FrontFooter />
+      {/* <FrontFooter /> */}
     </div>
   );
 }
