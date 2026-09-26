@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -41,12 +42,16 @@ const NAV_LINKS = [
   { label: "Sale", href: "#" },
 ];
 
+/* =========================================================
+   REAL PRODUCT IMAGES
+   ========================================================= */
+
 const CHECKOUT_PRODUCTS = [
   {
     id: 1,
     image:
-      "https://placehold.co/160x160/1F3A2E/F7F3EC?text=Alder+Chair",
-    name: "Alder Oak Dining Chair",
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=500&q=85",
+    name: "Alder Oak Lounge Chair",
     category: "Furniture",
     price: 189,
     quantity: 1,
@@ -54,8 +59,8 @@ const CHECKOUT_PRODUCTS = [
   {
     id: 2,
     image:
-      "https://placehold.co/160x160/B65C38/F7F3EC?text=Stoneware",
-    name: "Hand-Thrown Stoneware Mug Set",
+      "https://images.unsplash.com/photo-1572119865084-43c285814d63?auto=format&fit=crop&w=500&q=85",
+    name: "Hand-Thrown Ceramic Mug",
     category: "Kitchen & Dining",
     price: 58,
     quantity: 2,
@@ -111,7 +116,10 @@ function InputField({
     <div>
       <label className="block text-sm text-[#211F1D] mb-1.5">
         {label}
-        {required && <span className="text-[#B65C38] ml-1">*</span>}
+
+        {required && (
+          <span className="text-[#B65C38] ml-1">*</span>
+        )}
       </label>
 
       <input
@@ -168,7 +176,8 @@ export default function CheckoutPage() {
   };
 
   const subtotal = CHECKOUT_PRODUCTS.reduce(
-    (total, product) => total + product.price * product.quantity,
+    (total, product) =>
+      total + product.price * product.quantity,
     0
   );
 
@@ -192,7 +201,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F3EC] font-sans">
-      {/* Google Fonts */}
+      {/* =====================================================
+          FONTS
+      ===================================================== */}
+
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
@@ -208,16 +220,17 @@ export default function CheckoutPage() {
         }
       `}</style>
 
-      {/* =========================================================
+      {/* =====================================================
           HEADER
-      ========================================================= */}
+      ===================================================== */}
 
       <header className="bg-[#F7F3EC] sticky top-0 z-40">
         {/* Announcement Bar */}
         <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
             <p>
-              Free shipping on orders over $75 · Handmade in small batches
+              Free shipping on orders over $75 · Handmade in
+              small batches
             </p>
 
             <div className="hidden sm:flex items-center gap-4">
@@ -251,7 +264,10 @@ export default function CheckoutPage() {
           </button>
 
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2 shrink-0">
+          <a
+            href="#"
+            className="flex items-center gap-2 shrink-0"
+          >
             <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
               F
             </span>
@@ -286,7 +302,9 @@ export default function CheckoutPage() {
               aria-label="Account"
             >
               <LuUser size={20} />
-              <span className="text-[10px] hidden sm:inline">Account</span>
+              <span className="text-[10px] hidden sm:inline">
+                Account
+              </span>
             </button>
 
             <button
@@ -397,7 +415,7 @@ export default function CheckoutPage() {
         </nav>
 
         {/* Mobile Menu */}
-        {mobileOpen ? (
+        {mobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div
               className="absolute inset-0 bg-[#211F1D]/50"
@@ -415,7 +433,10 @@ export default function CheckoutPage() {
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
                 >
-                  <LuX size={20} className="text-[#211F1D]" />
+                  <LuX
+                    size={20}
+                    className="text-[#211F1D]"
+                  />
                 </button>
               </div>
 
@@ -432,12 +453,12 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </header>
 
-      {/* =========================================================
-          CHECKOUT CONTENT
-      ========================================================= */}
+      {/* =====================================================
+          MAIN CHECKOUT
+      ===================================================== */}
 
       <main>
         {/* Breadcrumb */}
@@ -462,12 +483,14 @@ export default function CheckoutPage() {
 
               <LuChevronRight size={13} />
 
-              <span className="text-[#211F1D]">Checkout</span>
+              <span className="text-[#211F1D]">
+                Checkout
+              </span>
             </div>
           </div>
         </section>
 
-        {/* Checkout Header */}
+        {/* Checkout Heading */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
@@ -481,12 +504,16 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <LuLock size={14} className="text-[#1F3A2E]" />
+              <LuLock
+                size={14}
+                className="text-[#1F3A2E]"
+              />
+
               Secure checkout
             </div>
           </div>
 
-          {/* Checkout Steps */}
+          {/* Checkout Progress */}
           <div className="mt-7 flex items-center max-w-2xl">
             <div className="flex items-center gap-2 text-[#1F3A2E]">
               <span className="w-7 h-7 rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center text-xs">
@@ -524,20 +551,23 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* Main Checkout */}
+        {/* Checkout Form */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <form
             onSubmit={placeOrder}
             className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] gap-6 lg:gap-10"
           >
-            {/* =====================================================
-                LEFT SIDE
-            ===================================================== */}
+            {/* =================================================
+                LEFT COLUMN
+            ================================================= */}
 
             <div className="space-y-6">
               {/* Contact */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle number="1" title="Contact information" />
+                <SectionTitle
+                  number="1"
+                  title="Contact information"
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
@@ -547,7 +577,10 @@ export default function CheckoutPage() {
                       placeholder="you@example.com"
                       value={form.email}
                       onChange={(e) =>
-                        updateField("email", e.target.value)
+                        updateField(
+                          "email",
+                          e.target.value
+                        )
                       }
                     />
                   </div>
@@ -557,7 +590,10 @@ export default function CheckoutPage() {
                     placeholder="First name"
                     value={form.firstName}
                     onChange={(e) =>
-                      updateField("firstName", e.target.value)
+                      updateField(
+                        "firstName",
+                        e.target.value
+                      )
                     }
                   />
 
@@ -566,7 +602,10 @@ export default function CheckoutPage() {
                     placeholder="Last name"
                     value={form.lastName}
                     onChange={(e) =>
-                      updateField("lastName", e.target.value)
+                      updateField(
+                        "lastName",
+                        e.target.value
+                      )
                     }
                   />
 
@@ -577,7 +616,10 @@ export default function CheckoutPage() {
                       placeholder="+880 1XXXXXXXXX"
                       value={form.phone}
                       onChange={(e) =>
-                        updateField("phone", e.target.value)
+                        updateField(
+                          "phone",
+                          e.target.value
+                        )
                       }
                     />
                   </div>
@@ -597,7 +639,10 @@ export default function CheckoutPage() {
 
               {/* Shipping Address */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle number="2" title="Shipping address" />
+                <SectionTitle
+                  number="2"
+                  title="Shipping address"
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
@@ -606,7 +651,10 @@ export default function CheckoutPage() {
                       placeholder="Street address"
                       value={form.address}
                       onChange={(e) =>
-                        updateField("address", e.target.value)
+                        updateField(
+                          "address",
+                          e.target.value
+                        )
                       }
                     />
                   </div>
@@ -618,7 +666,10 @@ export default function CheckoutPage() {
                       required={false}
                       value={form.apartment}
                       onChange={(e) =>
-                        updateField("apartment", e.target.value)
+                        updateField(
+                          "apartment",
+                          e.target.value
+                        )
                       }
                     />
                   </div>
@@ -628,7 +679,10 @@ export default function CheckoutPage() {
                     placeholder="City"
                     value={form.city}
                     onChange={(e) =>
-                      updateField("city", e.target.value)
+                      updateField(
+                        "city",
+                        e.target.value
+                      )
                     }
                   />
 
@@ -637,7 +691,10 @@ export default function CheckoutPage() {
                     placeholder="State / Province"
                     value={form.state}
                     onChange={(e) =>
-                      updateField("state", e.target.value)
+                      updateField(
+                        "state",
+                        e.target.value
+                      )
                     }
                   />
 
@@ -646,7 +703,10 @@ export default function CheckoutPage() {
                     placeholder="Postal code"
                     value={form.postalCode}
                     onChange={(e) =>
-                      updateField("postalCode", e.target.value)
+                      updateField(
+                        "postalCode",
+                        e.target.value
+                      )
                     }
                   />
 
@@ -655,7 +715,10 @@ export default function CheckoutPage() {
                     placeholder="Country"
                     value={form.country}
                     onChange={(e) =>
-                      updateField("country", e.target.value)
+                      updateField(
+                        "country",
+                        e.target.value
+                      )
                     }
                   />
                 </div>
@@ -674,7 +737,10 @@ export default function CheckoutPage() {
 
               {/* Delivery */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle number="3" title="Delivery method" />
+                <SectionTitle
+                  number="3"
+                  title="Delivery method"
+                />
 
                 <div className="border border-[#1F3A2E] bg-[#F7F3EC] rounded-sm p-4 flex items-center justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -694,14 +760,19 @@ export default function CheckoutPage() {
                   </div>
 
                   <span className="text-sm text-[#1F3A2E]">
-                    {shipping === 0 ? "FREE" : `$${shipping}`}
+                    {shipping === 0
+                      ? "FREE"
+                      : `$${shipping}`}
                   </span>
                 </div>
               </div>
 
               {/* Payment */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle number="4" title="Payment" />
+                <SectionTitle
+                  number="4"
+                  title="Payment"
+                />
 
                 <p className="text-xs text-[#8A8378] mb-5">
                   All transactions are secure and encrypted.
@@ -710,7 +781,9 @@ export default function CheckoutPage() {
                 {/* Card */}
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod("card")}
+                  onClick={() =>
+                    setPaymentMethod("card")
+                  }
                   className={`w-full text-left border rounded-sm p-4 transition-colors ${
                     paymentMethod === "card"
                       ? "border-[#1F3A2E] bg-[#F7F3EC]"
@@ -799,10 +872,12 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* Cash on Delivery */}
+                {/* Cash On Delivery */}
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod("cod")}
+                  onClick={() =>
+                    setPaymentMethod("cod")
+                  }
                   className={`w-full text-left border rounded-sm p-4 mt-3 transition-colors ${
                     paymentMethod === "cod"
                       ? "border-[#1F3A2E] bg-[#F7F3EC]"
@@ -840,13 +915,16 @@ export default function CheckoutPage() {
                     type="checkbox"
                     checked={sameBilling}
                     onChange={(e) =>
-                      setSameBilling(e.target.checked)
+                      setSameBilling(
+                        e.target.checked
+                      )
                     }
                     className="w-4 h-4 accent-[#1F3A2E]"
                   />
 
                   <span className="text-sm text-[#5B564C]">
-                    Billing address is the same as shipping address
+                    Billing address is the same as
+                    shipping address
                   </span>
                 </label>
 
@@ -897,12 +975,13 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* =====================================================
-                RIGHT SIDE — ORDER SUMMARY
-            ===================================================== */}
+            {/* =================================================
+                RIGHT COLUMN
+            ================================================= */}
 
             <aside className="lg:sticky lg:top-28 h-fit">
               <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden">
+                {/* Order Header */}
                 <div className="px-5 sm:px-6 py-5 border-b border-[#E4DED2]">
                   <div className="flex items-center justify-between">
                     <h2 className="font-serif text-xl text-[#211F1D]">
@@ -911,7 +990,8 @@ export default function CheckoutPage() {
 
                     <span className="text-xs text-[#8A8378]">
                       {CHECKOUT_PRODUCTS.reduce(
-                        (sum, product) => sum + product.quantity,
+                        (sum, product) =>
+                          sum + product.quantity,
                         0
                       )}{" "}
                       items
@@ -921,42 +1001,50 @@ export default function CheckoutPage() {
 
                 {/* Products */}
                 <div className="p-5 sm:p-6 space-y-5">
-                  {CHECKOUT_PRODUCTS.map((product) => (
-                    <div
-                      key={product.id}
-                      className="flex gap-3"
-                    >
-                      <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
+                  {CHECKOUT_PRODUCTS.map(
+                    (product) => (
+                      <div
+                        key={product.id}
+                        className="flex gap-3"
+                      >
+                        {/* Real Product Image */}
+                        <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
 
-                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#211F1D] text-white text-[10px] flex items-center justify-center">
-                          {product.quantity}
-                        </span>
+                          <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#211F1D] text-white text-[10px] flex items-center justify-center">
+                            {product.quantity}
+                          </span>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-[#8A8378] mb-0.5">
+                            {product.category}
+                          </p>
+
+                          <h3 className="text-sm text-[#211F1D] leading-snug">
+                            {product.name}
+                          </h3>
+
+                          <p className="text-sm text-[#1F3A2E] mt-1">
+                            ${product.price}
+                          </p>
+                        </div>
+
+                        <div className="text-sm text-[#211F1D]">
+                          $
+                          {(
+                            product.price *
+                            product.quantity
+                          ).toFixed(2)}
+                        </div>
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-[#8A8378] mb-0.5">
-                          {product.category}
-                        </p>
-
-                        <h3 className="text-sm text-[#211F1D] leading-snug">
-                          {product.name}
-                        </h3>
-
-                        <p className="text-sm text-[#1F3A2E] mt-1">
-                          ${product.price}
-                        </p>
-                      </div>
-
-                      <div className="text-sm text-[#211F1D]">
-                        ${(product.price * product.quantity).toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
 
                 {/* Coupon */}
@@ -986,14 +1074,17 @@ export default function CheckoutPage() {
                       disabled={couponApplied}
                       className="px-4 py-2.5 bg-[#211F1D] text-[#F7F3EC] text-sm rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-50"
                     >
-                      {couponApplied ? "Applied" : "Apply"}
+                      {couponApplied
+                        ? "Applied"
+                        : "Apply"}
                     </button>
                   </div>
 
                   {couponApplied && (
                     <p className="flex items-center gap-1.5 text-xs text-[#1F3A2E] mt-2">
                       <LuCheck size={13} />
-                      $15 promotional discount applied
+                      $15 promotional discount
+                      applied
                     </p>
                   )}
 
@@ -1066,12 +1157,13 @@ export default function CheckoutPage() {
                     className="w-full mt-3 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors flex items-center justify-center gap-2"
                   >
                     <LuLock size={15} />
+
                     Place order · ${total.toFixed(2)}
                   </button>
 
                   <p className="text-[11px] text-[#8A8378] text-center leading-relaxed pt-1">
-                    Your payment information is protected using
-                    secure encryption.
+                    Your payment information is
+                    protected using secure encryption.
                   </p>
                 </div>
               </div>
@@ -1091,7 +1183,8 @@ export default function CheckoutPage() {
 
                     <p className="text-xs text-[#5B564C] leading-relaxed mt-1">
                       Secure payments, easy returns, and
-                      customer support whenever you need it.
+                      customer support whenever you need
+                      it.
                     </p>
                   </div>
                 </div>
@@ -1100,9 +1193,9 @@ export default function CheckoutPage() {
           </form>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             PERKS
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 border border-[#E4DED2] bg-white rounded-md overflow-hidden">
@@ -1115,10 +1208,6 @@ export default function CheckoutPage() {
                   className={`p-5 sm:p-6 flex items-start gap-3 ${
                     index !== PERKS.length - 1
                       ? "border-b lg:border-b-0 lg:border-r border-[#E4DED2]"
-                      : ""
-                  } ${
-                    index === 1
-                      ? "border-r-0 lg:border-r"
                       : ""
                   }`}
                 >
@@ -1143,9 +1232,9 @@ export default function CheckoutPage() {
         </section>
       </main>
 
-      {/* =========================================================
+      {/* =====================================================
           FOOTER
-      ========================================================= */}
+      ===================================================== */}
 
       <footer className="bg-[#211F1D] text-[#D8D3C8]">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8">
@@ -1162,8 +1251,8 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-sm text-[#9B9689] mb-4">
-              Everyday goods for the home, made in small batches
-              with natural materials.
+              Everyday goods for the home, made in small
+              batches with natural materials.
             </p>
 
             <div className="flex items-center gap-3">
@@ -1329,3 +1418,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
