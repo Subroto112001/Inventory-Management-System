@@ -1,982 +1,532 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from 'react';
 import {
-  MdSearch,
-  MdMenu,
-  MdShoppingBag,
-  MdFavoriteBorder,
-  MdStar,
-  MdLocalShipping,
-  MdVerifiedUser,
-  MdAutorenew,
-  MdAddShoppingCart,
-  MdPhoneInTalk,
-  MdLocationOn,
-  MdSyncAlt,
-  MdPersonOutline,
-  MdCreditCard,
-  MdBolt,
-} from "react-icons/md";
+  LuSearch,
+  LuUser,
+  LuGitCompare,
+  LuShoppingCart,
+  LuHeart,
+  LuChevronLeft,
+  LuChevronRight,
+  LuStar,
+  LuMenu,
+  LuX,
+  LuTruck,
+  LuShieldCheck,
+  LuRotateCcw,
+  LuHeadphones,
+  LuFacebook,
+  LuInstagram,
+  LuTwitter,
+  LuYoutube,
+  LuMail,
+  LuMapPin,
+  LuPhone,
+} from 'react-icons/lu';
 
-/* =========================================================
-   DESIGN SYSTEM & TYPOGRAPHY
-========================================================= */
-const FONT_STACK =
-  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif';
-
-/* =========================================================
-   DUMMY DATA
-========================================================= */
-const categories = [
-  {
-    id: 1,
-    name: "Phones",
-    slug: "phones",
-    count: "120+ Items",
-    image:
-      "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 2,
-    name: "Laptops",
-    slug: "laptops",
-    count: "85+ Items",
-    image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 3,
-    name: "Smart Watches",
-    slug: "smart-watches",
-    count: "60+ Items",
-    image:
-      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 4,
-    name: "Audio & Headphones",
-    slug: "audio",
-    count: "110+ Items",
-    image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 5,
-    name: "Tablets",
-    slug: "tablets",
-    count: "45+ Items",
-    image:
-      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 6,
-    name: "Accessories",
-    slug: "accessories",
-    count: "300+ Items",
-    image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80",
-  },
+const NAV_LINKS = [
+  { label: 'Home', href: '#' },
+  { label: 'Shop All', href: '#' },
+  { label: 'Lighting', href: '#' },
+  { label: 'Kitchen & Dining', href: '#' },
+  { label: 'Furniture', href: '#' },
+  { label: 'Textiles & Bedding', href: '#' },
+  { label: 'Outdoor & Garden', href: '#' },
+  { label: 'Decor & Accents', href: '#' },
+  { label: 'Brands', href: '#' },
+  { label: 'Sale', href: '#' },
 ];
 
-const topBrands = [
-  {
-    id: 1,
-    name: "Apple",
-    logo: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=200&q=80",
-  },
-  {
-    id: 2,
-    name: "Samsung",
-    logo: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=200&q=80",
-  },
-  {
-    id: 3,
-    name: "Google",
-    logo: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?auto=format&fit=crop&w=200&q=80",
-  },
-  {
-    id: 4,
-    name: "Xiaomi",
-    logo: "https://images.unsplash.com/photo-1550029402-226115b7c579?auto=format&fit=crop&w=200&q=80",
-  },
-  {
-    id: 5,
-    name: "Sony",
-    logo: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=200&q=80",
-  },
-  {
-    id: 6,
-    name: "Anker",
-    logo: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=200&q=80",
-  },
+const HERO_SLIDES = [
+  { id: 1, image: 'https://placehold.co/1200x680/1F3A2E/F7F3EC?text=Autumn+Living+Edit', eyebrow: 'New season', title: 'Furniture built to live in, not around', subtitle: 'Solid oak and reclaimed wood pieces, finished by hand.', cta: 'Shop the edit' },
+  { id: 2, image: 'https://placehold.co/1200x680/B65C38/F7F3EC?text=Kitchen+Essentials', eyebrow: 'Kitchen & dining', title: 'Stoneware and cast iron for everyday cooking', subtitle: 'Small-batch pieces made to be used, not shelved.', cta: 'Browse kitchenware' },
+  { id: 3, image: 'https://placehold.co/1200x680/C9A659/211F1D?text=Textile+Restock', eyebrow: 'Just restocked', title: 'Linen and wool for the colder months', subtitle: 'Woven in small runs, softer with every wash.', cta: 'Shop textiles' },
 ];
 
-const flashSaleProducts = [
-  {
-    id: 101,
-    name: "Flagship Smartphone 5G - 256GB Titanium",
-    category: "Phones",
-    price: 142500,
-    oldPrice: 155000,
-    discount: "8% OFF",
-    rating: 4.9,
-    reviews: 320,
-    image:
-      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: 102,
-    name: "Ultra Thin Pro Laptop 14-inch M-Series",
-    category: "Laptops",
-    price: 128000,
-    oldPrice: 138000,
-    discount: "৳10,000 OFF",
-    rating: 4.8,
-    reviews: 142,
-    image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: 103,
-    name: "Fitness Smart Watch Series 9 GPS",
-    category: "Smart Watches",
-    price: 46500,
-    oldPrice: 52000,
-    discount: "11% OFF",
-    rating: 4.7,
-    reviews: 89,
-    image:
-      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: 104,
-    name: "Wireless ANC Earbuds Pro Type-C",
-    category: "Audio & Headphones",
-    price: 24500,
-    oldPrice: 28000,
-    discount: "12% OFF",
-    rating: 4.9,
-    reviews: 512,
-    image:
-      "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=85",
-  },
+const SIDE_BANNERS = [
+  { image: 'https://placehold.co/600x320/93A88A/211F1D?text=Outdoor+%26+Garden', title: 'Outdoor & garden', subtitle: 'Teak seating, up to 20% off' },
+  { image: 'https://placehold.co/600x320/211F1D/F7F3EC?text=Lighting+Studio', title: 'Lighting studio', subtitle: 'Brushed brass, new arrivals' },
 ];
 
-const featuredProducts = [
-  {
-    id: 201,
-    name: "NextGen Tablet 11-inch High Refresh Rate",
-    category: "Tablets",
-    price: 78500,
-    oldPrice: 84000,
-    rating: 4.8,
-    reviews: 64,
-    badge: "New Arrival",
-    image:
-      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: 202,
-    name: "Ultra AI Smartphone 12GB/512GB",
-    category: "Phones",
-    price: 129000,
-    oldPrice: 139000,
-    rating: 4.9,
-    reviews: 210,
-    badge: "Official",
-    image:
-      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: 203,
-    name: "Fast Charging 10000mAh Magnetic Power Bank",
-    category: "Accessories",
-    price: 6200,
-    oldPrice: 7500,
-    rating: 4.7,
-    reviews: 95,
-    badge: "Popular",
-    image:
-      "https://images.unsplash.com/photo-1609592424074-8b6528d223f6?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: 204,
-    name: "Pure Android Camera Phone 128GB",
-    category: "Phones",
-    price: 89500,
-    oldPrice: 98000,
-    rating: 4.8,
-    reviews: 178,
-    badge: "Best Value",
-    image:
-      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=85",
-  },
+const CATEGORIES = [
+  { name: 'Lighting', image: 'https://placehold.co/240x240/1F3A2E/F7F3EC?text=Lighting' },
+  { name: 'Kitchen & Dining', image: 'https://placehold.co/240x240/B65C38/F7F3EC?text=Kitchen' },
+  { name: 'Furniture', image: 'https://placehold.co/240x240/C9A659/211F1D?text=Furniture' },
+  { name: 'Textiles & Bedding', image: 'https://placehold.co/240x240/93A88A/211F1D?text=Textiles' },
+  { name: 'Storage', image: 'https://placehold.co/240x240/211F1D/F7F3EC?text=Storage' },
+  { name: 'Outdoor & Garden', image: 'https://placehold.co/240x240/16281F/F7F3EC?text=Outdoor' },
+  { name: 'Decor & Accents', image: 'https://placehold.co/240x240/B08D3E/211F1D?text=Decor' },
+  { name: 'Bath', image: 'https://placehold.co/240x240/E4DED2/211F1D?text=Bath' },
 ];
 
-/* =========================================================
-   COMPONENTS
-========================================================= */
-const ProductCard = ({ product }) => {
-  return (
-    <article
-      className="group flex flex-col rounded-xl bg-white p-3.5 transition-all duration-300 hover:shadow-xl ring-1 ring-[#E2E8F0] hover:ring-[#4F46E5]/40"
-      aria-labelledby={`product-title-${product.id}`}
-    >
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#F8FAFC] p-4 flex items-center justify-center">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
-        />
+const EXCLUSIVE_PRODUCTS = [
+  { id: 'ex1', image: 'https://placehold.co/480x480/1F3A2E/F7F3EC?text=Alder+Dining+Chair', category: 'Furniture', name: 'Alder Oak Dining Chair', price: 189, oldPrice: 229, rating: 4.8, reviews: 62, badge: 'Exclusive' },
+  { id: 'ex2', image: 'https://placehold.co/480x480/B65C38/F7F3EC?text=Stoneware+Mug+Set', category: 'Kitchen & Dining', name: 'Hand-Thrown Stoneware Mug Set', price: 58, rating: 4.9, reviews: 140, badge: 'Exclusive' },
+  { id: 'ex3', image: 'https://placehold.co/480x480/C9A659/211F1D?text=Brass+Pendant+Light', category: 'Lighting', name: 'Brushed Brass Pendant Light', price: 145, rating: 4.7, reviews: 38, badge: 'Exclusive' },
+  { id: 'ex4', image: 'https://placehold.co/480x480/93A88A/211F1D?text=Wool+Throw+Blanket', category: 'Textiles & Bedding', name: 'Linen Weave Throw Blanket', price: 76, rating: 4.6, reviews: 51, badge: 'Exclusive' },
+];
 
-        {product.discount && (
-          <span className="absolute left-2.5 top-2.5 rounded-md bg-[#EF4444] px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
-            {product.discount}
-          </span>
-        )}
+const OFFER_SLIDES = [
+  { id: 1, image: 'https://placehold.co/900x520/16281F/F7F3EC?text=Wool+%26+Wood', title: 'Wool & Wood', subtitle: 'Up to 30% off cold-weather furnishings', cta: 'Shop the sale' },
+  { id: 2, image: 'https://placehold.co/900x520/B65C38/F7F3EC?text=Kitchen+Edit', title: 'The Kitchen Edit', subtitle: "Season's essentials, from $18", cta: 'Shop kitchen' },
+  { id: 3, image: 'https://placehold.co/900x520/B08D3E/211F1D?text=Outdoor+Living', title: 'Outdoor Living', subtitle: 'Get ahead of spring, pre-order now', cta: 'Shop outdoor' },
+];
 
-        {product.badge && !product.discount && (
-          <span className="absolute left-2.5 top-2.5 rounded-md bg-[#0F172A] px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
-            {product.badge}
-          </span>
-        )}
+const FEATURED_TABS = ['Kitchen & Dining', 'Furniture', 'Lighting', 'Textiles'];
 
-        <button
-          type="button"
-          aria-label={`Add ${product.name} to wishlist`}
-          className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#0F172A] backdrop-blur-sm transition-colors hover:bg-white hover:text-[#EF4444] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
-        >
-          <MdFavoriteBorder size={18} />
-        </button>
-      </div>
-
-      <div className="flex flex-1 flex-col pt-3">
-        <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider">
-          {product.category}
-        </p>
-
-        <Link
-          href={`/products/${product.id}`}
-          id={`product-title-${product.id}`}
-          className="mt-1 text-[14px] font-semibold text-[#0F172A] line-clamp-2 transition hover:text-[#4F46E5] focus-visible:outline-none focus-visible:underline"
-        >
-          {product.name}
-        </Link>
-
-        <div
-          className="mt-2 flex items-center gap-1"
-          aria-label={`Rating: ${product.rating} stars`}
-        >
-          <MdStar className="text-[#F59E0B]" size={14} aria-hidden="true" />
-          <span className="text-[12px] font-semibold text-[#0F172A]">
-            {product.rating}
-          </span>
-          <span className="text-[11px] text-[#64748B]">
-            ({product.reviews})
-          </span>
-        </div>
-
-        <div className="mt-auto pt-3 flex items-end justify-between border-t border-[#F1F5F9]">
-          <div>
-            <span className="text-[16px] font-bold text-[#0F172A]">
-              ৳{product.price.toLocaleString("en-BD")}
-            </span>
-            {product.oldPrice > product.price && (
-              <span className="ml-1.5 text-[12px] text-[#94A3B8] line-through">
-                ৳{product.oldPrice.toLocaleString("en-BD")}
-              </span>
-            )}
-          </div>
-
-          <button
-            type="button"
-            aria-label={`Add ${product.name} to cart`}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F1F5F9] text-[#0F172A] transition hover:bg-[#4F46E5] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
-          >
-            <MdAddShoppingCart size={18} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </article>
-  );
+const FEATURED_PRODUCTS = {
+  'Kitchen & Dining': [
+    { id: 'k1', image: 'https://placehold.co/480x480/1F3A2E/F7F3EC?text=Cast+Iron+Skillet', category: 'Kitchen & Dining', name: 'Cast Iron Skillet 10"', price: 42, rating: 4.9, reviews: 210 },
+    { id: 'k2', image: 'https://placehold.co/480x480/B65C38/F7F3EC?text=Olive+Wood+Board', category: 'Kitchen & Dining', name: 'Olive Wood Cutting Board', price: 34, rating: 4.7, reviews: 88 },
+    { id: 'k3', image: 'https://placehold.co/480x480/C9A659/211F1D?text=Ceramic+Bowls', category: 'Kitchen & Dining', name: 'Speckled Ceramic Bowl Set', price: 64, rating: 4.8, reviews: 73 },
+    { id: 'k4', image: 'https://placehold.co/480x480/93A88A/211F1D?text=Glass+Carafe', category: 'Kitchen & Dining', name: 'Hand-Blown Glass Carafe', price: 29, rating: 4.5, reviews: 40 },
+  ],
+  Furniture: [
+    { id: 'f1', image: 'https://placehold.co/480x480/16281F/F7F3EC?text=Teak+Bench', category: 'Furniture', name: 'Teak Outdoor Bench', price: 320, rating: 4.6, reviews: 27 },
+    { id: 'f2', image: 'https://placehold.co/480x480/B08D3E/211F1D?text=Boucle+Armchair', category: 'Furniture', name: 'Bouclé Reading Armchair', price: 540, oldPrice: 620, rating: 4.9, reviews: 54 },
+    { id: 'f3', image: 'https://placehold.co/480x480/211F1D/F7F3EC?text=Walnut+Shelf', category: 'Furniture', name: 'Floating Walnut Shelf', price: 88, rating: 4.4, reviews: 19 },
+    { id: 'f4', image: 'https://placehold.co/480x480/93A88A/211F1D?text=Rattan+Ottoman', category: 'Furniture', name: 'Woven Rattan Ottoman', price: 165, rating: 4.7, reviews: 33 },
+  ],
+  Lighting: [
+    { id: 'l1', image: 'https://placehold.co/480x480/1F3A2E/F7F3EC?text=Table+Lamp', category: 'Lighting', name: 'Linen Shade Table Lamp', price: 74, rating: 4.6, reviews: 46 },
+    { id: 'l2', image: 'https://placehold.co/480x480/C9A659/211F1D?text=Wall+Sconce', category: 'Lighting', name: 'Brass Wall Sconce, Pair', price: 96, rating: 4.8, reviews: 22 },
+    { id: 'l3', image: 'https://placehold.co/480x480/B65C38/F7F3EC?text=Floor+Lamp', category: 'Lighting', name: 'Arched Iron Floor Lamp', price: 132, rating: 4.5, reviews: 17 },
+    { id: 'l4', image: 'https://placehold.co/480x480/16281F/F7F3EC?text=Paper+Pendant', category: 'Lighting', name: 'Rice Paper Pendant Shade', price: 48, rating: 4.3, reviews: 29 },
+  ],
+  Textiles: [
+    { id: 't1', image: 'https://placehold.co/480x480/93A88A/211F1D?text=Linen+Duvet', category: 'Textiles & Bedding', name: 'Washed Linen Duvet Set', price: 128, rating: 4.8, reviews: 95 },
+    { id: 't2', image: 'https://placehold.co/480x480/B08D3E/211F1D?text=Wool+Rug', category: 'Textiles & Bedding', name: 'Hand-Knotted Wool Rug', price: 240, rating: 4.9, reviews: 61 },
+    { id: 't3', image: 'https://placehold.co/480x480/1F3A2E/F7F3EC?text=Table+Runner', category: 'Textiles & Bedding', name: 'Wool Felt Table Runner', price: 36, rating: 4.4, reviews: 12 },
+    { id: 't4', image: 'https://placehold.co/480x480/211F1D/F7F3EC?text=Cushion+Covers', category: 'Textiles & Bedding', name: 'Boucle Cushion Cover, Set of 2', price: 44, rating: 4.6, reviews: 37 },
+  ],
 };
 
-/* =========================================================
-   MAIN E-COMMERCE HOMEPAGE (Electric Tech Theme)
-========================================================= */
-export default function EcommerceHomePage() {
-  const mainNavLinks = [
-    { label: "Phones", href: "/category/phones" },
-    { label: "Laptops", href: "/category/laptops" },
-    { label: "Tablets", href: "/category/tablets" },
-    { label: "Smart Watches", href: "/category/smart-watches" },
-    { label: "Audio", href: "/category/audio" },
-    { label: "Accessories", href: "/category/accessories" },
-    { label: "Gaming", href: "/category/gaming" },
-    { label: "Deals & Offers", href: "/offers" },
-  ];
+const NEW_ARRIVALS = [
+  { id: 'n1', image: 'https://placehold.co/480x480/1F3A2E/F7F3EC?text=Ash+Side+Table', category: 'Furniture', name: 'Ash Wood Side Table', price: 112, rating: 4.7, reviews: 8, badge: 'New' },
+  { id: 'n2', image: 'https://placehold.co/480x480/B65C38/F7F3EC?text=Enamel+Teapot', category: 'Kitchen & Dining', name: 'Enamel Stovetop Teapot', price: 46, rating: 4.5, reviews: 6, badge: 'New' },
+  { id: 'n3', image: 'https://placehold.co/480x480/C9A659/211F1D?text=Rattan+Mirror', category: 'Decor & Accents', name: 'Rattan-Framed Wall Mirror', price: 68, rating: 4.6, reviews: 4, badge: 'New' },
+  { id: 'n4', image: 'https://placehold.co/480x480/93A88A/211F1D?text=Wool+Throw', category: 'Textiles & Bedding', name: 'Chunky Knit Wool Throw', price: 82, rating: 4.8, reviews: 11, badge: 'New' },
+  { id: 'n5', image: 'https://placehold.co/480x480/16281F/F7F3EC?text=Iron+Candlestick', category: 'Decor & Accents', name: 'Forged Iron Candlestick', price: 24, rating: 4.3, reviews: 3, badge: 'New' },
+  { id: 'n6', image: 'https://placehold.co/480x480/B08D3E/211F1D?text=Ceramic+Planter', category: 'Decor & Accents', name: 'Speckled Ceramic Planter', price: 32, rating: 4.7, reviews: 9, badge: 'New' },
+];
 
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault();
+const PERKS = [
+  { icon: LuTruck, title: 'Free shipping', text: 'On orders over $75' },
+  { icon: LuRotateCcw, title: '30-day returns', text: 'No questions asked' },
+  { icon: LuShieldCheck, title: 'Secure checkout', text: 'Encrypted payments' },
+  { icon: LuHeadphones, title: 'Support', text: 'Mon–Fri, 9am–6pm' },
+];
+
+function Stars({ rating }) {
+  const full = Math.round(rating);
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <LuStar key={i} size={13} className={i < full ? 'fill-[#C9A659] text-[#C9A659]' : 'fill-[#E4DED2] text-[#E4DED2]'} />
+      ))}
+    </div>
+  );
+}
+
+function ProductCard({ product }) {
+  const { image, category, name, price, oldPrice, rating, reviews, badge } = product;
+  return (
+    <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200">
+      <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
+        <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300" />
+        {badge ? <span className="absolute top-3 left-3 bg-[#1F3A2E] text-[#F7F3EC] text-xs px-2 py-1 rounded-sm">{badge}</span> : null}
+        <button type="button" aria-label="Add to wishlist" className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#B65C38]">
+          <LuHeart size={15} />
+        </button>
+        <button type="button" className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
+          <LuShoppingCart size={14} />
+          Add to cart
+        </button>
+      </div>
+      <div className="p-4">
+        <p className="text-xs text-[#8A8378] mb-1">{category}</p>
+        <h3 className="text-sm text-[#211F1D] leading-snug mb-1.5 line-clamp-2">{name}</h3>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Stars rating={rating} />
+          <span className="text-xs text-[#8A8378]">({reviews})</span>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-[#1F3A2E] text-base">${price}</span>
+          {oldPrice ? <span className="text-xs text-[#8A8378] line-through">${oldPrice}</span> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function EcommerceHomePage() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const scrollerRef = useRef(null);
+  const [heroActive, setHeroActive] = useState(0);
+  const [offerActive, setOfferActive] = useState(0);
+  const [activeTab, setActiveTab] = useState(FEATURED_TABS[0]);
+
+  useEffect(() => {
+    const id = setInterval(() => setHeroActive((a) => (a + 1) % HERO_SLIDES.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setOfferActive((a) => (a + 1) % OFFER_SLIDES.length), 6000);
+    return () => clearInterval(id);
+  }, []);
+
+  const scrollNav = (dir) => {
+    if (scrollerRef.current) scrollerRef.current.scrollBy({ left: dir * 220, behavior: 'smooth' });
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#F8FAFC] text-[#0F172A] selection:bg-[#4F46E5] selection:text-white"
-      style={{ fontFamily: FONT_STACK }}
-    >
-      {/* Skip to Content for Accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-[#0F172A] focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
-      >
-        Skip to main content
-      </a>
+    <div className="min-h-screen bg-[#F7F3EC] font-sans">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" />
+      <style>{`.font-serif { font-family: 'Fraunces', ui-serif, Georgia, serif; } .font-sans { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }`}</style>
 
-      {/* =====================================================
-          1. TOP ANNOUNCEMENT BAR
-      ===================================================== */}
-      <div className="bg-[#0F172A] text-white text-[12px] py-1.5 border-b border-slate-800">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1 text-[#818CF8] font-semibold">
-              <MdPhoneInTalk size={14} /> Hotline: 09678-000111
-            </span>
-            <span className="hidden sm:inline-block text-slate-600">|</span>
-            <span className="hidden sm:flex items-center gap-1 text-slate-300">
-              <MdLocationOn size={14} /> Outlets: Dhanmondi, Banani, Jamuna
-              Future Park
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4 text-slate-300">
-            <Link
-              href="/order-tracking"
-              className="hover:text-white transition"
-            >
-              Order Tracking
-            </Link>
-            <span className="text-slate-600">|</span>
-            <Link
-              href="/emi-info"
-              className="flex items-center gap-1 hover:text-white transition"
-            >
-              <MdCreditCard size={14} /> 0% EMI Available
-            </Link>
+      {/* Header */}
+      <header className="bg-[#F7F3EC] sticky top-0 z-40">
+        <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
+            <p>Free shipping on orders over $75 · Handmade in small batches</p>
+            <div className="hidden sm:flex items-center gap-4">
+              <a href="#" className="hover:text-[#C9A659] transition-colors">Track order</a>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">Help</a>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* =====================================================
-          2. MAIN HEADER
-      ===================================================== */}
-      <header className="sticky top-0 z-50 border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6">
-          <button
-            type="button"
-            aria-label="Open mobile navigation menu"
-            className="flex h-10 w-10 items-center justify-center text-[#0F172A] lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] rounded-md"
-          >
-            <MdMenu size={24} />
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-8">
+          <button type="button" className="lg:hidden text-[#211F1D]" aria-label="Open menu" onClick={() => setMobileOpen(true)}>
+            <LuMenu size={22} />
           </button>
 
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] rounded-md"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white">
-              <MdBolt size={20} />
-            </div>
-            <span className="text-[22px] font-black tracking-tight text-[#0F172A]">
-              Gadget<span className="text-[#4F46E5]">Pulse</span>
-            </span>
-          </Link>
+          <a href="#" className="flex items-center gap-2 shrink-0">
+            <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">F</span>
+            <span className="font-serif text-xl text-[#211F1D] tracking-tight hidden xs:inline">FIELDHOUSE</span>
+          </a>
 
-          {/* Search Bar */}
-          <div
-            role="search"
-            className="hidden flex-1 max-w-[560px] lg:flex items-center gap-2 rounded-full border border-[#CBD5E1] bg-[#F1F5F9] px-4 py-2 transition focus-within:border-[#4F46E5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#4F46E5]/20"
-          >
-            <MdSearch size={20} className="text-[#64748B]" aria-hidden="true" />
-            <input
-              type="text"
-              placeholder="Search for Smartphones, Laptops, Earbuds, Smart Watches..."
-              aria-label="Search products"
-              className="w-full bg-transparent text-[14px] outline-none placeholder:text-[#64748B]"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-[#0F172A] px-4 py-1 text-[12px] font-semibold text-white transition hover:bg-[#4F46E5]"
-            >
-              Search
+          <div className="flex-1 max-w-xl hidden md:flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+            <input type="text" placeholder="Search for furniture, lighting, decor…" className="flex-1 px-4 py-2.5 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent" />
+            <button type="button" aria-label="Search" className="px-4 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] hover:bg-[#16281F] transition-colors">
+              <LuSearch size={17} />
             </button>
           </div>
 
-          {/* Action Icons */}
-          <div className="flex items-center gap-4 sm:gap-6">
-            <Link
-              href="/compare"
-              aria-label="Compare products"
-              className="hidden sm:flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
-            >
-              <MdSyncAlt size={22} />
-              <span>Compare</span>
-            </Link>
-
-            <Link
-              href="/wishlist"
-              aria-label="Wishlist"
-              className="flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
-            >
-              <div className="relative">
-                <MdFavoriteBorder size={22} />
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#EF4444] text-[9px] font-bold text-white">
-                  0
-                </span>
-              </div>
-              <span className="hidden sm:inline">Wishlist</span>
-            </Link>
-
-            <Link
-              href="/cart"
-              aria-label="Shopping bag"
-              className="flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
-            >
-              <div className="relative">
-                <MdShoppingBag size={22} />
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#4F46E5] text-[9px] font-bold text-white">
-                  2
-                </span>
-              </div>
-              <span className="hidden sm:inline">Cart</span>
-            </Link>
-
-            <Link
-              href="/account"
-              aria-label="Account"
-              className="flex flex-col items-center text-[11px] font-medium text-[#0F172A] hover:text-[#4F46E5]"
-            >
-              <MdPersonOutline size={22} />
-              <span className="hidden sm:inline">Account</span>
-            </Link>
+          <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
+            <button type="button" className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors" aria-label="Account">
+              <LuUser size={20} />
+              <span className="text-[10px] hidden sm:inline">Account</span>
+            </button>
+            <button type="button" className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors" aria-label="Compare">
+              <LuGitCompare size={20} />
+              <span className="text-[10px] hidden sm:inline">Compare</span>
+              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">2</span>
+            </button>
+            <button type="button" className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors" aria-label="Cart">
+              <LuShoppingCart size={20} />
+              <span className="text-[10px] hidden sm:inline">Cart</span>
+              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">3</span>
+            </button>
           </div>
         </div>
 
-        {/* Category Nav */}
-        <nav
-          aria-label="Category Menu"
-          className="hidden border-t border-[#E2E8F0] bg-white lg:block"
-        >
-          <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 sm:px-6">
-            {mainNavLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="py-2.5 text-[13px] font-medium text-[#0F172A] transition hover:text-[#4F46E5] focus-visible:outline-none focus-visible:underline"
-              >
-                {link.label}
-              </Link>
-            ))}
+        <div className="md:hidden px-4 pb-3">
+          <div className="flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+            <input type="text" placeholder="Search products…" className="flex-1 px-3 py-2 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent" />
+            <button type="button" aria-label="Search" className="px-3 py-2 bg-[#1F3A2E] text-[#F7F3EC]">
+              <LuSearch size={16} />
+            </button>
+          </div>
+        </div>
+
+        <nav className="hidden lg:block border-t border-[#E4DED2] bg-[#F7F3EC]">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 relative flex items-center">
+            <button type="button" aria-label="Scroll navigation left" onClick={() => scrollNav(-1)} className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pr-2">
+              <LuChevronLeft size={16} />
+            </button>
+            <div ref={scrollerRef} className="flex items-center gap-7 overflow-x-auto scroll-smooth py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {NAV_LINKS.map((link) => (
+                <a key={link.label} href={link.href} className="text-sm text-[#211F1D] hover:text-[#B65C38] whitespace-nowrap transition-colors">
+                  {link.label}
+                </a>
+              ))}
+            </div>
+            <button type="button" aria-label="Scroll navigation right" onClick={() => scrollNav(1)} className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pl-2">
+              <LuChevronRight size={16} />
+            </button>
           </div>
         </nav>
+
+        {mobileOpen ? (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-[#211F1D]/50" onClick={() => setMobileOpen(false)} />
+            <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#F7F3EC] p-5 overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <span className="font-serif text-lg text-[#211F1D]">FIELDHOUSE</span>
+                <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+                  <LuX size={20} className="text-[#211F1D]" />
+                </button>
+              </div>
+              <div className="flex flex-col gap-1">
+                {NAV_LINKS.map((link) => (
+                  <a key={link.label} href={link.href} className="py-2.5 border-b border-[#E4DED2] text-sm text-[#211F1D]">
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </header>
 
-      <main id="main-content" className="space-y-8 pb-16">
-        {/* =====================================================
-            3. HERO SECTION (Cyber-Tech Gradient)
-        ===================================================== */}
-        <section
-          aria-label="Promotions and Featured Offers"
-          className="pt-4 sm:pt-6"
-        >
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#312E81] lg:col-span-2 sm:min-h-[400px]">
-                <img
-                  src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1600&q=85"
-                  alt="Next-Gen Flagship Smartphone Banner"
-                  className="absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-overlay"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/80 to-transparent" />
-                <div className="relative z-10 flex h-full flex-col justify-end p-6 sm:p-10">
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-[#818CF8]">
-                    Next-Gen Hardware
-                  </span>
-                  <h1 className="mt-2 text-[32px] font-black text-white sm:text-[44px] leading-tight">
-                    Flagship Tech Arrived
-                  </h1>
-                  <p className="mt-2 max-w-md text-[14px] text-slate-300">
-                    Sleek titanium builds, neural processing units, and
-                    high-performance displays. Official warranty included.
-                  </p>
-                  <div className="mt-6 flex items-center gap-4">
-                    <Link
-                      href="/shop"
-                      className="rounded-full bg-[#4F46E5] px-6 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#4338CA] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4F46E5]/50"
-                    >
-                      Explore Gear
-                    </Link>
-                    <span className="text-[16px] font-bold text-white">
-                      Starting ৳42,500
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Side Banners */}
-              <div className="flex flex-col gap-4">
-                <div className="relative flex-1 overflow-hidden rounded-2xl bg-[#0F172A] p-6 text-white min-h-[190px] border border-slate-800">
-                  <img
-                    src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"
-                    alt="Ultrabook Laptops"
-                    className="absolute inset-0 h-full w-full object-cover opacity-30"
-                  />
-                  <div className="relative z-10 flex h-full flex-col justify-between">
-                    <div>
-                      <span className="text-[11px] font-bold uppercase text-[#F59E0B]">
-                        Featured Tech
-                      </span>
-                      <h2 className="text-[20px] font-bold">
-                        Pro Laptops & Rig Setup
-                      </h2>
+      <main>
+        {/* Hero: main slider + side banners */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+            <div className="relative rounded-md overflow-hidden h-[340px] sm:h-[420px] lg:h-[480px]">
+              {HERO_SLIDES.map((slide, i) => (
+                <div key={slide.id} className={`absolute inset-0 transition-opacity duration-700 ${i === heroActive ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#211F1D]/60 via-[#211F1D]/20 to-transparent" />
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="px-6 sm:px-10 max-w-md">
+                      <p className="text-[#C9A659] text-sm mb-2">{slide.eyebrow}</p>
+                      <h1 className="font-serif text-2xl sm:text-4xl text-[#F7F3EC] leading-tight mb-3">{slide.title}</h1>
+                      <p className="text-[#F7F3EC]/85 text-sm sm:text-base mb-5">{slide.subtitle}</p>
+                      <button type="button" className="bg-[#C9A659] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors">
+                        {slide.cta}
+                      </button>
                     </div>
-                    <Link
-                      href="/shop"
-                      className="text-[13px] font-semibold text-[#818CF8] hover:underline"
-                    >
-                      Explore Laptops &rarr;
-                    </Link>
                   </div>
                 </div>
+              ))}
 
-                <div className="relative flex-1 overflow-hidden rounded-2xl bg-white p-6 text-[#0F172A] min-h-[190px] border border-[#E2E8F0]">
-                  <img
-                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80"
-                    alt="Premium Wireless Audio Gear"
-                    className="absolute right-0 top-0 h-full w-1/2 object-contain p-2"
-                  />
-                  <div className="relative z-10 flex h-full flex-col justify-between max-w-[60%]">
-                    <div>
-                      <span className="text-[11px] font-bold uppercase text-[#7C3AED]">
-                        High Fidelity
-                      </span>
-                      <h2 className="text-[20px] font-bold">
-                        Acoustics & Audio
-                      </h2>
-                    </div>
-                    <Link
-                      href="/shop"
-                      className="text-[13px] font-semibold text-[#4F46E5] hover:underline"
-                    >
-                      Up to 30% OFF &rarr;
-                    </Link>
-                  </div>
-                </div>
+              <button type="button" aria-label="Previous slide" onClick={() => setHeroActive((a) => (a - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors">
+                <LuChevronLeft size={18} />
+              </button>
+              <button type="button" aria-label="Next slide" onClick={() => setHeroActive((a) => (a + 1) % HERO_SLIDES.length)} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors">
+                <LuChevronRight size={18} />
+              </button>
+
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {HERO_SLIDES.map((slide, i) => (
+                  <button key={slide.id} type="button" aria-label={`Go to slide ${i + 1}`} onClick={() => setHeroActive(i)} className={`h-1.5 rounded-full transition-all ${i === heroActive ? 'w-6 bg-[#F7F3EC]' : 'w-1.5 bg-[#F7F3EC]/50'}`} />
+                ))}
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* =====================================================
-            4. TRUST BADGES
-        ===================================================== */}
-        <section aria-label="Service Guarantees">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="grid grid-cols-2 gap-4 rounded-2xl bg-white p-6 border border-[#E2E8F0] md:grid-cols-4">
-              {[
-                {
-                  icon: MdVerifiedUser,
-                  title: "100% Authentic",
-                  desc: "Original Tech Guaranteed",
-                },
-                {
-                  icon: MdLocalShipping,
-                  title: "Fast Delivery",
-                  desc: "Express delivery islandwide",
-                },
-                {
-                  icon: MdAutorenew,
-                  title: "Easy Return",
-                  desc: "7 Days replacement policy",
-                },
-                {
-                  icon: MdCreditCard,
-                  title: "0% EMI Facility",
-                  desc: "Up to 36 months EMI option",
-                },
-              ].map((item, idx) => {
-                const Icon = item.icon;
-                return (
-                  <div key={idx} className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
-                      <Icon size={22} aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h3 className="text-[13px] font-bold text-[#0F172A]">
-                        {item.title}
-                      </h3>
-                      <p className="text-[11px] text-[#64748B]">{item.desc}</p>
-                    </div>
+            <div className="grid grid-rows-2 gap-4 h-[220px] sm:h-[420px] lg:h-[480px]">
+              {SIDE_BANNERS.map((banner) => (
+                <a key={banner.title} href="#" className="relative rounded-md overflow-hidden group block">
+                  <img src={banner.image} alt={banner.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-[#211F1D]/35" />
+                  <div className="absolute inset-0 flex flex-col justify-end p-4">
+                    <h3 className="text-[#F7F3EC] text-base mb-0.5">{banner.title}</h3>
+                    <p className="text-[#F7F3EC]/85 text-xs">{banner.subtitle}</p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================
-            5. BRANDS GRID
-        ===================================================== */}
-        <section aria-labelledby="top-brands-heading">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2
-                id="top-brands-heading"
-                className="text-[20px] font-bold text-[#0F172A]"
-              >
-                Top Tech Brands
-              </h2>
-            </div>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-              {topBrands.map((brand) => (
-                <Link
-                  key={brand.id}
-                  href={`/brand/${brand.name.toLowerCase()}`}
-                  className="flex flex-col items-center justify-center rounded-xl bg-white p-4 border border-[#E2E8F0] transition hover:border-[#4F46E5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
-                >
-                  <img
-                    src={brand.logo}
-                    alt={`${brand.name} logo`}
-                    className="h-10 w-10 object-contain"
-                  />
-                  <span className="mt-2 text-[12px] font-semibold text-[#0F172A]">
-                    {brand.name}
-                  </span>
-                </Link>
+                </a>
               ))}
             </div>
           </div>
         </section>
 
-        {/* =====================================================
-            6. FLASH SALE
-        ===================================================== */}
-        <section aria-labelledby="flash-sale-heading">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="rounded-2xl bg-white p-6 border border-[#E2E8F0]">
-              <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center border-b border-[#F1F5F9] pb-4">
-                <div className="flex items-center gap-3">
-                  <h2
-                    id="flash-sale-heading"
-                    className="text-[22px] font-black text-[#0F172A]"
-                  >
-                    Flash Deals
-                  </h2>
-                  <span className="rounded-md bg-[#EF4444] px-2.5 py-1 text-[11px] font-bold text-white">
-                    Ending Soon
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-[13px] font-semibold text-[#0F172A]">
-                  <span>Ends In:</span>
-                  <div className="flex items-center gap-1 font-mono">
-                    <span className="rounded bg-[#0F172A] px-2 py-1 text-white">
-                      02
-                    </span>
-                    :
-                    <span className="rounded bg-[#0F172A] px-2 py-1 text-white">
-                      14
-                    </span>
-                    :
-                    <span className="rounded bg-[#0F172A] px-2 py-1 text-white">
-                      38
-                    </span>
-                  </div>
+        {/* Perks strip */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-[#E4DED2] py-6">
+            {PERKS.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="flex items-center gap-3">
+                <Icon size={22} className="text-[#1F3A2E] shrink-0" />
+                <div>
+                  <p className="text-sm text-[#211F1D]">{title}</p>
+                  <p className="text-xs text-[#8A8378]">{text}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </section>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {flashSaleProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+        {/* Categories */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-14">
+          <div className="flex items-end justify-between gap-6 mb-8">
+            <div>
+              <p className="text-sm text-[#B65C38] mb-1">Browse</p>
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">Shop by category</h2>
+            </div>
+            <a href="#" className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap">View all categories</a>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 sm:gap-5">
+            {CATEGORIES.map((cat) => (
+              <a key={cat.name} href="#" className="group text-center">
+                <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[#F7F3EC]">
+                  <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-300" />
+                </div>
+                <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">{cat.name}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {/* Exclusive products */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
+          <div className="flex items-end justify-between gap-6 mb-8">
+            <div>
+              <p className="text-sm text-[#B65C38] mb-1">Members get first pick</p>
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">Exclusive products</h2>
+            </div>
+            <a href="#" className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap">View all exclusives</a>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {EXCLUSIVE_PRODUCTS.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+
+        {/* Offer slider */}
+        <section className="bg-[#1F3A2E] mt-16 py-14">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
+            <div className="flex items-end justify-between gap-6 mb-8">
+              <div>
+                <p className="text-sm text-[#C9A659] mb-1">Limited time</p>
+                <h2 className="font-serif text-3xl text-[#F7F3EC]">Current offers</h2>
+              </div>
+              <div className="flex gap-2">
+                <button type="button" aria-label="Previous offer" onClick={() => setOfferActive((a) => (a - 1 + OFFER_SLIDES.length) % OFFER_SLIDES.length)} className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors">
+                  <LuChevronLeft size={16} />
+                </button>
+                <button type="button" aria-label="Next offer" onClick={() => setOfferActive((a) => (a + 1) % OFFER_SLIDES.length)} className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors">
+                  <LuChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative h-[300px] sm:h-[360px] rounded-md overflow-hidden">
+              {OFFER_SLIDES.map((slide, i) => (
+                <div key={slide.id} className={`absolute inset-0 transition-opacity duration-700 ${i === offerActive ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-[#211F1D]/40" />
+                  <div className="absolute inset-0 flex flex-col items-start justify-center px-8 sm:px-14">
+                    <h3 className="font-serif text-2xl sm:text-3xl text-[#F7F3EC] mb-2">{slide.title}</h3>
+                    <p className="text-[#F7F3EC]/90 text-sm sm:text-base mb-5">{slide.subtitle}</p>
+                    <button type="button" className="bg-[#F7F3EC] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#C9A659] transition-colors">
+                      {slide.cta}
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <div className="absolute bottom-4 left-8 sm:left-14 flex gap-2">
+                {OFFER_SLIDES.map((slide, i) => (
+                  <button key={slide.id} type="button" aria-label={`Go to offer ${i + 1}`} onClick={() => setOfferActive(i)} className={`h-1.5 rounded-full transition-all ${i === offerActive ? 'w-6 bg-[#F7F3EC]' : 'w-1.5 bg-[#F7F3EC]/50'}`} />
                 ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* =====================================================
-            7. FEATURED CATEGORIES
-        ===================================================== */}
-        <section aria-labelledby="featured-categories-heading">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2
-                id="featured-categories-heading"
-                className="text-[20px] font-bold text-[#0F172A]"
-              >
-                Featured Categories
-              </h2>
-              <Link
-                href="/categories"
-                className="text-[13px] font-semibold text-[#4F46E5] hover:underline"
-              >
-                View All Categories
-              </Link>
+        {/* Featured products (tabbed) */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+            <div>
+              <p className="text-sm text-[#B65C38] mb-1">Hand-picked</p>
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D]">Featured products</h2>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
-                  className="group flex flex-col items-center rounded-xl bg-white p-4 border border-[#E2E8F0] text-center transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]"
-                >
-                  <div className="h-20 w-20 overflow-hidden rounded-full bg-[#F8FAFC] p-2">
-                    <img
-                      src={cat.image}
-                      alt={cat.name}
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  <h3 className="mt-3 text-[13px] font-bold text-[#0F172A]">
-                    {cat.name}
-                  </h3>
-                  <p className="text-[11px] text-[#64748B]">{cat.count}</p>
-                </Link>
+            <div className="flex flex-wrap gap-2">
+              {FEATURED_TABS.map((tab) => (
+                <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`text-sm px-4 py-1.5 rounded-sm border transition-colors ${activeTab === tab ? 'bg-[#1F3A2E] border-[#1F3A2E] text-[#F7F3EC]' : 'border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E]'}`}>
+                  {tab}
+                </button>
               ))}
             </div>
           </div>
-        </section>
-
-        {/* =====================================================
-            8. POPULAR PRODUCTS
-        ===================================================== */}
-        <section aria-labelledby="popular-heading">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2
-                id="popular-heading"
-                className="text-[20px] font-bold text-[#0F172A]"
-              >
-                Trending Electronics
-              </h2>
-              <Link
-                href="/shop"
-                className="text-[13px] font-semibold text-[#4F46E5] hover:underline"
-              >
-                See More
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {FEATURED_PRODUCTS[activeTab].map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
 
-        {/* =====================================================
-            9. PROMO BANNERS
-        ===================================================== */}
-        <section aria-label="Special Offers and Services">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#0F172A] to-[#1E293B] p-6 text-white border border-slate-800">
-                <div>
-                  <span className="text-[11px] font-bold uppercase text-[#818CF8]">
-                    Trade-In Program
-                  </span>
-                  <h3 className="mt-1 text-[22px] font-bold">
-                    Exchange Your Old Device
-                  </h3>
-                  <p className="mt-1 text-[13px] text-slate-300">
-                    Upgrade your phone or laptop with maximum trade-in value.
-                  </p>
-                  <Link
-                    href="/exchange"
-                    className="mt-4 inline-block text-[13px] font-bold text-[#818CF8] hover:underline"
-                  >
-                    Get Instant Valuation &rarr;
-                  </Link>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#3730A3] p-6 text-white">
-                <div>
-                  <span className="text-[11px] font-bold uppercase text-indigo-200">
-                    Support & Service
-                  </span>
-                  <h3 className="mt-1 text-[22px] font-bold">
-                    Certified Tech Repair
-                  </h3>
-                  <p className="mt-1 text-[13px] text-indigo-100">
-                    Display replacement, battery fixes & hardware repair by
-                    specialists.
-                  </p>
-                  <Link
-                    href="/repair"
-                    className="mt-4 inline-block text-[13px] font-bold text-white underline"
-                  >
-                    Book Service Appointment &rarr;
-                  </Link>
-                </div>
-              </div>
+        {/* New arrivals */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
+          <div className="flex items-end justify-between gap-6 mb-8">
+            <div>
+              <p className="text-sm text-[#B65C38] mb-1">Just landed</p>
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">New arrivals</h2>
             </div>
+            <a href="#" className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap">View all new arrivals</a>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
+            {NEW_ARRIVALS.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
 
-        {/* =====================================================
-            10. SEO CONTENT SECTION
-        ===================================================== */}
-        <section aria-labelledby="about-store-heading" className="pt-4">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-            <div className="rounded-2xl bg-white p-6 sm:p-8 border border-[#E2E8F0]">
-              <h2
-                id="about-store-heading"
-                className="text-[18px] font-bold text-[#0F172A]"
-              >
-                GadgetPulse - Premium Tech & Gadget Store in Bangladesh
-              </h2>
-              <p className="mt-3 text-[13px] leading-relaxed text-[#64748B]">
-                GadgetPulse is your ultimate destination for authentic consumer
-                electronics and gadgets. We bring you official and international
-                warranty products from top global technology brands, including
-                smartphones, laptops, audio gear, smart home accessories, and
-                wearable technology. Enjoy safe online ordering with fast
-                delivery, official brand warranties, and flexible 0% EMI
-                options.
-              </p>
+        {/* Newsletter */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
+          <div className="bg-[#EFE9DC] rounded-md px-6 sm:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="text-center lg:text-left">
+              <h3 className="font-serif text-2xl text-[#211F1D] mb-1">Get first access to restocks</h3>
+              <p className="text-sm text-[#5B564C]">One email a week. No spam, unsubscribe anytime.</p>
+            </div>
+            <div className="flex w-full lg:w-auto max-w-md">
+              <input type="email" placeholder="you@email.com" className="flex-1 px-4 py-2.5 text-sm rounded-l-sm border border-[#E4DED2] outline-none bg-white text-[#211F1D] placeholder:text-[#8A8378]" />
+              <button type="button" className="px-5 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] text-sm rounded-r-sm hover:bg-[#16281F] transition-colors whitespace-nowrap">Subscribe</button>
             </div>
           </div>
         </section>
       </main>
 
-      {/* =====================================================
-          11. FOOTER
-      ===================================================== */}
-      <footer className="border-t border-[#E2E8F0] bg-white text-[#0F172A]">
-        <div className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#4F46E5] text-white">
-                  <MdBolt size={18} />
-                </div>
-                <span className="text-[20px] font-black tracking-tight text-[#0F172A]">
-                  Gadget<span className="text-[#4F46E5]">Pulse</span>
-                </span>
-              </div>
-              <p className="mt-3 text-[13px] text-[#64748B]">
-                Your trusted e-commerce platform for original gadgets and tech
-                solutions.
-              </p>
-              <div className="mt-4 space-y-2 text-[13px]">
-                <p className="font-semibold text-[#0F172A]">
-                  Hotline: <span className="text-[#4F46E5]">09678-000111</span>
-                </p>
-                <p className="text-[#64748B]">Email: support@gadgetpulse.com</p>
-                <p className="text-[#64748B]">
-                  Hours: 10:00 AM - 8:00 PM (Everyday)
-                </p>
-              </div>
+      {/* Footer */}
+      <footer className="bg-[#211F1D] text-[#D8D3C8] mt-16">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8">
+          <div className="col-span-2 sm:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-8 h-8 rounded-sm bg-[#C9A659] text-[#211F1D] flex items-center justify-center font-serif text-base">F</span>
+              <span className="font-serif text-lg text-[#F7F3EC]">FIELDHOUSE</span>
             </div>
-
-            <div>
-              <h3 className="text-[14px] font-bold text-[#0F172A] uppercase tracking-wider">
-                Our Outlets
-              </h3>
-              <ul className="mt-3 space-y-2 text-[13px] text-[#64748B]">
-                <li>
-                  <strong className="text-[#0F172A]">Dhanmondi:</strong> Level
-                  3, Shimanto Square, Dhaka
-                </li>
-                <li>
-                  <strong className="text-[#0F172A]">Bashundhara:</strong> Level
-                  5, Jamuna Future Park
-                </li>
-                <li>
-                  <strong className="text-[#0F172A]">Banani:</strong> Road 11,
-                  Block C, Dhaka
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-[14px] font-bold text-[#0F172A] uppercase tracking-wider">
-                Customer Care
-              </h3>
-              <ul className="mt-3 space-y-2 text-[13px] text-[#64748B]">
-                <li>
-                  <Link href="/about" className="hover:text-[#4F46E5]">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/warranty-policy"
-                    className="hover:text-[#4F46E5]"
-                  >
-                    Warranty Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/replacement-policy"
-                    className="hover:text-[#4F46E5]"
-                  >
-                    Replacement Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/emi-terms" className="hover:text-[#4F46E5]">
-                    EMI Terms & Conditions
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-[#4F46E5]">
-                    Privacy Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-[14px] font-bold text-[#0F172A] uppercase tracking-wider">
-                Stay Connected
-              </h3>
-              <p className="mt-3 text-[13px] text-[#64748B]">
-                Subscribe to get daily discount codes & news updates.
-              </p>
-              <form
-                onSubmit={handleNewsletterSubmit}
-                className="mt-3 flex items-center gap-2"
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  aria-label="Email address for newsletter"
-                  className="w-full rounded-lg border border-[#CBD5E1] bg-[#F1F5F9] px-3 py-2 text-[13px] outline-none focus:border-[#4F46E5]"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-[#0F172A] px-4 py-2 text-[13px] font-bold text-white transition hover:bg-[#4F46E5]"
-                >
-                  Join
-                </button>
-              </form>
+            <p className="text-sm text-[#9B9689] mb-4">Everyday goods for the home, made in small batches with natural materials.</p>
+            <div className="flex items-center gap-3">
+              <a href="#" aria-label="Facebook" className="hover:text-[#C9A659] transition-colors"><LuFacebook size={16} /></a>
+              <a href="#" aria-label="Instagram" className="hover:text-[#C9A659] transition-colors"><LuInstagram size={16} /></a>
+              <a href="#" aria-label="Twitter" className="hover:text-[#C9A659] transition-colors"><LuTwitter size={16} /></a>
+              <a href="#" aria-label="YouTube" className="hover:text-[#C9A659] transition-colors"><LuYoutube size={16} /></a>
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#E2E8F0] pt-6 text-[12px] text-[#94A3B8] sm:flex-row">
-            <p>
-              © {new Date().getFullYear()} GadgetPulse Inc. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4">
-              <span>bKash / Nagad / Visa / Mastercard Accepted</span>
+          <div>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
+            <ul className="space-y-2.5 text-sm text-[#9B9689]">
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">All categories</a></li>
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">New arrivals</a></li>
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">Best sellers</a></li>
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">Gift cards</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
+            <ul className="space-y-2.5 text-sm text-[#9B9689]">
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">Shipping & returns</a></li>
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">Track order</a></li>
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">FAQs</a></li>
+              <li><a href="#" className="hover:text-[#C9A659] transition-colors">Contact us</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
+            <ul className="space-y-2.5 text-sm text-[#9B9689]">
+              <li className="flex items-center gap-2"><LuMapPin size={14} /> Dhaka, Bangladesh</li>
+              <li className="flex items-center gap-2"><LuPhone size={14} /> +880 1XXX-XXXXXX</li>
+              <li className="flex items-center gap-2"><LuMail size={14} /> hello@fieldhouse.shop</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#9B9689]">
+            <p>© {new Date().getFullYear()} Fieldhouse. All rights reserved.</p>
+            <div className="flex items-center gap-3">
+              <span className="border border-white/15 rounded-sm px-2 py-1">VISA</span>
+              <span className="border border-white/15 rounded-sm px-2 py-1">MASTERCARD</span>
+              <span className="border border-white/15 rounded-sm px-2 py-1">bKash</span>
             </div>
           </div>
         </div>
