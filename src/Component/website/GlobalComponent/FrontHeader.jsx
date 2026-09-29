@@ -1,204 +1,239 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
+import { useRef, useState } from "react";
 import {
-  MdSearch,
-  MdShoppingCart,
-  MdFavoriteBorder,
-  MdPersonOutline,
-  MdMenu,
-  MdClose,
-  MdKeyboardArrowDown,
-  MdFlashOn,
-} from "react-icons/md";
+  LuSearch,
+  LuUser,
+  LuGitCompare,
+  LuShoppingCart,
+  LuMenu,
+  LuX,
+  LuChevronLeft,
+  LuChevronRight,
+} from "react-icons/lu";
 
-export default function Header({
-  search,
-  setSearch,
-  favorites = [],
-  cartCount = 0,
-}) {
-  const [mobileMenu, setMobileMenu] = useState(false);
+const NAV_LINKS = [
+  { label: "Home", href: "#" },
+  { label: "Shop All", href: "#" },
+  { label: "Lighting", href: "#" },
+  { label: "Kitchen & Dining", href: "#" },
+  { label: "Furniture", href: "#" },
+  { label: "Textiles & Bedding", href: "#" },
+  { label: "Outdoor & Garden", href: "#" },
+  { label: "Decor & Accents", href: "#" },
+  { label: "Brands", href: "#" },
+  { label: "Sale", href: "#" },
+];
+
+export default function FrontHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const scrollerRef = useRef(null);
+
+  const scrollNav = (dir) => {
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollBy({
+        left: dir * 220,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-xl">
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-        <div className="flex h-[72px] items-center justify-between gap-5">
-          {/* Logo */}
+    <header className="bg-[#F7F3EC] sticky top-0 z-40">
+      {/* Announcement Bar */}
+      <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
+          <p>Free shipping on orders over $75 · Handmade in small batches</p>
 
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-950 text-lg font-black text-white shadow-sm">
-              B
-            </div>
+          <div className="hidden sm:flex items-center gap-4">
+            <a href="#" className="hover:text-[#C9A659] transition-colors">
+              Track order
+            </a>
 
-            <div className="hidden sm:block">
-              <p className="text-lg font-extrabold tracking-tight text-gray-950">
-                YourStore
-              </p>
+            <a href="#" className="hover:text-[#C9A659] transition-colors">
+              Help
+            </a>
+          </div>
+        </div>
+      </div>
 
-              <p className="-mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                Shop smarter
-              </p>
-            </div>
+      {/* Main Header */}
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-8">
+        {/* Mobile Menu */}
+        <button
+          type="button"
+          className="lg:hidden text-[#211F1D]"
+          aria-label="Open menu"
+          onClick={() => setMobileOpen(true)}
+        >
+          <LuMenu size={22} />
+        </button>
+
+        {/* Logo */}
+        <a href="#" className="flex items-center gap-2 shrink-0">
+          <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
+            F
+          </span>
+
+          <span className="font-serif text-xl text-[#211F1D] tracking-tight hidden xs:inline">
+            FIELDHOUSE
+          </span>
+        </a>
+
+        {/* Search */}
+        <div className="flex-1 max-w-xl hidden md:flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+          <input
+            type="text"
+            placeholder="Search for furniture, lighting, decor…"
+            className="flex-1 px-4 py-2.5 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
+          />
+
+          <button
+            type="button"
+            aria-label="Search"
+            className="px-4 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] hover:bg-[#16281F] transition-colors"
+          >
+            <LuSearch size={17} />
+          </button>
+        </div>
+
+        {/* Header Actions */}
+        <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
+          <Link
+            href="/order?view=dashboard"
+            className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            aria-label="Account"
+          >
+            <LuUser size={20} />
+
+            <span className="text-[10px] hidden sm:inline">Account</span>
           </Link>
 
-          {/* Desktop Navigation */}
+          <button
+            type="button"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            aria-label="Compare"
+          >
+            <LuGitCompare size={20} />
 
-          <nav className="hidden items-center gap-7 lg:flex">
-            <Link href="/" className="text-sm font-semibold text-[#1D4ED8]">
-              Home
-            </Link>
+            <span className="text-[10px] hidden sm:inline">Compare</span>
 
-            <Link
-              href="/shop"
-              className="flex items-center gap-1 text-sm font-medium text-gray-600 transition hover:text-gray-950"
-            >
-              Shop
-              <MdKeyboardArrowDown size={17} />
-            </Link>
+            <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+              2
+            </span>
+          </button>
 
-            <Link
-              href="/categories"
-              className="text-sm font-medium text-gray-600 transition hover:text-gray-950"
-            >
-              Categories
-            </Link>
+          <button
+            type="button"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            aria-label="Cart"
+          >
+            <LuShoppingCart size={20} />
 
-            <Link
-              href="/deals"
-              className="flex items-center gap-1.5 text-sm font-medium text-gray-600 transition hover:text-gray-950"
-            >
-              <MdFlashOn className="text-amber-500" />
-              Deals
-            </Link>
+            <span className="text-[10px] hidden sm:inline">Cart</span>
 
-            <Link
-              href="/new-arrivals"
-              className="text-sm font-medium text-gray-600 transition hover:text-gray-950"
-            >
-              New Arrivals
-            </Link>
-          </nav>
+            <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+              3
+            </span>
+          </button>
+        </div>
+      </div>
 
-          {/* Search */}
+      {/* Mobile Search */}
+      <div className="md:hidden px-4 pb-3">
+        <div className="flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+          <input
+            type="text"
+            placeholder="Search products…"
+            className="flex-1 px-3 py-2 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
+          />
 
-          <div className="hidden max-w-md flex-1 md:flex">
-            <div className="relative w-full">
-              <MdSearch
-                size={21}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              />
+          <button
+            type="button"
+            aria-label="Search"
+            className="px-3 py-2 bg-[#1F3A2E] text-[#F7F3EC]"
+          >
+            <LuSearch size={16} />
+          </button>
+        </div>
+      </div>
 
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                type="search"
-                placeholder="Search products..."
-                className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 text-sm outline-none transition placeholder:text-gray-400 focus:border-[#1D4ED8] focus:bg-white focus:ring-4 focus:ring-blue-50"
-              />
-            </div>
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:block border-t border-[#E4DED2] bg-[#F7F3EC]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 relative flex items-center">
+          <button
+            type="button"
+            aria-label="Scroll navigation left"
+            onClick={() => scrollNav(-1)}
+            className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pr-2"
+          >
+            <LuChevronLeft size={16} />
+          </button>
+
+          <div
+            ref={scrollerRef}
+            className="flex items-center gap-7 overflow-x-auto scroll-smooth py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {NAV_LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm text-[#211F1D] hover:text-[#B65C38] whitespace-nowrap transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
-          {/* Actions */}
+          <button
+            type="button"
+            aria-label="Scroll navigation right"
+            onClick={() => scrollNav(1)}
+            className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pl-2"
+          >
+            <LuChevronRight size={16} />
+          </button>
+        </div>
+      </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Link
-              href="/order?view=dashboard"
-              className="hidden h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100 hover:text-gray-950 sm:flex"
-              aria-label="Account"
-            >
-              <MdPersonOutline size={23} />
-            </Link>
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-[#211F1D]/50"
+            onClick={() => setMobileOpen(false)}
+          />
 
-            <Link
-              href="/order?view=wishlist"
-              className="relative hidden h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100 hover:text-gray-950 sm:flex"
-              aria-label="Wishlist"
-            >
-              <MdFavoriteBorder size={22} />
-
-              {favorites.length > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-                  {favorites.length}
-                </span>
-              )}
-            </Link>
-
-            <Link
-              href="/checkout"
-              className="relative flex h-10 items-center gap-2 rounded-xl px-2.5 text-gray-700 transition hover:bg-gray-100"
-            >
-              <MdShoppingCart size={23} />
-
-              <span className="hidden text-sm font-semibold sm:block">
-                Cart
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#F7F3EC] p-5 overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <span className="font-serif text-lg text-[#211F1D]">
+                FIELDHOUSE
               </span>
 
-              {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1D4ED8] px-1 text-[10px] font-bold text-white">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
+                <LuX size={20} className="text-[#211F1D]" />
+              </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setMobileMenu((prev) => !prev)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 lg:hidden"
-              aria-label="Toggle menu"
-            >
-              {mobileMenu ? <MdClose size={24} /> : <MdMenu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Search */}
-
-        <div className="pb-3 md:hidden">
-          <div className="relative">
-            <MdSearch
-              size={20}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              type="search"
-              placeholder="Search products..."
-              className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm outline-none focus:border-[#1D4ED8] focus:bg-white"
-            />
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-
-        {mobileMenu && (
-          <div className="border-t border-gray-100 py-4 lg:hidden">
-            <nav className="flex flex-col gap-1">
-              {[
-                ["Home", "/"],
-                ["Shop", "/shop"],
-                ["Categories", "/categories"],
-                ["Deals", "/deals"],
-                ["New Arrivals", "/new-arrivals"],
-                ["Account", "/order?view=dashboard"],
-                ["Wishlist", "/order?view=wishlist"],
-              ].map(([name, href]) => (
-                <Link
-                  key={name}
-                  href={href}
-                  onClick={() => setMobileMenu(false)}
-                  className="rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            <div className="flex flex-col gap-1">
+              {NAV_LINKS.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="py-2.5 border-b border-[#E4DED2] text-sm text-[#211F1D]"
                 >
-                  {name}
-                </Link>
+                  {link.label}
+                </a>
               ))}
-            </nav>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 }

@@ -1,146 +1,171 @@
-import React from "react";
-import Link from "next/link";
-import { MdCheckCircle } from "react-icons/md";
+import {
+  LuFacebook,
+  LuInstagram,
+  LuTwitter,
+  LuYoutube,
+  LuMail,
+  LuMapPin,
+  LuPhone,
+} from "react-icons/lu";
 
-export default function Footer() {
+export default function FrontFooter() {
   return (
-    <footer className="bg-gray-950 text-white">
-      <div className="mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="sm:col-span-2 lg:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-lg font-black text-gray-950">
-                B
-              </div>
+    <footer className="bg-[#211F1D] text-[#D8D3C8] mt-16">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8">
+        {/* Brand */}
+        <div className="col-span-2 sm:col-span-1">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-8 h-8 rounded-sm bg-[#C9A659] text-[#211F1D] flex items-center justify-center font-serif text-base">
+              F
+            </span>
 
-              <span className="text-xl font-extrabold">YourStore</span>
-            </Link>
-
-            <p className="mt-5 max-w-sm text-sm leading-6 text-gray-400">
-              A modern shopping experience built around quality products, great
-              prices, and reliable service.
-            </p>
-
-            <div className="mt-6 flex items-center gap-2 text-xs text-gray-500">
-              <MdCheckCircle className="text-emerald-400" />
-              Trusted shopping experience
-            </div>
+            <span className="font-serif text-lg text-[#F7F3EC]">
+              FIELDHOUSE
+            </span>
           </div>
 
-          <div>
-            <h3 className="text-sm font-bold text-white">Shop</h3>
+          <p className="text-sm text-[#9B9689] mb-4">
+            Everyday goods for the home, made in small batches with natural
+            materials.
+          </p>
 
-            <div className="mt-4 flex flex-col gap-3">
-              <Link
-                href="/shop"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                All Products
-              </Link>
+          <div className="flex items-center gap-3">
+            <a
+              href="#"
+              aria-label="Facebook"
+              className="hover:text-[#C9A659] transition-colors"
+            >
+              <LuFacebook size={16} />
+            </a>
 
-              <Link
-                href="/deals"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Hot Deals
-              </Link>
+            <a
+              href="#"
+              aria-label="Instagram"
+              className="hover:text-[#C9A659] transition-colors"
+            >
+              <LuInstagram size={16} />
+            </a>
 
-              <Link
-                href="/new-arrivals"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                New Arrivals
-              </Link>
+            <a
+              href="#"
+              aria-label="Twitter"
+              className="hover:text-[#C9A659] transition-colors"
+            >
+              <LuTwitter size={16} />
+            </a>
 
-              <Link
-                href="/categories"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Categories
-              </Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-white">Help</h3>
-
-            <div className="mt-4 flex flex-col gap-3">
-              <Link
-                href="/contact"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Contact Us
-              </Link>
-
-              <Link
-                href="/shipping"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Shipping Info
-              </Link>
-
-              <Link
-                href="/returns"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Returns
-              </Link>
-
-              <Link
-                href="/faq"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                FAQ
-              </Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-white">Company</h3>
-
-            <div className="mt-4 flex flex-col gap-3">
-              <Link
-                href="/about"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                About Us
-              </Link>
-
-              <Link
-                href="/privacy"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Privacy Policy
-              </Link>
-
-              <Link
-                href="/terms"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                Terms & Conditions
-              </Link>
-
-              <Link
-                href="/account"
-                className="text-sm text-gray-400 transition hover:text-white"
-              >
-                My Account
-              </Link>
-            </div>
+            <a
+              href="#"
+              aria-label="YouTube"
+              className="hover:text-[#C9A659] transition-colors"
+            >
+              <LuYoutube size={16} />
+            </a>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} YourStore. All rights reserved.
-          </p>
+        {/* Shop */}
+        <div>
+          <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
 
-          <div className="flex items-center gap-5 text-xs text-gray-500">
-            <span>Secure Payments</span>
-            <span>•</span>
-            <span>Fast Delivery</span>
-            <span>•</span>
-            <span>Easy Returns</span>
+          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                All categories
+              </a>
+            </li>
+
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                New arrivals
+              </a>
+            </li>
+
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                Best sellers
+              </a>
+            </li>
+
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                Gift cards
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Help */}
+        <div>
+          <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
+
+          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                Shipping & returns
+              </a>
+            </li>
+
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                Track order
+              </a>
+            </li>
+
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                FAQs
+              </a>
+            </li>
+
+            <li>
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
+                Contact us
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Contact */}
+        <div>
+          <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
+
+          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+            <li className="flex items-center gap-2">
+              <LuMapPin size={14} />
+              Dhaka, Bangladesh
+            </li>
+
+            <li className="flex items-center gap-2">
+              <LuPhone size={14} />
+              +880 1XXX-XXXXXX
+            </li>
+
+            <li className="flex items-center gap-2">
+              <LuMail size={14} />
+              hello@fieldhouse.shop
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Footer Bottom */}
+      <div className="border-t border-white/10">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#9B9689]">
+          <p>© {new Date().getFullYear()} Fieldhouse. All rights reserved.</p>
+
+          <div className="flex items-center gap-3">
+            <span className="border border-white/15 rounded-sm px-2 py-1">
+              VISA
+            </span>
+
+            <span className="border border-white/15 rounded-sm px-2 py-1">
+              MASTERCARD
+            </span>
+
+            <span className="border border-white/15 rounded-sm px-2 py-1">
+              bKash
+            </span>
           </div>
         </div>
       </div>

@@ -1636,9 +1636,7 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
   );
 }
 
-/* =========================================================
-   VIEW: ACCOUNT SETTINGS
-========================================================= */
+// account  settings
 
 function SettingsView({ profile, onSaveProfile, onToast }) {
   const [details, setDetails] = useState(profile);
@@ -1878,9 +1876,7 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
   );
 }
 
-/* =========================================================
-   PAGE
-========================================================= */
+// account page content function
 
 function AccountPageContent() {
   const searchParams = useSearchParams();
