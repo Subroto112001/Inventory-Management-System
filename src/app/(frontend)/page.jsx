@@ -1,6 +1,6 @@
-
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   LuSearch,
@@ -54,8 +54,7 @@ const HERO_SLIDES = [
       "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=85",
     eyebrow: "New season",
     title: "Furniture built to live in, not around",
-    subtitle:
-      "Solid oak and reclaimed wood pieces, finished by hand.",
+    subtitle: "Solid oak and reclaimed wood pieces, finished by hand.",
     cta: "Shop the edit",
   },
   {
@@ -64,8 +63,7 @@ const HERO_SLIDES = [
       "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1400&q=85",
     eyebrow: "Kitchen & dining",
     title: "Stoneware and cast iron for everyday cooking",
-    subtitle:
-      "Small-batch pieces made to be used, not shelved.",
+    subtitle: "Small-batch pieces made to be used, not shelved.",
     cta: "Browse kitchenware",
   },
   {
@@ -74,8 +72,7 @@ const HERO_SLIDES = [
       "https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&w=1400&q=85",
     eyebrow: "Just restocked",
     title: "Linen and wool for the colder months",
-    subtitle:
-      "Woven in small runs, softer with every wash.",
+    subtitle: "Woven in small runs, softer with every wash.",
     cta: "Shop textiles",
   },
 ];
@@ -208,8 +205,7 @@ const OFFER_SLIDES = [
     image:
       "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1200&q=85",
     title: "Wool & Wood",
-    subtitle:
-      "Up to 30% off cold-weather furnishings",
+    subtitle: "Up to 30% off cold-weather furnishings",
     cta: "Shop the sale",
   },
   {
@@ -217,8 +213,7 @@ const OFFER_SLIDES = [
     image:
       "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=85",
     title: "The Kitchen Edit",
-    subtitle:
-      "Season's essentials, from $18",
+    subtitle: "Season's essentials, from $18",
     cta: "Shop kitchen",
   },
   {
@@ -226,8 +221,7 @@ const OFFER_SLIDES = [
     image:
       "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
     title: "Outdoor Living",
-    subtitle:
-      "Get ahead of spring, pre-order now",
+    subtitle: "Get ahead of spring, pre-order now",
     cta: "Shop outdoor",
   },
 ];
@@ -236,12 +230,7 @@ const OFFER_SLIDES = [
    FEATURED TABS
 ========================================================= */
 
-const FEATURED_TABS = [
-  "Kitchen & Dining",
-  "Furniture",
-  "Lighting",
-  "Textiles",
-];
+const FEATURED_TABS = ["Kitchen & Dining", "Furniture", "Lighting", "Textiles"];
 
 /* =========================================================
    FEATURED PRODUCTS
@@ -551,16 +540,8 @@ function Stars({ rating }) {
 ========================================================= */
 
 function ProductCard({ product }) {
-  const {
-    image,
-    category,
-    name,
-    price,
-    oldPrice,
-    rating,
-    reviews,
-    badge,
-  } = product;
+  const { image, category, name, price, oldPrice, rating, reviews, badge } =
+    product;
 
   return (
     <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200">
@@ -595,9 +576,7 @@ function ProductCard({ product }) {
       </div>
 
       <div className="p-4">
-        <p className="text-xs text-[#8A8378] mb-1">
-          {category}
-        </p>
+        <p className="text-xs text-[#8A8378] mb-1">{category}</p>
 
         <h3 className="text-sm text-[#211F1D] leading-snug mb-1.5 line-clamp-2">
           {name}
@@ -606,15 +585,11 @@ function ProductCard({ product }) {
         <div className="flex items-center gap-1.5 mb-2">
           <Stars rating={rating} />
 
-          <span className="text-xs text-[#8A8378]">
-            ({reviews})
-          </span>
+          <span className="text-xs text-[#8A8378]">({reviews})</span>
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-[#1F3A2E] text-base">
-            ${price}
-          </span>
+          <span className="text-[#1F3A2E] text-base">${price}</span>
 
           {oldPrice ? (
             <span className="text-xs text-[#8A8378] line-through">
@@ -637,15 +612,12 @@ export default function EcommerceHomePage() {
 
   const [heroActive, setHeroActive] = useState(0);
   const [offerActive, setOfferActive] = useState(0);
-  const [activeTab, setActiveTab] =
-    useState(FEATURED_TABS[0]);
+  const [activeTab, setActiveTab] = useState(FEATURED_TABS[0]);
 
   /* Hero autoplay */
   useEffect(() => {
     const id = setInterval(() => {
-      setHeroActive(
-        (a) => (a + 1) % HERO_SLIDES.length
-      );
+      setHeroActive((a) => (a + 1) % HERO_SLIDES.length);
     }, 5000);
 
     return () => clearInterval(id);
@@ -654,9 +626,7 @@ export default function EcommerceHomePage() {
   /* Offer autoplay */
   useEffect(() => {
     const id = setInterval(() => {
-      setOfferActive(
-        (a) => (a + 1) % OFFER_SLIDES.length
-      );
+      setOfferActive((a) => (a + 1) % OFFER_SLIDES.length);
     }, 6000);
 
     return () => clearInterval(id);
@@ -701,23 +671,14 @@ export default function EcommerceHomePage() {
         {/* Announcement Bar */}
         <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
-            <p>
-              Free shipping on orders over $75 · Handmade in
-              small batches
-            </p>
+            <p>Free shipping on orders over $75 · Handmade in small batches</p>
 
             <div className="hidden sm:flex items-center gap-4">
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Track order
               </a>
 
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Help
               </a>
             </div>
@@ -737,10 +698,7 @@ export default function EcommerceHomePage() {
           </button>
 
           {/* Logo */}
-          <a
-            href="#"
-            className="flex items-center gap-2 shrink-0"
-          >
+          <a href="#" className="flex items-center gap-2 shrink-0">
             <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
               F
             </span>
@@ -769,17 +727,15 @@ export default function EcommerceHomePage() {
 
           {/* Header Actions */}
           <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
-            <button
-              type="button"
+            <Link
+              href="/order?view=dashboard"
               className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
               aria-label="Account"
             >
               <LuUser size={20} />
 
-              <span className="text-[10px] hidden sm:inline">
-                Account
-              </span>
-            </button>
+              <span className="text-[10px] hidden sm:inline">Account</span>
+            </Link>
 
             <button
               type="button"
@@ -788,9 +744,7 @@ export default function EcommerceHomePage() {
             >
               <LuGitCompare size={20} />
 
-              <span className="text-[10px] hidden sm:inline">
-                Compare
-              </span>
+              <span className="text-[10px] hidden sm:inline">Compare</span>
 
               <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 2
@@ -804,9 +758,7 @@ export default function EcommerceHomePage() {
             >
               <LuShoppingCart size={20} />
 
-              <span className="text-[10px] hidden sm:inline">
-                Cart
-              </span>
+              <span className="text-[10px] hidden sm:inline">Cart</span>
 
               <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 3
@@ -891,10 +843,7 @@ export default function EcommerceHomePage() {
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
                 >
-                  <LuX
-                    size={20}
-                    className="text-[#211F1D]"
-                  />
+                  <LuX size={20} className="text-[#211F1D]" />
                 </button>
               </div>
 
@@ -975,9 +924,7 @@ export default function EcommerceHomePage() {
                 aria-label="Previous slide"
                 onClick={() =>
                   setHeroActive(
-                    (a) =>
-                      (a - 1 + HERO_SLIDES.length) %
-                      HERO_SLIDES.length
+                    (a) => (a - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
                   )
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
@@ -990,9 +937,7 @@ export default function EcommerceHomePage() {
                 type="button"
                 aria-label="Next slide"
                 onClick={() =>
-                  setHeroActive(
-                    (a) => (a + 1) % HERO_SLIDES.length
-                  )
+                  setHeroActive((a) => (a + 1) % HERO_SLIDES.length)
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
               >
@@ -1055,23 +1000,13 @@ export default function EcommerceHomePage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-10">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-[#E4DED2] py-6">
             {PERKS.map(({ icon: Icon, title, text }) => (
-              <div
-                key={title}
-                className="flex items-center gap-3"
-              >
-                <Icon
-                  size={22}
-                  className="text-[#1F3A2E] shrink-0"
-                />
+              <div key={title} className="flex items-center gap-3">
+                <Icon size={22} className="text-[#1F3A2E] shrink-0" />
 
                 <div>
-                  <p className="text-sm text-[#211F1D]">
-                    {title}
-                  </p>
+                  <p className="text-sm text-[#211F1D]">{title}</p>
 
-                  <p className="text-xs text-[#8A8378]">
-                    {text}
-                  </p>
+                  <p className="text-xs text-[#8A8378]">{text}</p>
                 </div>
               </div>
             ))}
@@ -1085,9 +1020,7 @@ export default function EcommerceHomePage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-14">
           <div className="flex items-end justify-between gap-6 mb-8">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">
-                Browse
-              </p>
+              <p className="text-sm text-[#B65C38] mb-1">Browse</p>
 
               <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">
                 Shop by category
@@ -1104,11 +1037,7 @@ export default function EcommerceHomePage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 sm:gap-5">
             {CATEGORIES.map((cat) => (
-              <a
-                key={cat.name}
-                href="#"
-                className="group text-center"
-              >
+              <a key={cat.name} href="#" className="group text-center">
                 <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[#F7F3EC]">
                   <img
                     src={cat.image}
@@ -1151,10 +1080,7 @@ export default function EcommerceHomePage() {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {EXCLUSIVE_PRODUCTS.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-              />
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </section>
@@ -1167,9 +1093,7 @@ export default function EcommerceHomePage() {
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
             <div className="flex items-end justify-between gap-6 mb-8">
               <div>
-                <p className="text-sm text-[#C9A659] mb-1">
-                  Limited time
-                </p>
+                <p className="text-sm text-[#C9A659] mb-1">Limited time</p>
 
                 <h2 className="font-serif text-3xl text-[#F7F3EC]">
                   Current offers
@@ -1183,8 +1107,7 @@ export default function EcommerceHomePage() {
                   onClick={() =>
                     setOfferActive(
                       (a) =>
-                        (a - 1 + OFFER_SLIDES.length) %
-                        OFFER_SLIDES.length
+                        (a - 1 + OFFER_SLIDES.length) % OFFER_SLIDES.length,
                     )
                   }
                   className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
@@ -1196,9 +1119,7 @@ export default function EcommerceHomePage() {
                   type="button"
                   aria-label="Next offer"
                   onClick={() =>
-                    setOfferActive(
-                      (a) => (a + 1) % OFFER_SLIDES.length
-                    )
+                    setOfferActive((a) => (a + 1) % OFFER_SLIDES.length)
                   }
                   className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
                 >
@@ -1270,9 +1191,7 @@ export default function EcommerceHomePage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">
-                Hand-picked
-              </p>
+              <p className="text-sm text-[#B65C38] mb-1">Hand-picked</p>
 
               <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D]">
                 Featured products
@@ -1298,14 +1217,9 @@ export default function EcommerceHomePage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {FEATURED_PRODUCTS[activeTab].map(
-              (p) => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                />
-              )
-            )}
+            {FEATURED_PRODUCTS[activeTab].map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
         </section>
 
@@ -1316,9 +1230,7 @@ export default function EcommerceHomePage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
           <div className="flex items-end justify-between gap-6 mb-8">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">
-                Just landed
-              </p>
+              <p className="text-sm text-[#B65C38] mb-1">Just landed</p>
 
               <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">
                 New arrivals
@@ -1335,10 +1247,7 @@ export default function EcommerceHomePage() {
 
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
             {NEW_ARRIVALS.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-              />
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </section>
@@ -1355,8 +1264,7 @@ export default function EcommerceHomePage() {
               </h3>
 
               <p className="text-sm text-[#5B564C]">
-                One email a week. No spam, unsubscribe
-                anytime.
+                One email a week. No spam, unsubscribe anytime.
               </p>
             </div>
 
@@ -1397,8 +1305,8 @@ export default function EcommerceHomePage() {
             </div>
 
             <p className="text-sm text-[#9B9689] mb-4">
-              Everyday goods for the home, made in small
-              batches with natural materials.
+              Everyday goods for the home, made in small batches with natural
+              materials.
             </p>
 
             <div className="flex items-center gap-3">
@@ -1438,43 +1346,29 @@ export default function EcommerceHomePage() {
 
           {/* Shop */}
           <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">
-              Shop
-            </h4>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
 
             <ul className="space-y-2.5 text-sm text-[#9B9689]">
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   All categories
                 </a>
               </li>
 
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   New arrivals
                 </a>
               </li>
 
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   Best sellers
                 </a>
               </li>
 
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   Gift cards
                 </a>
               </li>
@@ -1483,43 +1377,29 @@ export default function EcommerceHomePage() {
 
           {/* Help */}
           <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">
-              Help
-            </h4>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
 
             <ul className="space-y-2.5 text-sm text-[#9B9689]">
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   Shipping & returns
                 </a>
               </li>
 
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   Track order
                 </a>
               </li>
 
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   FAQs
                 </a>
               </li>
 
               <li>
-                <a
-                  href="#"
-                  className="hover:text-[#C9A659] transition-colors"
-                >
+                <a href="#" className="hover:text-[#C9A659] transition-colors">
                   Contact us
                 </a>
               </li>
@@ -1528,9 +1408,7 @@ export default function EcommerceHomePage() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">
-              Contact
-            </h4>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
 
             <ul className="space-y-2.5 text-sm text-[#9B9689]">
               <li className="flex items-center gap-2">
@@ -1554,10 +1432,7 @@ export default function EcommerceHomePage() {
         {/* Footer Bottom */}
         <div className="border-t border-white/10">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#9B9689]">
-            <p>
-              © {new Date().getFullYear()} Fieldhouse. All
-              rights reserved.
-            </p>
+            <p>© {new Date().getFullYear()} Fieldhouse. All rights reserved.</p>
 
             <div className="flex items-center gap-3">
               <span className="border border-white/15 rounded-sm px-2 py-1">

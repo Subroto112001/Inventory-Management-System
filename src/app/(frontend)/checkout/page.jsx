@@ -1,6 +1,6 @@
-
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import {
   LuSearch,
@@ -97,9 +97,7 @@ function SectionTitle({ number, title }) {
         {number}
       </span>
 
-      <h2 className="font-serif text-xl sm:text-2xl text-[#211F1D]">
-        {title}
-      </h2>
+      <h2 className="font-serif text-xl sm:text-2xl text-[#211F1D]">{title}</h2>
     </div>
   );
 }
@@ -117,9 +115,7 @@ function InputField({
       <label className="block text-sm text-[#211F1D] mb-1.5">
         {label}
 
-        {required && (
-          <span className="text-[#B65C38] ml-1">*</span>
-        )}
+        {required && <span className="text-[#B65C38] ml-1">*</span>}
       </label>
 
       <input
@@ -176,9 +172,8 @@ export default function CheckoutPage() {
   };
 
   const subtotal = CHECKOUT_PRODUCTS.reduce(
-    (total, product) =>
-      total + product.price * product.quantity,
-    0
+    (total, product) => total + product.price * product.quantity,
+    0,
   );
 
   const shipping = subtotal >= 75 ? 0 : 12;
@@ -228,23 +223,14 @@ export default function CheckoutPage() {
         {/* Announcement Bar */}
         <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
-            <p>
-              Free shipping on orders over $75 · Handmade in
-              small batches
-            </p>
+            <p>Free shipping on orders over $75 · Handmade in small batches</p>
 
             <div className="hidden sm:flex items-center gap-4">
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Track order
               </a>
 
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Help
               </a>
             </div>
@@ -264,10 +250,7 @@ export default function CheckoutPage() {
           </button>
 
           {/* Logo */}
-          <a
-            href="#"
-            className="flex items-center gap-2 shrink-0"
-          >
+          <a href="#" className="flex items-center gap-2 shrink-0">
             <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
               F
             </span>
@@ -296,16 +279,14 @@ export default function CheckoutPage() {
 
           {/* Header Actions */}
           <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
-            <button
-              type="button"
+            <Link
+              href="/order?view=dashboard"
               className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
               aria-label="Account"
             >
               <LuUser size={20} />
-              <span className="text-[10px] hidden sm:inline">
-                Account
-              </span>
-            </button>
+              <span className="text-[10px] hidden sm:inline">Account</span>
+            </Link>
 
             <button
               type="button"
@@ -314,30 +295,26 @@ export default function CheckoutPage() {
             >
               <LuGitCompare size={20} />
 
-              <span className="text-[10px] hidden sm:inline">
-                Compare
-              </span>
+              <span className="text-[10px] hidden sm:inline">Compare</span>
 
               <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 2
               </span>
             </button>
 
-            <button
-              type="button"
+            <Link
+              href="/order?view=wishlist"
               className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
               aria-label="Wishlist"
             >
               <LuHeart size={20} />
 
-              <span className="text-[10px] hidden sm:inline">
-                Wishlist
-              </span>
+              <span className="text-[10px] hidden sm:inline">Wishlist</span>
 
               <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 1
               </span>
-            </button>
+            </Link>
 
             <button
               type="button"
@@ -346,9 +323,7 @@ export default function CheckoutPage() {
             >
               <LuShoppingCart size={20} />
 
-              <span className="text-[10px] hidden sm:inline">
-                Cart
-              </span>
+              <span className="text-[10px] hidden sm:inline">Cart</span>
 
               <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 3
@@ -433,10 +408,7 @@ export default function CheckoutPage() {
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
                 >
-                  <LuX
-                    size={20}
-                    className="text-[#211F1D]"
-                  />
+                  <LuX size={20} className="text-[#211F1D]" />
                 </button>
               </div>
 
@@ -465,27 +437,19 @@ export default function CheckoutPage() {
         <section className="border-b border-[#E4DED2]">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4">
             <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <a
-                href="#"
-                className="hover:text-[#B65C38] transition-colors"
-              >
+              <a href="#" className="hover:text-[#B65C38] transition-colors">
                 Home
               </a>
 
               <LuChevronRight size={13} />
 
-              <a
-                href="#"
-                className="hover:text-[#B65C38] transition-colors"
-              >
+              <a href="#" className="hover:text-[#B65C38] transition-colors">
                 Cart
               </a>
 
               <LuChevronRight size={13} />
 
-              <span className="text-[#211F1D]">
-                Checkout
-              </span>
+              <span className="text-[#211F1D]">Checkout</span>
             </div>
           </div>
         </section>
@@ -494,9 +458,7 @@ export default function CheckoutPage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">
-                Almost there
-              </p>
+              <p className="text-sm text-[#B65C38] mb-1">Almost there</p>
 
               <h1 className="font-serif text-3xl sm:text-4xl text-[#211F1D]">
                 Checkout
@@ -504,11 +466,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <LuLock
-                size={14}
-                className="text-[#1F3A2E]"
-              />
-
+              <LuLock size={14} className="text-[#1F3A2E]" />
               Secure checkout
             </div>
           </div>
@@ -520,9 +478,7 @@ export default function CheckoutPage() {
                 1
               </span>
 
-              <span className="text-xs sm:text-sm">
-                Information
-              </span>
+              <span className="text-xs sm:text-sm">Information</span>
             </div>
 
             <div className="flex-1 h-px bg-[#C9A659] mx-3 sm:mx-5" />
@@ -532,9 +488,7 @@ export default function CheckoutPage() {
                 2
               </span>
 
-              <span className="text-xs sm:text-sm">
-                Payment
-              </span>
+              <span className="text-xs sm:text-sm">Payment</span>
             </div>
 
             <div className="flex-1 h-px bg-[#E4DED2] mx-3 sm:mx-5" />
@@ -544,9 +498,7 @@ export default function CheckoutPage() {
                 3
               </span>
 
-              <span className="text-xs sm:text-sm">
-                Confirmation
-              </span>
+              <span className="text-xs sm:text-sm">Confirmation</span>
             </div>
           </div>
         </section>
@@ -564,10 +516,7 @@ export default function CheckoutPage() {
             <div className="space-y-6">
               {/* Contact */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle
-                  number="1"
-                  title="Contact information"
-                />
+                <SectionTitle number="1" title="Contact information" />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
@@ -576,12 +525,7 @@ export default function CheckoutPage() {
                       type="email"
                       placeholder="you@example.com"
                       value={form.email}
-                      onChange={(e) =>
-                        updateField(
-                          "email",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => updateField("email", e.target.value)}
                     />
                   </div>
 
@@ -589,24 +533,14 @@ export default function CheckoutPage() {
                     label="First name"
                     placeholder="First name"
                     value={form.firstName}
-                    onChange={(e) =>
-                      updateField(
-                        "firstName",
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateField("firstName", e.target.value)}
                   />
 
                   <InputField
                     label="Last name"
                     placeholder="Last name"
                     value={form.lastName}
-                    onChange={(e) =>
-                      updateField(
-                        "lastName",
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateField("lastName", e.target.value)}
                   />
 
                   <div className="sm:col-span-2">
@@ -615,21 +549,13 @@ export default function CheckoutPage() {
                       type="tel"
                       placeholder="+880 1XXXXXXXXX"
                       value={form.phone}
-                      onChange={(e) =>
-                        updateField(
-                          "phone",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => updateField("phone", e.target.value)}
                     />
                   </div>
                 </div>
 
                 <label className="flex items-center gap-2 mt-5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 accent-[#1F3A2E]"
-                  />
+                  <input type="checkbox" className="w-4 h-4 accent-[#1F3A2E]" />
 
                   <span className="text-sm text-[#5B564C]">
                     Email me with news and offers
@@ -639,10 +565,7 @@ export default function CheckoutPage() {
 
               {/* Shipping Address */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle
-                  number="2"
-                  title="Shipping address"
-                />
+                <SectionTitle number="2" title="Shipping address" />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
@@ -650,12 +573,7 @@ export default function CheckoutPage() {
                       label="Address"
                       placeholder="Street address"
                       value={form.address}
-                      onChange={(e) =>
-                        updateField(
-                          "address",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => updateField("address", e.target.value)}
                     />
                   </div>
 
@@ -665,12 +583,7 @@ export default function CheckoutPage() {
                       placeholder="Apartment, suite, unit (optional)"
                       required={false}
                       value={form.apartment}
-                      onChange={(e) =>
-                        updateField(
-                          "apartment",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => updateField("apartment", e.target.value)}
                     />
                   </div>
 
@@ -678,56 +591,33 @@ export default function CheckoutPage() {
                     label="City"
                     placeholder="City"
                     value={form.city}
-                    onChange={(e) =>
-                      updateField(
-                        "city",
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateField("city", e.target.value)}
                   />
 
                   <InputField
                     label="State / Province"
                     placeholder="State / Province"
                     value={form.state}
-                    onChange={(e) =>
-                      updateField(
-                        "state",
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateField("state", e.target.value)}
                   />
 
                   <InputField
                     label="Postal code"
                     placeholder="Postal code"
                     value={form.postalCode}
-                    onChange={(e) =>
-                      updateField(
-                        "postalCode",
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateField("postalCode", e.target.value)}
                   />
 
                   <InputField
                     label="Country"
                     placeholder="Country"
                     value={form.country}
-                    onChange={(e) =>
-                      updateField(
-                        "country",
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateField("country", e.target.value)}
                   />
                 </div>
 
                 <label className="flex items-center gap-2 mt-5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 accent-[#1F3A2E]"
-                  />
+                  <input type="checkbox" className="w-4 h-4 accent-[#1F3A2E]" />
 
                   <span className="text-sm text-[#5B564C]">
                     Save this information for next time
@@ -737,10 +627,7 @@ export default function CheckoutPage() {
 
               {/* Delivery */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle
-                  number="3"
-                  title="Delivery method"
-                />
+                <SectionTitle number="3" title="Delivery method" />
 
                 <div className="border border-[#1F3A2E] bg-[#F7F3EC] rounded-sm p-4 flex items-center justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -760,19 +647,14 @@ export default function CheckoutPage() {
                   </div>
 
                   <span className="text-sm text-[#1F3A2E]">
-                    {shipping === 0
-                      ? "FREE"
-                      : `$${shipping}`}
+                    {shipping === 0 ? "FREE" : `$${shipping}`}
                   </span>
                 </div>
               </div>
 
               {/* Payment */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
-                <SectionTitle
-                  number="4"
-                  title="Payment"
-                />
+                <SectionTitle number="4" title="Payment" />
 
                 <p className="text-xs text-[#8A8378] mb-5">
                   All transactions are secure and encrypted.
@@ -781,9 +663,7 @@ export default function CheckoutPage() {
                 {/* Card */}
                 <button
                   type="button"
-                  onClick={() =>
-                    setPaymentMethod("card")
-                  }
+                  onClick={() => setPaymentMethod("card")}
                   className={`w-full text-left border rounded-sm p-4 transition-colors ${
                     paymentMethod === "card"
                       ? "border-[#1F3A2E] bg-[#F7F3EC]"
@@ -809,10 +689,7 @@ export default function CheckoutPage() {
                       </span>
                     </div>
 
-                    <LuCreditCard
-                      size={20}
-                      className="text-[#5B564C]"
-                    />
+                    <LuCreditCard size={20} className="text-[#5B564C]" />
                   </div>
                 </button>
 
@@ -824,10 +701,7 @@ export default function CheckoutPage() {
                         placeholder="1234 5678 9012 3456"
                         value={form.cardNumber}
                         onChange={(e) =>
-                          updateField(
-                            "cardNumber",
-                            e.target.value
-                          )
+                          updateField("cardNumber", e.target.value)
                         }
                       />
                     </div>
@@ -836,12 +710,7 @@ export default function CheckoutPage() {
                       label="Name on card"
                       placeholder="Name on card"
                       value={form.cardName}
-                      onChange={(e) =>
-                        updateField(
-                          "cardName",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => updateField("cardName", e.target.value)}
                     />
 
                     <div className="grid grid-cols-2 gap-3">
@@ -849,24 +718,14 @@ export default function CheckoutPage() {
                         label="Expiry"
                         placeholder="MM/YY"
                         value={form.expiry}
-                        onChange={(e) =>
-                          updateField(
-                            "expiry",
-                            e.target.value
-                          )
-                        }
+                        onChange={(e) => updateField("expiry", e.target.value)}
                       />
 
                       <InputField
                         label="CVV"
                         placeholder="123"
                         value={form.cvv}
-                        onChange={(e) =>
-                          updateField(
-                            "cvv",
-                            e.target.value
-                          )
-                        }
+                        onChange={(e) => updateField("cvv", e.target.value)}
                       />
                     </div>
                   </div>
@@ -875,9 +734,7 @@ export default function CheckoutPage() {
                 {/* Cash On Delivery */}
                 <button
                   type="button"
-                  onClick={() =>
-                    setPaymentMethod("cod")
-                  }
+                  onClick={() => setPaymentMethod("cod")}
                   className={`w-full text-left border rounded-sm p-4 mt-3 transition-colors ${
                     paymentMethod === "cod"
                       ? "border-[#1F3A2E] bg-[#F7F3EC]"
@@ -903,9 +760,7 @@ export default function CheckoutPage() {
                       </span>
                     </div>
 
-                    <span className="text-xs text-[#8A8378]">
-                      Available
-                    </span>
+                    <span className="text-xs text-[#8A8378]">Available</span>
                   </div>
                 </button>
 
@@ -914,17 +769,12 @@ export default function CheckoutPage() {
                   <input
                     type="checkbox"
                     checked={sameBilling}
-                    onChange={(e) =>
-                      setSameBilling(
-                        e.target.checked
-                      )
-                    }
+                    onChange={(e) => setSameBilling(e.target.checked)}
                     className="w-4 h-4 accent-[#1F3A2E]"
                   />
 
                   <span className="text-sm text-[#5B564C]">
-                    Billing address is the same as
-                    shipping address
+                    Billing address is the same as shipping address
                   </span>
                 </label>
 
@@ -957,17 +807,11 @@ export default function CheckoutPage() {
                   className="text-xs sm:text-sm text-[#5B564C] leading-relaxed"
                 >
                   I agree to the{" "}
-                  <a
-                    href="#"
-                    className="text-[#1F3A2E] underline"
-                  >
+                  <a href="#" className="text-[#1F3A2E] underline">
                     Terms & Conditions
                   </a>{" "}
                   and{" "}
-                  <a
-                    href="#"
-                    className="text-[#1F3A2E] underline"
-                  >
+                  <a href="#" className="text-[#1F3A2E] underline">
                     Privacy Policy
                   </a>
                   .
@@ -990,9 +834,8 @@ export default function CheckoutPage() {
 
                     <span className="text-xs text-[#8A8378]">
                       {CHECKOUT_PRODUCTS.reduce(
-                        (sum, product) =>
-                          sum + product.quantity,
-                        0
+                        (sum, product) => sum + product.quantity,
+                        0,
                       )}{" "}
                       items
                     </span>
@@ -1001,50 +844,41 @@ export default function CheckoutPage() {
 
                 {/* Products */}
                 <div className="p-5 sm:p-6 space-y-5">
-                  {CHECKOUT_PRODUCTS.map(
-                    (product) => (
-                      <div
-                        key={product.id}
-                        className="flex gap-3"
-                      >
-                        {/* Real Product Image */}
-                        <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
+                  {CHECKOUT_PRODUCTS.map((product) => (
+                    <div key={product.id} className="flex gap-3">
+                      {/* Real Product Image */}
+                      <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
 
-                          <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#211F1D] text-white text-[10px] flex items-center justify-center">
-                            {product.quantity}
-                          </span>
-                        </div>
-
-                        {/* Product Info */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-[#8A8378] mb-0.5">
-                            {product.category}
-                          </p>
-
-                          <h3 className="text-sm text-[#211F1D] leading-snug">
-                            {product.name}
-                          </h3>
-
-                          <p className="text-sm text-[#1F3A2E] mt-1">
-                            ${product.price}
-                          </p>
-                        </div>
-
-                        <div className="text-sm text-[#211F1D]">
-                          $
-                          {(
-                            product.price *
-                            product.quantity
-                          ).toFixed(2)}
-                        </div>
+                        <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#211F1D] text-white text-[10px] flex items-center justify-center">
+                          {product.quantity}
+                        </span>
                       </div>
-                    )
-                  )}
+
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-[#8A8378] mb-0.5">
+                          {product.category}
+                        </p>
+
+                        <h3 className="text-sm text-[#211F1D] leading-snug">
+                          {product.name}
+                        </h3>
+
+                        <p className="text-sm text-[#1F3A2E] mt-1">
+                          ${product.price}
+                        </p>
+                      </div>
+
+                      <div className="text-sm text-[#211F1D]">
+                        ${(product.price * product.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Coupon */}
@@ -1059,9 +893,7 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         value={coupon}
-                        onChange={(e) =>
-                          setCoupon(e.target.value)
-                        }
+                        onChange={(e) => setCoupon(e.target.value)}
                         placeholder="Promo code"
                         disabled={couponApplied}
                         className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#E4DED2] rounded-sm text-sm outline-none focus:border-[#1F3A2E]"
@@ -1074,26 +906,20 @@ export default function CheckoutPage() {
                       disabled={couponApplied}
                       className="px-4 py-2.5 bg-[#211F1D] text-[#F7F3EC] text-sm rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-50"
                     >
-                      {couponApplied
-                        ? "Applied"
-                        : "Apply"}
+                      {couponApplied ? "Applied" : "Apply"}
                     </button>
                   </div>
 
                   {couponApplied && (
                     <p className="flex items-center gap-1.5 text-xs text-[#1F3A2E] mt-2">
                       <LuCheck size={13} />
-                      $15 promotional discount
-                      applied
+                      $15 promotional discount applied
                     </p>
                   )}
 
                   {!couponApplied && (
                     <p className="text-[11px] text-[#8A8378] mt-2">
-                      Try code{" "}
-                      <span className="text-[#211F1D]">
-                        FIELD15
-                      </span>{" "}
+                      Try code <span className="text-[#211F1D]">FIELD15</span>{" "}
                       for $15 off.
                     </p>
                   )}
@@ -1102,9 +928,7 @@ export default function CheckoutPage() {
                 {/* Totals */}
                 <div className="p-5 sm:p-6 space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#5B564C]">
-                      Subtotal
-                    </span>
+                    <span className="text-[#5B564C]">Subtotal</span>
 
                     <span className="text-[#211F1D]">
                       ${subtotal.toFixed(2)}
@@ -1112,22 +936,16 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#5B564C]">
-                      Shipping
-                    </span>
+                    <span className="text-[#5B564C]">Shipping</span>
 
                     <span className="text-[#211F1D]">
-                      {shipping === 0
-                        ? "FREE"
-                        : `$${shipping.toFixed(2)}`}
+                      {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
                     </span>
                   </div>
 
                   {couponApplied && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-[#1F3A2E]">
-                        Discount
-                      </span>
+                      <span className="text-[#1F3A2E]">Discount</span>
 
                       <span className="text-[#1F3A2E]">
                         -${discount.toFixed(2)}
@@ -1157,13 +975,12 @@ export default function CheckoutPage() {
                     className="w-full mt-3 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors flex items-center justify-center gap-2"
                   >
                     <LuLock size={15} />
-
                     Place order · ${total.toFixed(2)}
                   </button>
 
                   <p className="text-[11px] text-[#8A8378] text-center leading-relaxed pt-1">
-                    Your payment information is
-                    protected using secure encryption.
+                    Your payment information is protected using secure
+                    encryption.
                   </p>
                 </div>
               </div>
@@ -1182,9 +999,8 @@ export default function CheckoutPage() {
                     </p>
 
                     <p className="text-xs text-[#5B564C] leading-relaxed mt-1">
-                      Secure payments, easy returns, and
-                      customer support whenever you need
-                      it.
+                      Secure payments, easy returns, and customer support
+                      whenever you need it.
                     </p>
                   </div>
                 </div>
@@ -1211,19 +1027,12 @@ export default function CheckoutPage() {
                       : ""
                   }`}
                 >
-                  <Icon
-                    size={20}
-                    className="text-[#1F3A2E] mt-0.5 shrink-0"
-                  />
+                  <Icon size={20} className="text-[#1F3A2E] mt-0.5 shrink-0" />
 
                   <div>
-                    <p className="text-sm text-[#211F1D]">
-                      {perk.title}
-                    </p>
+                    <p className="text-sm text-[#211F1D]">{perk.title}</p>
 
-                    <p className="text-xs text-[#8A8378] mt-1">
-                      {perk.text}
-                    </p>
+                    <p className="text-xs text-[#8A8378] mt-1">{perk.text}</p>
                   </div>
                 </div>
               );
@@ -1251,8 +1060,8 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-sm text-[#9B9689] mb-4">
-              Everyday goods for the home, made in small
-              batches with natural materials.
+              Everyday goods for the home, made in small batches with natural
+              materials.
             </p>
 
             <div className="flex items-center gap-3">
@@ -1292,9 +1101,7 @@ export default function CheckoutPage() {
 
           {/* Shop */}
           <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">
-              Shop
-            </h4>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
 
             <ul className="space-y-2.5 text-sm">
               {[
@@ -1318,9 +1125,7 @@ export default function CheckoutPage() {
 
           {/* Help */}
           <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">
-              Help
-            </h4>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
 
             <ul className="space-y-2.5 text-sm">
               {[
@@ -1344,16 +1149,11 @@ export default function CheckoutPage() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">
-              Contact
-            </h4>
+            <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
 
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
-                <LuMapPin
-                  size={15}
-                  className="mt-0.5 text-[#C9A659]"
-                />
+                <LuMapPin size={15} className="mt-0.5 text-[#C9A659]" />
 
                 <span>
                   124 Market Street
@@ -1363,19 +1163,13 @@ export default function CheckoutPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <LuPhone
-                  size={15}
-                  className="text-[#C9A659]"
-                />
+                <LuPhone size={15} className="text-[#C9A659]" />
 
                 <span>+1 (555) 123-4567</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <LuMail
-                  size={15}
-                  className="text-[#C9A659]"
-                />
+                <LuMail size={15} className="text-[#C9A659]" />
 
                 <span>hello@fieldhouse.com</span>
               </div>
@@ -1391,24 +1185,15 @@ export default function CheckoutPage() {
             </p>
 
             <div className="flex items-center gap-4 text-xs text-[#8F8A80]">
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Privacy
               </a>
 
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Terms
               </a>
 
-              <a
-                href="#"
-                className="hover:text-[#C9A659] transition-colors"
-              >
+              <a href="#" className="hover:text-[#C9A659] transition-colors">
                 Cookies
               </a>
             </div>
@@ -1418,4 +1203,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

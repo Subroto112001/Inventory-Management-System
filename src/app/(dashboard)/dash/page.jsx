@@ -99,9 +99,9 @@ const Page = () => {
 
   const { customers, loadingCustomers, fetchCustomers } =
     CustomerdataProvider();
-  
+
   const { offers, loadingOffers, fetchOffers } = OfferdataProvider();
-  console.log("offer",offers);
+  console.log("offer", offers);
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setLoadError("");
@@ -314,8 +314,7 @@ const Page = () => {
   // ------------------------------------------------------------
   // Offers
   // ------------------------------------------------------------
-const offerList = offers
-
+  const offerList = offers;
 
   // ------------------------------------------------------------
   // Customers
@@ -972,7 +971,7 @@ const offerList = offers
                 </div>
 
                 <Link
-                  href="/order"
+                  href="/order?view=orders"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all orders"
                 >

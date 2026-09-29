@@ -1,6 +1,6 @@
-
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   LuSearch,
@@ -42,8 +42,7 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 62,
     badge: "Exclusive",
-    image:
-      "https://placehold.co/600x600/1F3A2E/F7F3EC?text=Alder+Dining+Chair",
+    image: "https://placehold.co/600x600/1F3A2E/F7F3EC?text=Alder+Dining+Chair",
   },
   {
     id: 2,
@@ -53,8 +52,7 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 140,
     badge: "Best Seller",
-    image:
-      "https://placehold.co/600x600/B65C38/F7F3EC?text=Stoneware+Mug+Set",
+    image: "https://placehold.co/600x600/B65C38/F7F3EC?text=Stoneware+Mug+Set",
   },
   {
     id: 3,
@@ -64,8 +62,7 @@ const PRODUCTS = [
     rating: 4.7,
     reviews: 38,
     badge: "New",
-    image:
-      "https://placehold.co/600x600/C9A659/211F1D?text=Brass+Pendant",
+    image: "https://placehold.co/600x600/C9A659/211F1D?text=Brass+Pendant",
   },
   {
     id: 4,
@@ -74,8 +71,7 @@ const PRODUCTS = [
     price: 76,
     rating: 4.6,
     reviews: 51,
-    image:
-      "https://placehold.co/600x600/93A88A/211F1D?text=Wool+Throw",
+    image: "https://placehold.co/600x600/93A88A/211F1D?text=Wool+Throw",
   },
   {
     id: 5,
@@ -85,8 +81,7 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 210,
     badge: "Best Seller",
-    image:
-      "https://placehold.co/600x600/211F1D/F7F3EC?text=Cast+Iron+Skillet",
+    image: "https://placehold.co/600x600/211F1D/F7F3EC?text=Cast+Iron+Skillet",
   },
   {
     id: 6,
@@ -95,8 +90,7 @@ const PRODUCTS = [
     price: 34,
     rating: 4.7,
     reviews: 88,
-    image:
-      "https://placehold.co/600x600/B08D3E/211F1D?text=Olive+Wood+Board",
+    image: "https://placehold.co/600x600/B08D3E/211F1D?text=Olive+Wood+Board",
   },
   {
     id: 7,
@@ -105,8 +99,7 @@ const PRODUCTS = [
     price: 64,
     rating: 4.8,
     reviews: 73,
-    image:
-      "https://placehold.co/600x600/E4DED2/211F1D?text=Ceramic+Bowls",
+    image: "https://placehold.co/600x600/E4DED2/211F1D?text=Ceramic+Bowls",
   },
   {
     id: 8,
@@ -116,8 +109,7 @@ const PRODUCTS = [
     rating: 4.5,
     reviews: 40,
     badge: "New",
-    image:
-      "https://placehold.co/600x600/93A88A/211F1D?text=Glass+Carafe",
+    image: "https://placehold.co/600x600/93A88A/211F1D?text=Glass+Carafe",
   },
   {
     id: 9,
@@ -126,8 +118,7 @@ const PRODUCTS = [
     price: 320,
     rating: 4.6,
     reviews: 27,
-    image:
-      "https://placehold.co/600x600/16281F/F7F3EC?text=Teak+Bench",
+    image: "https://placehold.co/600x600/16281F/F7F3EC?text=Teak+Bench",
   },
   {
     id: 10,
@@ -138,8 +129,7 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 54,
     badge: "Sale",
-    image:
-      "https://placehold.co/600x600/B08D3E/211F1D?text=Boucle+Armchair",
+    image: "https://placehold.co/600x600/B08D3E/211F1D?text=Boucle+Armchair",
   },
   {
     id: 11,
@@ -148,8 +138,7 @@ const PRODUCTS = [
     price: 88,
     rating: 4.4,
     reviews: 19,
-    image:
-      "https://placehold.co/600x600/211F1D/F7F3EC?text=Walnut+Shelf",
+    image: "https://placehold.co/600x600/211F1D/F7F3EC?text=Walnut+Shelf",
   },
   {
     id: 12,
@@ -158,8 +147,7 @@ const PRODUCTS = [
     price: 165,
     rating: 4.7,
     reviews: 33,
-    image:
-      "https://placehold.co/600x600/93A88A/211F1D?text=Rattan+Ottoman",
+    image: "https://placehold.co/600x600/93A88A/211F1D?text=Rattan+Ottoman",
   },
   {
     id: 13,
@@ -168,8 +156,7 @@ const PRODUCTS = [
     price: 74,
     rating: 4.6,
     reviews: 46,
-    image:
-      "https://placehold.co/600x600/1F3A2E/F7F3EC?text=Table+Lamp",
+    image: "https://placehold.co/600x600/1F3A2E/F7F3EC?text=Table+Lamp",
   },
   {
     id: 14,
@@ -179,8 +166,7 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 22,
     badge: "New",
-    image:
-      "https://placehold.co/600x600/C9A659/211F1D?text=Wall+Sconce",
+    image: "https://placehold.co/600x600/C9A659/211F1D?text=Wall+Sconce",
   },
   {
     id: 15,
@@ -189,8 +175,7 @@ const PRODUCTS = [
     price: 132,
     rating: 4.5,
     reviews: 17,
-    image:
-      "https://placehold.co/600x600/B65C38/F7F3EC?text=Floor+Lamp",
+    image: "https://placehold.co/600x600/B65C38/F7F3EC?text=Floor+Lamp",
   },
   {
     id: 16,
@@ -199,8 +184,7 @@ const PRODUCTS = [
     price: 48,
     rating: 4.3,
     reviews: 29,
-    image:
-      "https://placehold.co/600x600/16281F/F7F3EC?text=Paper+Pendant",
+    image: "https://placehold.co/600x600/16281F/F7F3EC?text=Paper+Pendant",
   },
   {
     id: 17,
@@ -209,8 +193,7 @@ const PRODUCTS = [
     price: 128,
     rating: 4.8,
     reviews: 95,
-    image:
-      "https://placehold.co/600x600/93A88A/211F1D?text=Linen+Duvet",
+    image: "https://placehold.co/600x600/93A88A/211F1D?text=Linen+Duvet",
   },
   {
     id: 18,
@@ -220,8 +203,7 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 61,
     badge: "Exclusive",
-    image:
-      "https://placehold.co/600x600/B08D3E/211F1D?text=Wool+Rug",
+    image: "https://placehold.co/600x600/B08D3E/211F1D?text=Wool+Rug",
   },
   {
     id: 19,
@@ -231,8 +213,7 @@ const PRODUCTS = [
     rating: 4.6,
     reviews: 4,
     badge: "New",
-    image:
-      "https://placehold.co/600x600/C9A659/211F1D?text=Rattan+Mirror",
+    image: "https://placehold.co/600x600/C9A659/211F1D?text=Rattan+Mirror",
   },
   {
     id: 20,
@@ -242,8 +223,7 @@ const PRODUCTS = [
     rating: 4.7,
     reviews: 9,
     badge: "New",
-    image:
-      "https://placehold.co/600x600/93A88A/211F1D?text=Ceramic+Planter",
+    image: "https://placehold.co/600x600/93A88A/211F1D?text=Ceramic+Planter",
   },
 ];
 
@@ -293,10 +273,7 @@ function ProductCard({ product }) {
               : "text-[#211F1D] opacity-0 group-hover:opacity-100"
           }`}
         >
-          <LuHeart
-            size={16}
-            className={liked ? "fill-[#B65C38]" : ""}
-          />
+          <LuHeart size={16} className={liked ? "fill-[#B65C38]" : ""} />
         </button>
 
         <button
@@ -309,9 +286,7 @@ function ProductCard({ product }) {
       </div>
 
       <div className="p-4">
-        <p className="text-xs text-[#8A8378] mb-1">
-          {product.category}
-        </p>
+        <p className="text-xs text-[#8A8378] mb-1">{product.category}</p>
 
         <h3 className="text-sm text-[#211F1D] leading-snug mb-2 line-clamp-2 min-h-[40px]">
           {product.name}
@@ -319,9 +294,7 @@ function ProductCard({ product }) {
 
         <div className="flex items-center gap-1.5 mb-2.5">
           <Stars rating={product.rating} />
-          <span className="text-xs text-[#8A8378]">
-            ({product.reviews})
-          </span>
+          <span className="text-xs text-[#8A8378]">({product.reviews})</span>
         </div>
 
         <div className="flex items-baseline gap-2">
@@ -354,9 +327,7 @@ export default function ProductPage() {
     let result = [...PRODUCTS];
 
     if (activeCategory !== "All Products") {
-      result = result.filter(
-        (product) => product.category === activeCategory
-      );
+      result = result.filter((product) => product.category === activeCategory);
     }
 
     if (search.trim()) {
@@ -365,7 +336,7 @@ export default function ProductPage() {
       result = result.filter(
         (product) =>
           product.name.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
+          product.category.toLowerCase().includes(query),
       );
     }
 
@@ -388,13 +359,11 @@ export default function ProductPage() {
     return result;
   }, [activeCategory, search, sort]);
 
-  const totalPages = Math.ceil(
-    filteredProducts.length / productsPerPage
-  );
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const visibleProducts = filteredProducts.slice(
     (page - 1) * productsPerPage,
-    page * productsPerPage
+    page * productsPerPage,
   );
 
   const changeCategory = (category) => {
@@ -423,9 +392,7 @@ export default function ProductPage() {
       <header className="sticky top-0 z-40 bg-[#F7F3EC] border-b border-[#E4DED2]">
         <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex justify-between">
-            <p>
-              Free shipping on orders over $75 · Handmade in small batches
-            </p>
+            <p>Free shipping on orders over $75 · Handmade in small batches</p>
 
             <div className="hidden sm:flex gap-4">
               <a href="#">Track order</a>
@@ -465,27 +432,23 @@ export default function ProductPage() {
               className="flex-1 px-4 py-2.5 text-sm outline-none"
             />
 
-            <button
-              type="button"
-              className="px-4 bg-[#1F3A2E] text-[#F7F3EC]"
-            >
+            <button type="button" className="px-4 bg-[#1F3A2E] text-[#F7F3EC]">
               <LuSearch size={17} />
             </button>
           </div>
 
           <div className="ml-auto flex items-center gap-5">
-            <button className="flex flex-col items-center">
+            <Link
+              href="/order?view=dashboard"
+              className="flex flex-col items-center"
+            >
               <LuUser size={20} />
-              <span className="hidden sm:block text-[10px]">
-                Account
-              </span>
-            </button>
+              <span className="hidden sm:block text-[10px]">Account</span>
+            </Link>
 
             <button className="relative flex flex-col items-center">
               <LuGitCompare size={20} />
-              <span className="hidden sm:block text-[10px]">
-                Compare
-              </span>
+              <span className="hidden sm:block text-[10px]">Compare</span>
 
               <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 2
@@ -494,9 +457,7 @@ export default function ProductPage() {
 
             <button className="relative flex flex-col items-center">
               <LuShoppingCart size={20} />
-              <span className="hidden sm:block text-[10px]">
-                Cart
-              </span>
+              <span className="hidden sm:block text-[10px]">Cart</span>
 
               <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 3
@@ -534,17 +495,15 @@ export default function ProductPage() {
 
         {/* PAGE TITLE */}
         <section className="mb-8">
-          <p className="text-sm text-[#B65C38] mb-1">
-            Discover our collection
-          </p>
+          <p className="text-sm text-[#B65C38] mb-1">Discover our collection</p>
 
           <h1 className="font-serif text-4xl md:text-5xl mb-3">
             Shop all products
           </h1>
 
           <p className="text-sm text-[#8A8378] max-w-2xl">
-            Thoughtfully selected furniture, lighting, kitchenware,
-            textiles and home accents made for everyday living.
+            Thoughtfully selected furniture, lighting, kitchenware, textiles and
+            home accents made for everyday living.
           </p>
         </section>
 
@@ -565,10 +524,7 @@ export default function ProductPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-medium">Categories</h2>
 
-                <LuSlidersHorizontal
-                  size={17}
-                  className="text-[#8A8378]"
-                />
+                <LuSlidersHorizontal size={17} className="text-[#8A8378]" />
               </div>
 
               <div className="border-t border-[#E4DED2]">
@@ -584,18 +540,14 @@ export default function ProductPage() {
                   >
                     <span>{category}</span>
 
-                    {activeCategory === category && (
-                      <LuCheck size={15} />
-                    )}
+                    {activeCategory === category && <LuCheck size={15} />}
                   </button>
                 ))}
               </div>
 
               {/* PRICE FILTER */}
               <div className="mt-8">
-                <h3 className="font-medium text-sm mb-4">
-                  Price range
-                </h3>
+                <h3 className="font-medium text-sm mb-4">Price range</h3>
 
                 <div className="h-1 bg-[#E4DED2] relative">
                   <div className="absolute left-[15%] right-[15%] h-1 bg-[#1F3A2E]" />
@@ -613,9 +565,7 @@ export default function ProductPage() {
 
               {/* AVAILABILITY */}
               <div className="mt-8">
-                <h3 className="font-medium text-sm mb-3">
-                  Availability
-                </h3>
+                <h3 className="font-medium text-sm mb-3">Availability</h3>
 
                 <label className="flex items-center gap-2 text-sm text-[#5B564C]">
                   <input type="checkbox" className="accent-[#1F3A2E]" />
@@ -647,9 +597,7 @@ export default function ProductPage() {
                   <button
                     onClick={() => setView("grid")}
                     className={`p-2 ${
-                      view === "grid"
-                        ? "bg-[#1F3A2E] text-white"
-                        : "bg-white"
+                      view === "grid" ? "bg-[#1F3A2E] text-white" : "bg-white"
                     }`}
                   >
                     <LuGrid2X2 size={16} />
@@ -658,9 +606,7 @@ export default function ProductPage() {
                   <button
                     onClick={() => setView("list")}
                     className={`p-2 ${
-                      view === "list"
-                        ? "bg-[#1F3A2E] text-white"
-                        : "bg-white"
+                      view === "list" ? "bg-[#1F3A2E] text-white" : "bg-white"
                     }`}
                   >
                     <LuList size={16} />
@@ -702,17 +648,12 @@ export default function ProductPage() {
                 }
               >
                 {visibleProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                  />
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
               <div className="bg-white border border-[#E4DED2] rounded-md py-20 text-center">
-                <p className="font-serif text-2xl mb-2">
-                  No products found
-                </p>
+                <p className="font-serif text-2xl mb-2">No products found</p>
 
                 <p className="text-sm text-[#8A8378]">
                   Try another search or category.
@@ -725,9 +666,7 @@ export default function ProductPage() {
               <div className="flex justify-center items-center gap-2 py-12">
                 <button
                   disabled={page === 1}
-                  onClick={() =>
-                    setPage((current) => Math.max(1, current - 1))
-                  }
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
                   className="w-9 h-9 border border-[#E4DED2] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
                 >
                   <LuChevronLeft size={17} />
@@ -754,9 +693,7 @@ export default function ProductPage() {
                 <button
                   disabled={page === totalPages}
                   onClick={() =>
-                    setPage((current) =>
-                      Math.min(totalPages, current + 1)
-                    )
+                    setPage((current) => Math.min(totalPages, current + 1))
                   }
                   className="w-9 h-9 border border-[#E4DED2] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
                 >
@@ -778,20 +715,14 @@ export default function ProductPage() {
 
           <div className="absolute left-0 top-0 bottom-0 w-[310px] max-w-[85%] bg-[#F7F3EC] p-5 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-serif text-xl">
-                Filters
-              </h2>
+              <h2 className="font-serif text-xl">Filters</h2>
 
-              <button
-                onClick={() => setMobileFilterOpen(false)}
-              >
+              <button onClick={() => setMobileFilterOpen(false)}>
                 <LuX size={20} />
               </button>
             </div>
 
-            <h3 className="font-medium mb-3">
-              Categories
-            </h3>
+            <h3 className="font-medium mb-3">Categories</h3>
 
             <div className="border-t border-[#E4DED2]">
               {CATEGORIES.map((category) => (
@@ -809,23 +740,16 @@ export default function ProductPage() {
                 >
                   {category}
 
-                  {activeCategory === category && (
-                    <LuCheck size={15} />
-                  )}
+                  {activeCategory === category && <LuCheck size={15} />}
                 </button>
               ))}
             </div>
 
             <div className="mt-8">
-              <h3 className="font-medium text-sm mb-4">
-                Availability
-              </h3>
+              <h3 className="font-medium text-sm mb-4">Availability</h3>
 
               <label className="flex items-center gap-2 text-sm text-[#5B564C]">
-                <input
-                  type="checkbox"
-                  className="accent-[#1F3A2E]"
-                />
+                <input type="checkbox" className="accent-[#1F3A2E]" />
                 In stock
               </label>
             </div>
@@ -835,4 +759,3 @@ export default function ProductPage() {
     </div>
   );
 }
-

@@ -104,7 +104,7 @@ export default function Header({
 
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
-              href="/account"
+              href="/order?view=dashboard"
               className="hidden h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100 hover:text-gray-950 sm:flex"
               aria-label="Account"
             >
@@ -112,7 +112,7 @@ export default function Header({
             </Link>
 
             <Link
-              href="/wishlist"
+              href="/order?view=wishlist"
               className="relative hidden h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100 hover:text-gray-950 sm:flex"
               aria-label="Wishlist"
             >
@@ -126,7 +126,7 @@ export default function Header({
             </Link>
 
             <Link
-              href="/cart"
+              href="/checkout"
               className="relative flex h-10 items-center gap-2 rounded-xl px-2.5 text-gray-700 transition hover:bg-gray-100"
             >
               <MdShoppingCart size={23} />
@@ -183,8 +183,8 @@ export default function Header({
                 ["Categories", "/categories"],
                 ["Deals", "/deals"],
                 ["New Arrivals", "/new-arrivals"],
-                ["Account", "/account"],
-                ["Wishlist", "/wishlist"],
+                ["Account", "/order?view=dashboard"],
+                ["Wishlist", "/order?view=wishlist"],
               ].map(([name, href]) => (
                 <Link
                   key={name}
