@@ -846,7 +846,7 @@ function DashboardView({
         <button
           type="button"
           onClick={() => goTo("orders")}
-          className="bg-[#C9A659] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors self-start sm:self-auto"
+          className="bg-[#C9A659] cursor-pointer text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors self-start sm:self-auto"
         >
           View all orders
         </button>

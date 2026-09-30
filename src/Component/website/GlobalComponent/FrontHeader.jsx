@@ -74,7 +74,7 @@ export default function FrontHeader() {
         </button>
 
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2 shrink-0">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
             F
           </span>
@@ -82,7 +82,7 @@ export default function FrontHeader() {
           <span className="font-serif text-xl text-[#211F1D] tracking-tight hidden xs:inline">
             FIELDHOUSE
           </span>
-        </a>
+        </Link>
 
         {/* Search */}
         <div className="flex-1 max-w-xl hidden md:flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
@@ -105,7 +105,7 @@ export default function FrontHeader() {
         <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
           <Link
             href="/order?view=dashboard"
-            className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors cursor-pointer"
             aria-label="Account"
           >
             <LuUser size={20} />
@@ -130,7 +130,7 @@ export default function FrontHeader() {
           <button
             type="button"
             onClick={openCart}
-            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors cursor-pointer"
             aria-label="Cart"
           >
             <LuShoppingCart size={20} />
