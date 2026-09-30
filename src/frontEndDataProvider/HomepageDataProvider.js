@@ -2,6 +2,8 @@
  * Here slider banner image
  * */
 
+import { LuHeadphones, LuRotateCcw, LuShieldCheck, LuTruck } from "react-icons/lu";
+
 export const HERO_SLIDES = [
   {
     id: 1,

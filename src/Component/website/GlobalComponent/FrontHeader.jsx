@@ -14,8 +14,8 @@ import {
 } from "react-icons/lu";
 
 const NAV_LINKS = [
-  { label: "Home", href: "#" },
-  { label: "Shop All", href: "#" },
+  { label: "Home", href: "/" },
+  { label: "Shop All", href: "./product" },
   { label: "Lighting", href: "#" },
   { label: "Kitchen & Dining", href: "#" },
   { label: "Furniture", href: "#" },
