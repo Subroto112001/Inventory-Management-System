@@ -1,3 +1,5 @@
+import { CartProvider } from "@/Component/website/Cart/CartContext";
+import CartSidebar from "@/Component/website/Cart/Cartsidebar";
 import FrontFooter from "@/Component/website/GlobalComponent/FrontFooter";
 import FrontHeader from "@/Component/website/GlobalComponent/FrontHeader";
 import { League_Spartan } from "next/font/google";
@@ -11,9 +13,12 @@ const leagueSpartan = League_Spartan({
 export default function FrontendLayout({ children }) {
   return (
     <div className={leagueSpartan.className}>
-      <FrontHeader/>
-      <main>{children}</main>
-      <FrontFooter />
+      <CartProvider>
+        <FrontHeader />
+        <main>{children}</main>
+        <FrontFooter />
+        <CartSidebar />
+      </CartProvider>
     </div>
   );
 }

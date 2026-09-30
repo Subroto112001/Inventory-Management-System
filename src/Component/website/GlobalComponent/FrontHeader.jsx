@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+
 import {
   LuSearch,
   LuUser,
@@ -12,6 +13,7 @@ import {
   LuChevronLeft,
   LuChevronRight,
 } from "react-icons/lu";
+import { useCart } from "../Cart/CartContext";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -29,7 +31,8 @@ const NAV_LINKS = [
 export default function FrontHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const scrollerRef = useRef(null);
-
+  const { openCart, itemCount } = useCart();
+  
   const scrollNav = (dir) => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollBy({
@@ -110,8 +113,8 @@ export default function FrontHeader() {
             <span className="text-[10px] hidden sm:inline">Account</span>
           </Link>
 
-          <button
-            type="button"
+          <Link
+            href={"/compare"}
             className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
             aria-label="Compare"
           >
@@ -122,10 +125,11 @@ export default function FrontHeader() {
             <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
               2
             </span>
-          </button>
+          </Link>
 
           <button
             type="button"
+            onClick={openCart}
             className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
             aria-label="Cart"
           >
@@ -133,9 +137,11 @@ export default function FrontHeader() {
 
             <span className="text-[10px] hidden sm:inline">Cart</span>
 
-            <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-              3
-            </span>
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
           </button>
         </div>
       </div>

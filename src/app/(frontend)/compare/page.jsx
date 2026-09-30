@@ -248,69 +248,6 @@ export default function ComparePage() {
         </div>
       )}
 
-      {/* ── HEADER (matches your other pages) ── */}
-      <header className="sticky top-0 z-40 bg-[#F7F3EC] border-b border-[#E4DED2]">
-        <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex justify-between">
-            <p>Free shipping on orders over $75 · Handmade in small batches</p>
-            <div className="hidden sm:flex gap-4">
-              <a href="#">Track order</a>
-              <a href="#">Help</a>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex items-center gap-5">
-          <a href="#" className="flex items-center gap-2 shrink-0">
-            <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
-              F
-            </span>
-            <span className="font-serif text-xl tracking-tight hidden sm:block">
-              FIELDHOUSE
-            </span>
-          </a>
-
-          <div className="flex-1 max-w-xl mx-auto hidden md:flex border border-[#E4DED2] rounded-md bg-white overflow-hidden">
-            <input
-              type="text"
-              placeholder="Search for furniture, lighting, decor..."
-              className="flex-1 px-4 py-2.5 text-sm outline-none"
-            />
-            <button type="button" className="px-4 bg-[#1F3A2E] text-[#F7F3EC]">
-              <LuSearch size={17} />
-            </button>
-          </div>
-
-          <div className="ml-auto flex items-center gap-5">
-            <Link
-              href="/order?view=dashboard"
-              className="flex flex-col items-center"
-            >
-              <LuUser size={20} />
-              <span className="hidden sm:block text-[10px]">Account</span>
-            </Link>
-
-            <button className="relative flex flex-col items-center text-[#1F3A2E]">
-              <LuGitCompare size={20} />
-              <span className="hidden sm:block text-[10px]">Compare</span>
-              {compareIds.length > 0 && (
-                <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-                  {compareIds.length}
-                </span>
-              )}
-            </button>
-
-            <button className="relative flex flex-col items-center">
-              <LuShoppingCart size={20} />
-              <span className="hidden sm:block text-[10px]">Cart</span>
-              <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-                3
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
         {/* Breadcrumb */}
         <div className="py-6 text-sm text-[#8A8378] flex items-center gap-2">
