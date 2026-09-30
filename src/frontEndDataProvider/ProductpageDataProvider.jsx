@@ -293,3 +293,12 @@ export const ProductCard = ({ product }) => {
     </div>
   );
 };
+
+export const SORT_OPTIONS = [
+  "Featured",
+  "Newest",
+  "Highest Rated",
+  "Price: Low to High",
+  "Price: High to Low",
+  "ABCD",
+];

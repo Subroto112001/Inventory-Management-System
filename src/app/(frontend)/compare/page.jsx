@@ -1,709 +1,564 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   LuSearch,
   LuUser,
   LuGitCompare,
   LuShoppingCart,
   LuHeart,
+  LuChevronLeft,
   LuChevronRight,
+  LuStar,
   LuMenu,
   LuX,
+  LuTrash2,
   LuPlus,
-  LuStar,
   LuCheck,
-  LuImageOff,
-  LuMail,
-  LuPhone,
-  LuMapPin,
+  LuScale,
 } from "react-icons/lu";
 
-const NAV_LINKS = [
-  "Home",
-  "Shop All",
-  "Lighting",
-  "Kitchen & Dining",
-  "Furniture",
-  "Textiles & Bedding",
-  "Outdoor & Garden",
-  "Decor & Accents",
-  "Brands",
-  "Sale",
-];
-
-const MAX_COMPARE = 4;
-
 /* =========================================================
-   PRODUCTS — edit / replace with your own data or API response.
-   Every product uses the same spec keys so rows line up.
-   ========================================================= */
+   MOCK PRODUCTS (replace with real data / cart compare state)
+========================================================= */
 
-const PRODUCTS = [
+const ALL_PRODUCTS = [
   {
     id: 1,
-    name: "Alder Oak Lounge Chair",
-    category: "Lounge chairs",
-    image:
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=85",
+    name: "Alder Oak Dining Chair",
+    category: "Furniture",
     price: 189,
     oldPrice: 229,
-    rating: 4.7,
-    reviews: 128,
-    specs: {
-      availability: "In stock",
-      material: "Solid oak, wool-blend seat",
-      dimensions: "72 × 78 × 84 cm",
-      weight: "9.5 kg",
-      colours: "Natural, Charcoal",
-      madeIn: "Portugal",
-      assembly: "Attach legs (10 min)",
-      delivery: "3–5 days",
-      warranty: "5 years",
-      care: "Wipe with a dry cloth",
-    },
-  },
-  {
-    id: 2,
-    name: "Birch Accent Chair",
-    category: "Lounge chairs",
+    rating: 4.8,
+    reviews: 62,
+    badge: "Exclusive",
     image:
-      "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=600&q=85",
-    price: 149,
-    rating: 4.4,
-    reviews: 86,
-    specs: {
-      availability: "In stock",
-      material: "Birch plywood, cotton canvas",
-      dimensions: "64 × 70 × 80 cm",
-      weight: "6.8 kg",
-      colours: "Sand, Sage",
-      madeIn: "Poland",
-      assembly: "Ready assembled",
-      delivery: "3–5 days",
-      warranty: "2 years",
-      care: "Spot clean with mild soap",
-    },
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=85",
+    material: "Solid oak, natural oil finish",
+    dimensions: '18" W × 20" D × 33" H',
+    weight: "12 lb",
+    warranty: "2 years",
+    inStock: true,
   },
   {
     id: 3,
-    name: "Linen Club Chair",
-    category: "Lounge chairs",
+    name: "Brushed Brass Pendant Light",
+    category: "Lighting",
+    price: 145,
+    rating: 4.7,
+    reviews: 38,
+    badge: "New",
     image:
-      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=600&q=85",
-    price: 329,
-    oldPrice: 389,
-    rating: 4.8,
-    reviews: 214,
-    specs: {
-      availability: "Only 3 left",
-      material: "Ash frame, washed linen",
-      dimensions: "80 × 84 × 78 cm",
-      weight: "14 kg",
-      colours: "Oat, Olive, Clay",
-      madeIn: "Portugal",
-      assembly: "Ready assembled",
-      delivery: "5–7 days",
-      warranty: "5 years",
-      care: "Removable, washable cover",
-    },
+      "https://images.unsplash.com/photo-1540932239986-30128078f3c5?auto=format&fit=crop&w=400&q=85",
+    material: "Brushed brass, linen shade",
+    dimensions: '12" Ø × 10" H',
+    weight: "3.2 lb",
+    warranty: "1 year",
+    inStock: true,
   },
   {
-    id: 4,
-    name: "Rattan Lounge Chair",
-    category: "Lounge chairs",
-    image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=85",
-    price: 219,
-    rating: 4.5,
-    reviews: 62,
-    specs: {
-      availability: "In stock",
-      material: "Natural rattan, teak legs",
-      dimensions: "70 × 75 × 88 cm",
-      weight: "8.2 kg",
-      colours: "Natural",
-      madeIn: "Indonesia",
-      assembly: "Attach legs (15 min)",
-      delivery: "7–10 days",
-      warranty: "3 years",
-      care: "Dust regularly, avoid damp",
-    },
-  },
-  {
-    id: 5,
-    name: "Walnut Rocking Chair",
-    category: "Lounge chairs",
-    image:
-      "https://images.unsplash.com/photo-1540574163026-643ea20ade25?auto=format&fit=crop&w=600&q=85",
-    price: 399,
+    id: 10,
+    name: "Bouclé Reading Armchair",
+    category: "Furniture",
+    price: 540,
+    oldPrice: 620,
     rating: 4.9,
-    reviews: 41,
-    specs: {
-      availability: "Made to order",
-      material: "Solid walnut, leather sling",
-      dimensions: "68 × 92 × 90 cm",
-      weight: "11 kg",
-      colours: "Walnut",
-      madeIn: "Denmark",
-      assembly: "Ready assembled",
-      delivery: "3 weeks",
-      warranty: "10 years",
-      care: "Oil the wood twice a year",
-    },
-  },
-  {
-    id: 6,
-    name: "Hand-Thrown Ceramic Mug",
-    category: "Kitchen & Dining",
+    reviews: 54,
+    badge: "Sale",
     image:
-      "https://images.unsplash.com/photo-1572119865084-43c285814d63?auto=format&fit=crop&w=600&q=85",
-    price: 58,
+      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&q=85",
+    material: "Bouclé fabric, solid wood frame",
+    dimensions: '32" W × 34" D × 36" H',
+    weight: "48 lb",
+    warranty: "3 years",
+    inStock: true,
+  },
+  {
+    id: 13,
+    name: "Linen Shade Table Lamp",
+    category: "Lighting",
+    price: 74,
     rating: 4.6,
-    reviews: 305,
-    specs: {
-      availability: "In stock",
-      material: "Stoneware, reactive glaze",
-      dimensions: "9 × 9 × 10 cm",
-      weight: "0.4 kg",
-      colours: "Moss, Cream, Slate",
-      madeIn: "Portland, USA",
-      assembly: "Not needed",
-      delivery: "2–3 days",
-      warranty: "1 year",
-      care: "Dishwasher safe",
-    },
+    reviews: 46,
+    image:
+      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=400&q=85",
+    material: "Ceramic base, linen shade",
+    dimensions: '10" Ø × 22" H',
+    weight: "4.5 lb",
+    warranty: "1 year",
+    inStock: true,
+  },
+  {
+    id: 17,
+    name: "Washed Linen Duvet Set",
+    category: "Textiles & Bedding",
+    price: 128,
+    rating: 4.8,
+    reviews: 95,
+    image:
+      "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=400&q=85",
+    material: "100% washed linen",
+    dimensions: 'Queen (90" × 90")',
+    weight: "3.1 lb",
+    warranty: "—",
+    inStock: true,
+  },
+  {
+    id: 12,
+    name: "Woven Rattan Ottoman",
+    category: "Furniture",
+    price: 165,
+    oldPrice: 190,
+    rating: 4.7,
+    reviews: 33,
+    image:
+      "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400&q=85",
+    material: "Natural rattan, cotton cushion",
+    dimensions: '20" W × 20" D × 16" H',
+    weight: "9 lb",
+    warranty: "1 year",
+    inStock: false,
   },
 ];
 
-const SPEC_GROUPS = [
-  {
-    title: "Overview",
-    rows: [
-      { label: "Availability", key: "availability" },
-      { label: "Made in", key: "madeIn" },
-    ],
-  },
-  {
-    title: "Materials & size",
-    rows: [
-      { label: "Material", key: "material" },
-      { label: "Dimensions", key: "dimensions" },
-      { label: "Weight", key: "weight" },
-      { label: "Colours", key: "colours" },
-    ],
-  },
-  {
-    title: "Delivery & care",
-    rows: [
-      { label: "Delivery", key: "delivery" },
-      { label: "Assembly", key: "assembly" },
-      { label: "Care", key: "care" },
-      { label: "Warranty", key: "warranty" },
-    ],
-  },
+const INITIAL_COMPARE_IDS = [1, 3, 10, 13]; // start with 4 items
+
+const COMPARE_ROWS = [
+  { key: "price", label: "Price" },
+  { key: "rating", label: "Rating" },
+  { key: "category", label: "Category" },
+  { key: "material", label: "Material" },
+  { key: "dimensions", label: "Dimensions" },
+  { key: "weight", label: "Weight" },
+  { key: "warranty", label: "Warranty" },
+  { key: "stock", label: "Availability" },
 ];
 
-const FOOTER_COLUMNS = [
-  {
-    title: "Shop",
-    items: ["Shop All", "Furniture", "Lighting", "Kitchen & Dining"],
-  },
-  {
-    title: "Help",
-    items: ["Contact us", "Shipping & delivery", "Returns", "FAQ"],
-  },
-];
+/* =========================================================
+   SMALL COMPONENTS
+========================================================= */
 
-function ProductImage({ src, alt, className }) {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return (
-      <div
-        className={`${className} bg-[#EFE9DC] flex items-center justify-center text-[#8A8378]`}
-      >
-        <LuImageOff size={24} />
-      </div>
-    );
-  }
-
+function Stars({ rating }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      onError={() => setFailed(true)}
-      className={className}
-    />
-  );
-}
-
-function Rating({ rating, reviews }) {
-  return (
-    <div className="flex items-center gap-1.5 text-xs text-[#5B564C]">
-      <LuStar size={13} className="text-[#C9A659] fill-[#C9A659]" />
-      <span className="text-[#211F1D]">{rating.toFixed(1)}</span>
-      <span className="text-[#8A8378]">({reviews})</span>
+    <div className="flex items-center gap-0.5 justify-center">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <LuStar
+          key={i}
+          size={13}
+          className={
+            i < Math.round(rating)
+              ? "fill-[#C9A659] text-[#C9A659]"
+              : "fill-[#E4DED2] text-[#E4DED2]"
+          }
+        />
+      ))}
     </div>
   );
 }
 
+function EmptyCompare({ onBrowse }) {
+  return (
+    <div className="bg-white border border-[#E4DED2] rounded-md py-20 px-6 text-center">
+      <LuScale size={36} className="mx-auto text-[#8A8378] mb-4" />
+      <p className="font-serif text-2xl mb-2">No products to compare</p>
+      <p className="text-sm text-[#8A8378] mb-6 max-w-sm mx-auto">
+        Add products from the shop using the compare icon, then return here to
+        see them side by side.
+      </p>
+      <button
+        type="button"
+        onClick={onBrowse}
+        className="bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
+      >
+        Browse products
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
 export default function ComparePage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState([1, 2, 3]);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerQuery, setPickerQuery] = useState("");
-  const [diffOnly, setDiffOnly] = useState(false);
-  const [wishlist, setWishlist] = useState([]);
-  const [cartCount, setCartCount] = useState(0);
+  const [compareIds, setCompareIds] = useState(INITIAL_COMPARE_IDS);
+  const [toast, setToast] = useState("");
 
-  const selected = selectedIds
-    .map((id) => PRODUCTS.find((p) => p.id === id))
-    .filter(Boolean);
-
-  const isFull = selected.length >= MAX_COMPARE;
-  const canCompareBest = selected.length >= 2;
-
-  const lowestPrice = Math.min(...selected.map((p) => p.price));
-  const topRating = Math.max(...selected.map((p) => p.rating));
-
-  const addProduct = (id) => {
-    if (isFull || selectedIds.includes(id)) return;
-    setSelectedIds((prev) => [...prev, id]);
-  };
-
-  const removeProduct = (id) =>
-    setSelectedIds((prev) => prev.filter((x) => x !== id));
-
-  const toggleWishlist = (id) =>
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const pickerResults = PRODUCTS.filter((p) =>
-    `${p.name} ${p.category}`.toLowerCase().includes(pickerQuery.toLowerCase()),
+  const products = useMemo(
+    () => ALL_PRODUCTS.filter((p) => compareIds.includes(p.id)),
+    [compareIds],
   );
 
-  // Rows where every selected product has the same value are "shared"
-  const isDifferent = (key) =>
-    new Set(selected.map((p) => p.specs[key])).size > 1;
+  const availableToAdd = useMemo(
+    () => ALL_PRODUCTS.filter((p) => !compareIds.includes(p.id)),
+    [compareIds],
+  );
 
-  const gridCols = {
-    gridTemplateColumns: `150px repeat(${MAX_COMPARE}, minmax(210px, 1fr))`,
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2200);
   };
 
-  const labelCell =
-    "sticky left-0 z-10 bg-white border-t border-[#E4DED2] px-4 py-3.5 text-xs text-[#8A8378]";
-  const valueCell =
-    "border-t border-l border-[#E4DED2] px-4 py-3.5 text-sm text-[#211F1D]";
+  const removeProduct = (id) => {
+    setCompareIds((ids) => ids.filter((x) => x !== id));
+    showToast("Removed from comparison");
+  };
+
+  const clearAll = () => {
+    setCompareIds([]);
+    showToast("Comparison cleared");
+  };
+
+  const addProduct = (id) => {
+    if (compareIds.length >= 4) {
+      showToast("You can compare up to 4 products");
+      return;
+    }
+    setCompareIds((ids) => [...ids, id]);
+    showToast("Added to comparison");
+  };
+
+  const colCount = products.length;
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] font-sans">
+    <div className="min-h-screen bg-[#F7F3EC] font-sans text-[#211F1D]">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
       />
 
       <style>{`
-        .font-serif { font-family: 'Fraunces', ui-serif, Georgia, serif; }
-        .font-sans { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+        .font-serif {
+          font-family: 'Fraunces', ui-serif, Georgia, serif;
+        }
+        .font-sans {
+          font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        }
       `}</style>
 
+      {/* Toast */}
+      {toast && (
+        <div
+          role="status"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#211F1D] text-[#F7F3EC] text-sm px-5 py-3 rounded-md shadow-lg flex items-center gap-2"
+        >
+          <LuCheck size={16} className="text-[#C9A659]" />
+          {toast}
+        </div>
+      )}
 
-
-      
-      <main>
-        {/* Breadcrumb */}
-        <section className="border-b border-[#E4DED2]">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4">
-            <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <a href="#" className="hover:text-[#B65C38] transition-colors">
-                Home
-              </a>
-              <LuChevronRight size={13} />
-              <a href="#" className="hover:text-[#B65C38] transition-colors">
-                Furniture
-              </a>
-              <LuChevronRight size={13} />
-              <span className="text-[#211F1D]">Compare</span>
+      {/* ── HEADER (matches your other pages) ── */}
+      <header className="sticky top-0 z-40 bg-[#F7F3EC] border-b border-[#E4DED2]">
+        <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex justify-between">
+            <p>Free shipping on orders over $75 · Handmade in small batches</p>
+            <div className="hidden sm:flex gap-4">
+              <a href="#">Track order</a>
+              <a href="#">Help</a>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Heading */}
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
-          <p className="text-sm text-[#B65C38] mb-1">Side by side</p>
-          <h1 className="font-serif text-3xl sm:text-4xl text-[#211F1D]">
-            Compare products
-          </h1>
-          <p className="text-sm text-[#5B564C] mt-2 max-w-xl leading-relaxed">
-            Pick up to {MAX_COMPARE} products to see price, materials, size and
-            delivery next to each other.
-          </p>
-        </section>
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex items-center gap-5">
+          <a href="#" className="flex items-center gap-2 shrink-0">
+            <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
+              F
+            </span>
+            <span className="font-serif text-xl tracking-tight hidden sm:block">
+              FIELDHOUSE
+            </span>
+          </a>
 
-        {/* Toolbar */}
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-7">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm text-[#211F1D]">
-              {selected.length} of {MAX_COMPARE} products selected
-            </p>
+          <div className="flex-1 max-w-xl mx-auto hidden md:flex border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+            <input
+              type="text"
+              placeholder="Search for furniture, lighting, decor..."
+              className="flex-1 px-4 py-2.5 text-sm outline-none"
+            />
+            <button type="button" className="px-4 bg-[#1F3A2E] text-[#F7F3EC]">
+              <LuSearch size={17} />
+            </button>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={diffOnly}
-                onClick={() => setDiffOnly((v) => !v)}
-                className="flex items-center gap-2.5 text-sm text-[#211F1D]"
-              >
-                <span
-                  className={`relative w-9 h-5 rounded-full transition-colors ${
-                    diffOnly ? "bg-[#1F3A2E]" : "bg-[#E4DED2]"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                      diffOnly ? "translate-x-4" : ""
-                    }`}
-                  />
+          <div className="ml-auto flex items-center gap-5">
+            <Link
+              href="/order?view=dashboard"
+              className="flex flex-col items-center"
+            >
+              <LuUser size={20} />
+              <span className="hidden sm:block text-[10px]">Account</span>
+            </Link>
+
+            <button className="relative flex flex-col items-center text-[#1F3A2E]">
+              <LuGitCompare size={20} />
+              <span className="hidden sm:block text-[10px]">Compare</span>
+              {compareIds.length > 0 && (
+                <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {compareIds.length}
                 </span>
-                Show differences only
-              </button>
-
-              {selected.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedIds([])}
-                  className="text-sm text-[#8A8378] hover:text-[#B65C38] transition-colors"
-                >
-                  Clear all
-                </button>
               )}
+            </button>
 
-              <button
-                type="button"
-                disabled={isFull}
-                onClick={() => setPickerOpen(true)}
-                className="flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] px-4 py-2.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors disabled:bg-[#E4DED2] disabled:text-[#8A8378] disabled:cursor-not-allowed"
-              >
-                <LuPlus size={15} />
-                Add product
-              </button>
-            </div>
+            <button className="relative flex flex-col items-center">
+              <LuShoppingCart size={20} />
+              <span className="hidden sm:block text-[10px]">Cart</span>
+              <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                3
+              </span>
+            </button>
           </div>
+        </div>
+      </header>
+
+      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
+        {/* Breadcrumb */}
+        <div className="py-6 text-sm text-[#8A8378] flex items-center gap-2">
+          <a href="#" className="hover:text-[#B65C38] transition-colors">
+            Home
+          </a>
+          <LuChevronRight size={13} />
+          <a href="#" className="hover:text-[#B65C38] transition-colors">
+            Shop
+          </a>
+          <LuChevronRight size={13} />
+          <span className="text-[#211F1D]">Compare</span>
+        </div>
+
+        {/* Title */}
+        <section className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-sm text-[#B65C38] mb-1">Side by side</p>
+            <h1 className="font-serif text-3xl sm:text-4xl text-[#211F1D]">
+              Product comparison
+            </h1>
+            <p className="text-sm text-[#8A8378] mt-2 max-w-lg">
+              Compare up to 4 products at a glance — price, materials, size and
+              more.
+            </p>
+          </div>
+
+          {products.length > 0 && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="text-sm text-[#B65C38] border-b border-[#B65C38] pb-0.5 hover:text-[#9E4D2E] hover:border-[#9E4D2E] transition-colors self-start sm:self-auto"
+            >
+              Clear all
+            </button>
+          )}
         </section>
 
-        {/* Comparison Table */}
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="bg-white border border-[#E4DED2] rounded-md overflow-x-auto">
-            <div className="grid min-w-max" style={gridCols}>
-              {/* ---------- Product header row ---------- */}
-              <div className="sticky left-0 z-10 bg-white p-4 flex items-end">
-                <p className="text-xs text-[#8A8378] leading-relaxed">
-                  {selected.length < 2
-                    ? "Add at least two products to compare."
-                    : diffOnly
-                      ? "Showing what's different."
-                      : "Showing all details."}
-                </p>
-              </div>
-
-              {Array.from({ length: MAX_COMPARE }).map((_, slot) => {
-                const product = selected[slot];
-
-                if (!product) {
-                  return (
-                    <div
-                      key={`empty-${slot}`}
-                      className="border-l border-[#E4DED2] p-4"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setPickerOpen(true)}
-                        className="w-full aspect-[4/5] border border-dashed border-[#C9C2B3] rounded-sm flex flex-col items-center justify-center gap-2 text-[#8A8378] hover:border-[#1F3A2E] hover:text-[#1F3A2E] transition-colors"
-                      >
-                        <LuPlus size={22} />
-                        <span className="text-sm">Add a product</span>
-                      </button>
-                    </div>
-                  );
-                }
-
-                const isLowest =
-                  canCompareBest && product.price === lowestPrice;
-                const isTop = canCompareBest && product.rating === topRating;
-                const saved = wishlist.includes(product.id);
-
-                return (
-                  <div
-                    key={product.id}
-                    className="relative border-l border-[#E4DED2] p-4"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => removeProduct(product.id)}
-                      aria-label={`Remove ${product.name}`}
-                      className="absolute top-6 right-6 z-10 w-7 h-7 rounded-full bg-white/90 border border-[#E4DED2] flex items-center justify-center text-[#211F1D] hover:text-[#B65C38] transition-colors"
-                    >
-                      <LuX size={14} />
-                    </button>
-
-                    <ProductImage
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full aspect-[4/5] object-cover rounded-sm"
-                    />
-
-                    <div className="flex flex-wrap gap-1.5 mt-3 min-h-[22px]">
-                      {isLowest && (
-                        <span className="text-[11px] bg-[#EFE9DC] text-[#1F3A2E] px-2 py-0.5 rounded-sm">
-                          Lowest price
-                        </span>
-                      )}
-                      {isTop && (
-                        <span className="text-[11px] bg-[#EFE9DC] text-[#1F3A2E] px-2 py-0.5 rounded-sm">
-                          Top rated
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-xs text-[#8A8378] mt-2">
-                      {product.category}
+        {/* Empty state */}
+        {products.length === 0 ? (
+          <EmptyCompare onBrowse={() => {}} />
+        ) : (
+          <>
+            {/* ── COMPARISON TABLE ── */}
+            <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden">
+              {/* Horizontal scroll on mobile */}
+              <div className="overflow-x-auto">
+                <div
+                  className="min-w-[640px]"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: `180px repeat(${colCount}, minmax(180px, 1fr))`,
+                  }}
+                >
+                  {/* ── Header row: product cards ── */}
+                  <div className="border-b border-[#E4DED2] bg-[#F7F3EC] p-4 sticky left-0 z-10">
+                    <p className="text-xs text-[#8A8378] mt-16">
+                      Comparing {products.length} product
+                      {products.length > 1 ? "s" : ""}
                     </p>
-                    <h3 className="font-serif text-lg text-[#211F1D] leading-snug mt-0.5">
-                      {product.name}
-                    </h3>
+                  </div>
 
-                    <div className="mt-2">
-                      <Rating
-                        rating={product.rating}
-                        reviews={product.reviews}
-                      />
-                    </div>
-
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="font-serif text-xl text-[#1F3A2E]">
-                        ${product.price}
-                      </span>
-                      {product.oldPrice && (
-                        <span className="text-xs text-[#8A8378] line-through">
-                          ${product.oldPrice}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-4">
+                  {products.map((p) => (
+                    <div
+                      key={p.id}
+                      className="border-b border-l border-[#E4DED2] p-4 text-center relative group"
+                    >
                       <button
                         type="button"
-                        onClick={() => setCartCount((c) => c + 1)}
-                        className="flex-1 bg-[#1F3A2E] text-[#F7F3EC] py-2.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors"
+                        onClick={() => removeProduct(p.id)}
+                        aria-label={`Remove ${p.name}`}
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-[#E4DED2] flex items-center justify-center text-[#8A8378] hover:text-[#B65C38] hover:border-[#B65C38] transition-colors opacity-0 group-hover:opacity-100"
                       >
+                        <LuX size={15} />
+                      </button>
+
+                      <div className="aspect-square max-w-[140px] mx-auto rounded-sm overflow-hidden bg-[#F7F3EC] mb-3">
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {p.badge && (
+                        <span className="inline-block text-[10px] px-2 py-0.5 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] mb-2">
+                          {p.badge}
+                        </span>
+                      )}
+
+                      <h3 className="text-sm text-[#211F1D] leading-snug line-clamp-2 min-h-[40px]">
+                        {p.name}
+                      </h3>
+                    </div>
+                  ))}
+
+                  {/* ── Attribute rows ── */}
+                  {COMPARE_ROWS.map((row) => (
+                    <div key={row.key} className="contents">
+                      {/* Label */}
+                      <div className="border-b border-[#E4DED2] px-4 py-3.5 text-sm text-[#5B564C] bg-[#F7F3EC] sticky left-0 z-10 flex items-center">
+                        {row.label}
+                      </div>
+
+                      {/* Values */}
+                      {products.map((p) => {
+                        let content = null;
+
+                        if (row.key === "price") {
+                          content = (
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span className="text-[#1F3A2E] font-medium text-base">
+                                ${p.price}
+                              </span>
+                              {p.oldPrice && (
+                                <span className="text-xs text-[#8A8378] line-through">
+                                  ${p.oldPrice}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        } else if (row.key === "rating") {
+                          content = (
+                            <div className="flex flex-col items-center gap-1">
+                              <Stars rating={p.rating} />
+                              <span className="text-xs text-[#8A8378]">
+                                {p.rating} ({p.reviews})
+                              </span>
+                            </div>
+                          );
+                        } else if (row.key === "stock") {
+                          content = p.inStock ? (
+                            <span className="text-sm text-[#1F3A2E]">
+                              In stock
+                            </span>
+                          ) : (
+                            <span className="text-sm text-[#B65C38]">
+                              Out of stock
+                            </span>
+                          );
+                        } else {
+                          content = (
+                            <span className="text-sm text-[#211F1D]">
+                              {p[row.key]}
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={`${p.id}-${row.key}`}
+                            className="border-b border-l border-[#E4DED2] px-4 py-3.5 text-center flex items-center justify-center"
+                          >
+                            {content}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+
+                  {/* ── Action row ── */}
+                  <div className="px-4 py-4 bg-[#F7F3EC] sticky left-0 z-10" />
+
+                  {products.map((p) => (
+                    <div
+                      key={`action-${p.id}`}
+                      className="border-l border-[#E4DED2] p-4 flex flex-col gap-2"
+                    >
+                      <button
+                        type="button"
+                        disabled={!p.inStock}
+                        className="w-full flex items-center justify-center gap-2 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <LuShoppingCart size={14} />
                         Add to cart
                       </button>
                       <button
                         type="button"
-                        onClick={() => toggleWishlist(product.id)}
-                        aria-label={
-                          saved ? "Remove from wishlist" : "Save to wishlist"
-                        }
-                        aria-pressed={saved}
-                        className="w-10 h-10 border border-[#E4DED2] rounded-sm flex items-center justify-center hover:border-[#B65C38] transition-colors"
+                        onClick={() => removeProduct(p.id)}
+                        className="w-full flex items-center justify-center gap-2 text-sm py-2 rounded-sm border border-[#E4DED2] text-[#5B564C] hover:border-[#B65C38] hover:text-[#B65C38] transition-colors"
                       >
-                        <LuHeart
-                          size={17}
-                          className={
-                            saved
-                              ? "text-[#B65C38] fill-[#B65C38]"
-                              : "text-[#211F1D]"
-                          }
-                        />
+                        <LuTrash2 size={14} />
+                        Remove
                       </button>
                     </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Add more products ── */}
+            {availableToAdd.length > 0 && compareIds.length < 4 && (
+              <section className="mt-10">
+                <div className="flex items-end justify-between gap-4 mb-5">
+                  <div>
+                    <p className="text-sm text-[#B65C38] mb-1">
+                      Still deciding?
+                    </p>
+                    <h2 className="font-serif text-2xl text-[#211F1D]">
+                      Add another product
+                    </h2>
                   </div>
-                );
-              })}
+                  <p className="text-xs text-[#8A8378]">
+                    {4 - compareIds.length} slot
+                    {4 - compareIds.length > 1 ? "s" : ""} left
+                  </p>
+                </div>
 
-              {/* ---------- Spec rows ---------- */}
-              {SPEC_GROUPS.map((group) => {
-                const rows = group.rows.filter(
-                  (row) =>
-                    !diffOnly || selected.length < 2 || isDifferent(row.key),
-                );
-
-                if (rows.length === 0) return null;
-
-                return (
-                  <div key={group.title} className="contents">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {availableToAdd.slice(0, 4).map((p) => (
                     <div
-                      className="border-t border-[#E4DED2] bg-[#EFE9DC]"
-                      style={{ gridColumn: "1 / -1" }}
+                      key={p.id}
+                      className="bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:border-[#C9A659] transition-colors group"
                     >
-                      <p className="sticky left-0 w-max px-4 py-2.5 font-serif text-base text-[#211F1D]">
-                        {group.title}
-                      </p>
+                      <div className="aspect-square bg-[#F7F3EC] overflow-hidden">
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <p className="text-xs text-[#8A8378] mb-0.5">
+                          {p.category}
+                        </p>
+                        <h3 className="text-sm text-[#211F1D] leading-snug line-clamp-2 min-h-[40px]">
+                          {p.name}
+                        </h3>
+                        <p className="text-sm text-[#1F3A2E] mt-1 mb-3">
+                          ${p.price}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => addProduct(p.id)}
+                          className="w-full flex items-center justify-center gap-1.5 text-sm py-2 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] hover:bg-[#1F3A2E] hover:text-[#F7F3EC] transition-colors"
+                        >
+                          <LuPlus size={14} />
+                          Compare
+                        </button>
+                      </div>
                     </div>
-
-                    {rows.map((row) => {
-                      const different =
-                        selected.length >= 2 && isDifferent(row.key);
-
-                      return (
-                        <div key={row.key} className="contents">
-                          <div className={labelCell}>{row.label}</div>
-
-                          {Array.from({ length: MAX_COMPARE }).map(
-                            (_, slot) => {
-                              const product = selected[slot];
-
-                              return (
-                                <div
-                                  key={`${row.key}-${slot}`}
-                                  className={`${valueCell} ${
-                                    different && !diffOnly ? "bg-[#FBF9F4]" : ""
-                                  } ${product ? "" : "text-[#C9C2B3]"}`}
-                                >
-                                  {product ? product.specs[row.key] : "—"}
-                                </div>
-                              );
-                            },
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {diffOnly && selected.length >= 2 && (
-            <p className="text-xs text-[#8A8378] mt-3">
-              Details that are the same across every product are hidden.
-            </p>
-          )}
-          {!diffOnly && selected.length >= 2 && (
-            <p className="text-xs text-[#8A8378] mt-3">
-              Shaded rows show details that differ between products.
-            </p>
-          )}
-        </section>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )}
       </main>
-
-      {/* =====================================================
-          PRODUCT PICKER
-      ===================================================== */}
-
-      {pickerOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Add a product to compare"
-        >
-          <div
-            className="absolute inset-0 bg-[#211F1D]/50"
-            onClick={() => setPickerOpen(false)}
-          />
-
-          <div className="relative w-full max-w-lg max-h-[85vh] flex flex-col bg-[#F7F3EC] rounded-md overflow-hidden">
-            <div className="flex items-center justify-between px-5 pt-5 pb-4">
-              <div>
-                <h2 className="font-serif text-xl text-[#211F1D]">
-                  Add a product
-                </h2>
-                <p className="text-xs text-[#8A8378] mt-0.5">
-                  {selected.length} of {MAX_COMPARE} selected
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPickerOpen(false)}
-                aria-label="Close"
-              >
-                <LuX size={20} className="text-[#211F1D]" />
-              </button>
-            </div>
-
-            <div className="px-5 pb-4">
-              <div className="flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
-                <LuSearch size={16} className="ml-3.5 text-[#8A8378]" />
-                <input
-                  type="text"
-                  value={pickerQuery}
-                  onChange={(e) => setPickerQuery(e.target.value)}
-                  placeholder="Search products…"
-                  className="flex-1 px-3 py-2.5 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="overflow-y-auto px-5 pb-5 space-y-2">
-              {pickerResults.length === 0 && (
-                <p className="text-sm text-[#5B564C] py-6 text-center">
-                  No products match “{pickerQuery}”. Try a different name or
-                  category.
-                </p>
-              )}
-
-              {pickerResults.map((product) => {
-                const added = selectedIds.includes(product.id);
-                const disabled = !added && isFull;
-
-                return (
-                  <div
-                    key={product.id}
-                    className="flex items-center gap-3 bg-white border border-[#E4DED2] rounded-md p-3"
-                  >
-                    <ProductImage
-                      src={product.image}
-                      alt={product.name}
-                      className="w-14 h-14 object-cover rounded-sm shrink-0"
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[#211F1D] truncate">
-                        {product.name}
-                      </p>
-                      <p className="text-xs text-[#8A8378]">
-                        {product.category} · ${product.price}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() =>
-                        added
-                          ? removeProduct(product.id)
-                          : addProduct(product.id)
-                      }
-                      className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-sm text-xs transition-colors ${
-                        added
-                          ? "border border-[#1F3A2E] text-[#1F3A2E]"
-                          : "bg-[#1F3A2E] text-[#F7F3EC] hover:bg-[#16281F]"
-                      } disabled:bg-[#E4DED2] disabled:text-[#8A8378] disabled:cursor-not-allowed`}
-                    >
-                      {added ? (
-                        <>
-                          <LuCheck size={13} />
-                          Added
-                        </>
-                      ) : (
-                        "Add"
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-   
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   CATEGORIES,
   ProductCard,
   PRODUCTS,
+  SORT_OPTIONS,
   Stars,
 } from "@/frontEndDataProvider/ProductpageDataProvider";
 import Link from "next/link";
@@ -99,7 +100,6 @@ export default function ProductPage() {
         }
       `}</style>
 
-   
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6">
         {/* BREADCRUMB */}
         <div className="py-6 text-sm text-[#8A8378]">
@@ -237,11 +237,11 @@ export default function ProductPage() {
                     }}
                     className="appearance-none border border-[#E4DED2] rounded-md bg-white text-sm px-4 py-2 pr-9 outline-none cursor-pointer"
                   >
-                    <option>Featured</option>
-                    <option>Newest</option>
-                    <option>Highest Rated</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
 
                   <LuChevronDown
