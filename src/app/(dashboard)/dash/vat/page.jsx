@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   MdListAlt,
   MdReceipt,
@@ -68,22 +68,26 @@ const mockOrders = [
 const MushakModal = ({ isOpen, onClose, order }) => {
   if (!isOpen || !order) return null;
 
-  // Calculate totals
-  let totalExclVat = 0;
-  let totalVat = 0;
-  let totalInclVat = 0;
-
-  const enrichedItems = order.items.map((item, index) => {
-    const totalVal = item.qty * item.price;
-    const vatAmt = (totalVal * item.vatRate) / 100;
-    const grandTotal = totalVal + vatAmt;
-
-    totalExclVat += totalVal;
-    totalVat += vatAmt;
-    totalInclVat += grandTotal;
-
-    return { ...item, totalVal, vatAmt, grandTotal, sl: index + 1 };
-  });
+  const totals = order.items.reduce(
+    (result, item, index) => {
+      const totalVal = item.qty * item.price;
+      const vatAmt = (totalVal * item.vatRate) / 100;
+      const grandTotal = totalVal + vatAmt;
+      result.items.push({
+        ...item,
+        totalVal,
+        vatAmt,
+        grandTotal,
+        sl: index + 1,
+      });
+      result.totalExclVat += totalVal;
+      result.totalVat += vatAmt;
+      result.totalInclVat += grandTotal;
+      return result;
+    },
+    { items: [], totalExclVat: 0, totalVat: 0, totalInclVat: 0 },
+  );
+  const { items: enrichedItems, totalExclVat, totalVat, totalInclVat } = totals;
 
   const handlePrint = () => {
     window.print();
@@ -326,9 +330,58 @@ const MushakModal = ({ isOpen, onClose, order }) => {
 // Main Order History Page
 // ==========================================
 export default function OrderHistoryPage() {
-  const [orders] = useState(mockOrders);
+  void mockOrders;
+  const [orders, setOrders] = useState([]);
+  const [taxSettings, setTaxSettings] = useState({ rate: 15, name: "VAT" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const loadVATData = async () => {
+      try {
+        const [ordersResponse, settingsResponse] = await Promise.all([
+          fetch("/api/orders?limit=100", { cache: "no-store" }),
+          fetch("/api/settings", { cache: "no-store" }),
+        ]);
+        const orderData = await ordersResponse.json();
+        const settingsData = await settingsResponse.json();
+        if (!ordersResponse.ok)
+          throw new Error(orderData.message || "Unable to load orders");
+        setTaxSettings({
+          rate: Number(settingsData.settings?.taxRate ?? 15),
+          name: settingsData.settings?.taxName || "VAT",
+        });
+        setOrders(
+          (orderData.orders || []).map((order) => ({
+            id: order.orderNumber,
+            date: order.createdAt,
+            time: new Date(order.createdAt).toLocaleTimeString(),
+            customerName: order.customer?.name || "Customer",
+            customerAddress: order.customer?.address || "",
+            customerBIN: "N/A",
+            items: (order.items || []).map((item) => ({
+              name: item.name,
+              qty: item.quantity,
+              price: item.price,
+              vatRate: Number(
+                order.financials?.taxRate ??
+                  settingsData.settings?.taxRate ??
+                  15,
+              ),
+            })),
+          })),
+        );
+      } catch (loadError) {
+        setError(loadError.message || "Unable to load VAT data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    const timer = setTimeout(loadVATData, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Quick stats calculations
   const { totalOrders, totalRevenue } = useMemo(() => {
@@ -387,7 +440,7 @@ export default function OrderHistoryPage() {
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 className="text-sm font-semibold text-gray-500 uppercase">
-              Total Revenue (Incl. VAT)
+              Total Revenue (Incl. {taxSettings.name})
             </h2>
             <p className="text-3xl font-bold text-[#611F69] mt-2">
               ৳
@@ -453,63 +506,92 @@ export default function OrderHistoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {orders.map((order) => {
-                  // Calculate order total for the table view
-                  const orderTotal = order.items.reduce(
-                    (sum, item) =>
-                      sum + item.qty * item.price * (1 + item.vatRate / 100),
-                    0,
-                  );
-                  const totalItems = order.items.reduce(
-                    (sum, item) => sum + item.qty,
-                    0,
-                  );
-
-                  return (
-                    <tr
-                      key={order.id}
-                      className="hover:bg-gray-50 transition-colors"
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-6 py-10 text-center text-gray-500"
                     >
-                      <td className="py-4 px-6">
-                        <div className="font-bold text-gray-900">
-                          {order.id}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {order.date} at {order.time}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="font-semibold text-gray-800">
-                          {order.customerName}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {order.customerAddress}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {totalItems} Items
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-gray-900">
-                        ৳
-                        {orderTotal.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button
-                          onClick={() => openMushak(order)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#611F69]/10 text-[#611F69] text-sm font-semibold rounded hover:bg-[#611F69] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
-                          aria-label={`View Mushak 6.3 for order ${order.id}`}
-                        >
-                          <MdRemoveRedEye size={18} />
-                          View Mushak 6.3
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                      Loading orders...
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-6 py-10 text-center text-red-600"
+                    >
+                      {error}
+                    </td>
+                  </tr>
+                ) : orders.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-6 py-10 text-center text-gray-500"
+                    >
+                      No orders found.
+                    </td>
+                  </tr>
+                ) : (
+                  orders.map((order) => {
+                    // Calculate order total for the table view
+                    const orderTotal = order.items.reduce(
+                      (sum, item) =>
+                        sum + item.qty * item.price * (1 + item.vatRate / 100),
+                      0,
+                    );
+                    const totalItems = order.items.reduce(
+                      (sum, item) => sum + item.qty,
+                      0,
+                    );
+
+                    return (
+                      <tr
+                        key={order.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-4 px-6">
+                          <div className="font-bold text-gray-900">
+                            {order.id}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {order.date} at {order.time}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="font-semibold text-gray-800">
+                            {order.customerName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {order.customerAddress}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {totalItems} Items
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-gray-900">
+                          ৳
+                          {orderTotal.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <button
+                            onClick={() => openMushak(order)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#611F69]/10 text-[#611F69] text-sm font-semibold rounded hover:bg-[#611F69] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                            aria-label={`View Mushak 6.3 for order ${order.id}`}
+                          >
+                            <MdRemoveRedEye size={18} />
+                            View Mushak 6.3
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>

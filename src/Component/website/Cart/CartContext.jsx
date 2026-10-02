@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  startTransition,
 } from "react";
 
 const STORAGE_KEY = "fieldhouse-cart";
@@ -23,9 +24,11 @@ export function CartProvider({ children }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setItems(JSON.parse(saved));
+      startTransition(() => {
+        if (saved) setItems(JSON.parse(saved));
+        setHydrated(true);
+      });
     } catch {}
-    setHydrated(true);
   }, []);
 
   // Save on every change, but only after the saved cart has been loaded
@@ -41,13 +44,19 @@ export function CartProvider({ children }) {
 
   // product needs: id, name, price, image, category
   const addItem = useCallback((product, quantity = 1, { open = true } = {}) => {
+    const requestedQuantity = Number.isFinite(Number(quantity))
+      ? Math.max(1, Math.floor(Number(quantity)))
+      : 1;
     setItems((prev) => {
       const existing = prev.find((item) => item.id === product.id);
 
       if (existing) {
         return prev.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: Math.min(item.quantity + quantity, MAX_QTY) }
+            ? {
+                ...item,
+                quantity: Math.min(item.quantity + requestedQuantity, MAX_QTY),
+              }
             : item,
         );
       }
@@ -60,7 +69,7 @@ export function CartProvider({ children }) {
           category: product.category,
           image: product.image,
           price: product.price,
-          quantity: Math.min(quantity, MAX_QTY),
+          quantity: Math.min(requestedQuantity, MAX_QTY),
         },
       ];
     });
@@ -69,11 +78,17 @@ export function CartProvider({ children }) {
   }, []);
 
   const updateQuantity = useCallback((id, quantity) => {
+    const nextQuantity = Number.isFinite(Number(quantity))
+      ? Math.floor(Number(quantity))
+      : 0;
     setItems((prev) =>
       prev
         .map((item) =>
           item.id === id
-            ? { ...item, quantity: Math.min(quantity, MAX_QTY) }
+            ? {
+                ...item,
+                quantity: Math.min(Math.max(nextQuantity, 0), MAX_QTY),
+              }
             : item,
         )
         .filter((item) => item.quantity > 0),

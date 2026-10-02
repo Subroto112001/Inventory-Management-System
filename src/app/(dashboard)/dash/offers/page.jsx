@@ -638,7 +638,7 @@ export default function OffersPage() {
 
       <header className="mb-6">
         <Link
-          href="/products"
+          href="/dash/products"
           className="inline-flex gap-2 items-center text-gray-800 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
           aria-label="Go back to products page"
         >

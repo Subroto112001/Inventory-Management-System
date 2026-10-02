@@ -1,7 +1,9 @@
-
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useCart } from "@/Component/website/Cart/CartContext";
 import {
   LuHeart,
   LuShoppingCart,
@@ -19,78 +21,6 @@ import {
   LuGitCompare,
   LuSearch,
 } from "react-icons/lu";
-
-const PRODUCT = {
-  id: "ex1",
-  name: "Alder Oak Dining Chair",
-  category: "Furniture",
-  price: 189,
-  oldPrice: 229,
-  rating: 4.8,
-  reviews: 62,
-  sku: "FH-ALD-001",
-  badge: "Exclusive",
-  description:
-    "A beautifully crafted dining chair made from solid oak with a warm natural finish. Designed for everyday dining, it combines timeless craftsmanship with comfortable proportions.",
-  images: [
-    "https://placehold.co/900x900/1F3A2E/F7F3EC?text=Alder+Dining+Chair",
-    "https://placehold.co/900x900/B08D3E/211F1D?text=Chair+Side+View",
-    "https://placehold.co/900x900/93A88A/211F1D?text=Chair+Detail",
-    "https://placehold.co/900x900/C9A659/211F1D?text=Chair+Material",
-  ],
-  details: [
-    ["Material", "Solid oak"],
-    ["Finish", "Natural oak"],
-    ["Dimensions", "19.5 × 21 × 32 in"],
-    ["Seat height", "18 in"],
-    ["Weight", "12.5 lb"],
-    ["Assembly", "Minimal assembly required"],
-  ],
-};
-
-const RELATED_PRODUCTS = [
-  {
-    id: 1,
-    name: "Teak Outdoor Bench",
-    category: "Furniture",
-    price: 320,
-    rating: 4.6,
-    reviews: 27,
-    image:
-      "https://placehold.co/600x600/16281F/F7F3EC?text=Teak+Bench",
-  },
-  {
-    id: 2,
-    name: "Bouclé Reading Armchair",
-    category: "Furniture",
-    price: 540,
-    oldPrice: 620,
-    rating: 4.9,
-    reviews: 54,
-    image:
-      "https://placehold.co/600x600/B08D3E/211F1D?text=Boucle+Armchair",
-  },
-  {
-    id: 3,
-    name: "Floating Walnut Shelf",
-    category: "Furniture",
-    price: 88,
-    rating: 4.4,
-    reviews: 19,
-    image:
-      "https://placehold.co/600x600/211F1D/F7F3EC?text=Walnut+Shelf",
-  },
-  {
-    id: 4,
-    name: "Woven Rattan Ottoman",
-    category: "Furniture",
-    price: 165,
-    rating: 4.7,
-    reviews: 33,
-    image:
-      "https://placehold.co/600x600/93A88A/211F1D?text=Rattan+Ottoman",
-  },
-];
 
 function Stars({ rating }) {
   return (
@@ -112,15 +42,19 @@ function Stars({ rating }) {
 
 function ProductCard({ product }) {
   const [liked, setLiked] = useState(false);
+  const { addItem } = useCart();
+  const inStock = product.inStock ?? true;
 
   return (
     <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-lg hover:border-[#C9A659] transition-all duration-200">
       <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
-        />
+        <Link href={`/product/product_details?id=${product.id}`}>
+          <img
+            src={product.image || "/placeholder-product.svg"}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
+          />
+        </Link>
 
         <button
           type="button"
@@ -129,36 +63,29 @@ function ProductCard({ product }) {
             liked ? "text-[#B65C38]" : "text-[#211F1D]"
           }`}
         >
-          <LuHeart
-            size={16}
-            className={liked ? "fill-[#B65C38]" : ""}
-          />
+          <LuHeart size={16} className={liked ? "fill-[#B65C38]" : ""} />
         </button>
 
         <button
           type="button"
-          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2"
+          disabled={!inStock}
+          onClick={() => addItem(product)}
+          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <LuShoppingCart size={15} />
-          Add to cart
+          {inStock ? "Add to cart" : "Out of stock"}
         </button>
       </div>
 
       <div className="p-4">
-        <p className="text-xs text-[#8A8378] mb-1">
-          {product.category}
-        </p>
+        <p className="text-xs text-[#8A8378] mb-1">{product.category}</p>
 
-        <h3 className="text-sm text-[#211F1D] mb-2">
-          {product.name}
-        </h3>
+        <h3 className="text-sm text-[#211F1D] mb-2">{product.name}</h3>
 
         <div className="flex items-center gap-1.5 mb-2">
           <Stars rating={product.rating} />
 
-          <span className="text-xs text-[#8A8378]">
-            ({product.reviews})
-          </span>
+          <span className="text-xs text-[#8A8378]">({product.reviews})</span>
         </div>
 
         <div className="flex items-baseline gap-2">
@@ -177,11 +104,77 @@ function ProductCard({ product }) {
   );
 }
 
-export default function ProductDetailsPage() {
+function ProductDetailsContent() {
+  const searchParams = useSearchParams();
+  const productId = searchParams.get("id");
+  const { addItem } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [liked, setLiked] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(Boolean(productId));
+  const [error, setError] = useState(productId ? "" : "Product not found");
+
+  useEffect(() => {
+    if (!productId) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    fetch(`/api/product/${productId}?public=1`, { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Product not found");
+        return data.product;
+      })
+      .then(async (loadedProduct) => {
+        setProduct({
+          ...loadedProduct,
+          images: loadedProduct.images?.length
+            ? loadedProduct.images
+            : [loadedProduct.image || "/placeholder-product.svg"],
+          rating: loadedProduct.rating || 0,
+          reviews: loadedProduct.reviews || 0,
+          details: [],
+        });
+        const relatedResponse = await fetch(
+          `/api/product?public=1&category=${encodeURIComponent(loadedProduct.category || "")}&limit=5`,
+          { signal: controller.signal },
+        );
+        const relatedData = await relatedResponse.json();
+        setRelatedProducts(
+          (relatedData.products || [])
+            .filter((item) => item.id !== loadedProduct.id)
+            .slice(0, 4),
+        );
+      })
+      .catch((fetchError) => {
+        if (fetchError.name !== "AbortError") setError(fetchError.message);
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [productId]);
+
+  const PRODUCT = product;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F7F3EC] px-6 py-20 text-center text-[#8A8378]">
+        Loading product...
+      </div>
+    );
+  }
+
+  if (error || !PRODUCT) {
+    return (
+      <div className="min-h-screen bg-[#F7F3EC] px-6 py-20 text-center text-red-700">
+        {error || "Product not found"}
+      </div>
+    );
+  }
 
   const decreaseQuantity = () => {
     setQuantity((current) => Math.max(1, current - 1));
@@ -194,16 +187,12 @@ export default function ProductDetailsPage() {
   const previousImage = () => {
     setActiveImage(
       (current) =>
-        (current - 1 + PRODUCT.images.length) %
-        PRODUCT.images.length
+        (current - 1 + PRODUCT.images.length) % PRODUCT.images.length,
     );
   };
 
   const nextImage = () => {
-    setActiveImage(
-      (current) =>
-        (current + 1) % PRODUCT.images.length
-    );
+    setActiveImage((current) => (current + 1) % PRODUCT.images.length);
   };
 
   return (
@@ -227,9 +216,7 @@ export default function ProductDetailsPage() {
       <header className="sticky top-0 z-40 bg-[#F7F3EC] border-b border-[#E4DED2]">
         <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
-            <p>
-              Free shipping on orders over $75 · Handmade in small batches
-            </p>
+            <p>Free shipping on orders over $75 · Handmade in small batches</p>
 
             <div className="hidden sm:flex gap-4">
               <a href="#">Track order</a>
@@ -264,16 +251,12 @@ export default function ProductDetailsPage() {
           <div className="ml-auto flex items-center gap-5">
             <button className="flex flex-col items-center">
               <LuUser size={20} />
-              <span className="hidden sm:block text-[10px]">
-                Account
-              </span>
+              <span className="hidden sm:block text-[10px]">Account</span>
             </button>
 
             <button className="relative flex flex-col items-center">
               <LuGitCompare size={20} />
-              <span className="hidden sm:block text-[10px]">
-                Compare
-              </span>
+              <span className="hidden sm:block text-[10px]">Compare</span>
 
               <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 2
@@ -282,9 +265,7 @@ export default function ProductDetailsPage() {
 
             <button className="relative flex flex-col items-center">
               <LuShoppingCart size={20} />
-              <span className="hidden sm:block text-[10px]">
-                Cart
-              </span>
+              <span className="hidden sm:block text-[10px]">Cart</span>
 
               <span className="absolute -top-1 -right-2 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 3
@@ -302,9 +283,7 @@ export default function ProductDetailsPage() {
             <span className="mx-2">/</span>
             Furniture
             <span className="mx-2">/</span>
-            <span className="text-[#211F1D]">
-              {PRODUCT.name}
-            </span>
+            <span className="text-[#211F1D]">{PRODUCT.name}</span>
           </div>
         </div>
 
@@ -366,9 +345,7 @@ export default function ProductDetailsPage() {
 
             {/* PRODUCT INFO */}
             <div className="flex flex-col">
-              <p className="text-sm text-[#B65C38] mb-2">
-                {PRODUCT.category}
-              </p>
+              <p className="text-sm text-[#B65C38] mb-2">{PRODUCT.category}</p>
 
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[2.8rem] leading-tight mb-4">
                 {PRODUCT.name}
@@ -427,9 +404,7 @@ export default function ProductDetailsPage() {
 
               {/* QUANTITY */}
               <div className="mb-5">
-                <p className="text-sm font-medium mb-2">
-                  Quantity
-                </p>
+                <p className="text-sm font-medium mb-2">Quantity</p>
 
                 <div className="flex items-center border border-[#E4DED2] rounded-md w-fit bg-white">
                   <button
@@ -439,9 +414,7 @@ export default function ProductDetailsPage() {
                     <LuMinus size={15} />
                   </button>
 
-                  <span className="w-12 text-center text-sm">
-                    {quantity}
-                  </span>
+                  <span className="w-12 text-center text-sm">{quantity}</span>
 
                   <button
                     onClick={increaseQuantity}
@@ -456,10 +429,12 @@ export default function ProductDetailsPage() {
               <div className="flex gap-3 mb-6">
                 <button
                   type="button"
+                  disabled={!PRODUCT.inStock}
+                  onClick={() => addItem(PRODUCT, quantity)}
                   className="flex-1 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-md text-sm flex items-center justify-center gap-2 hover:bg-[#16281F] transition-colors"
                 >
                   <LuShoppingCart size={18} />
-                  Add to cart
+                  {PRODUCT.inStock ? "Add to cart" : "Out of stock"}
                 </button>
 
                 <button
@@ -498,15 +473,10 @@ export default function ProductDetailsPage() {
               {/* SHIPPING INFO */}
               <div className="mt-7 border-t border-[#E4DED2]">
                 <div className="flex gap-4 py-4 border-b border-[#E4DED2]">
-                  <LuTruck
-                    size={21}
-                    className="text-[#1F3A2E] shrink-0"
-                  />
+                  <LuTruck size={21} className="text-[#1F3A2E] shrink-0" />
 
                   <div>
-                    <p className="text-sm font-medium">
-                      Free shipping
-                    </p>
+                    <p className="text-sm font-medium">Free shipping</p>
 
                     <p className="text-xs text-[#8A8378] mt-1">
                       Free delivery on orders over $75.
@@ -515,15 +485,10 @@ export default function ProductDetailsPage() {
                 </div>
 
                 <div className="flex gap-4 py-4 border-b border-[#E4DED2]">
-                  <LuRotateCcw
-                    size={21}
-                    className="text-[#1F3A2E] shrink-0"
-                  />
+                  <LuRotateCcw size={21} className="text-[#1F3A2E] shrink-0" />
 
                   <div>
-                    <p className="text-sm font-medium">
-                      30-day returns
-                    </p>
+                    <p className="text-sm font-medium">30-day returns</p>
 
                     <p className="text-xs text-[#8A8378] mt-1">
                       Return your purchase within 30 days.
@@ -538,9 +503,7 @@ export default function ProductDetailsPage() {
                   />
 
                   <div>
-                    <p className="text-sm font-medium">
-                      Secure checkout
-                    </p>
+                    <p className="text-sm font-medium">Secure checkout</p>
 
                     <p className="text-xs text-[#8A8378] mt-1">
                       Your payment information is protected.
@@ -602,20 +565,17 @@ export default function ProductDetailsPage() {
                   </p>
 
                   <p className="text-sm leading-7 text-[#5B564C] mt-4">
-                    The simple silhouette works naturally with both
-                    modern and traditional interiors. Its solid oak
-                    construction gives it the durability needed for
-                    everyday use while maintaining a warm,
-                    understated appearance.
+                    The simple silhouette works naturally with both modern and
+                    traditional interiors. Its solid oak construction gives it
+                    the durability needed for everyday use while maintaining a
+                    warm, understated appearance.
                   </p>
                 </div>
               )}
 
               {activeTab === "details" && (
                 <div>
-                  <h2 className="font-serif text-2xl mb-5">
-                    Product details
-                  </h2>
+                  <h2 className="font-serif text-2xl mb-5">Product details</h2>
 
                   <div className="grid sm:grid-cols-2 border-t border-l border-[#E4DED2]">
                     {PRODUCT.details.map(([label, value]) => (
@@ -640,9 +600,7 @@ export default function ProductDetailsPage() {
                 <div>
                   <div className="flex flex-col sm:flex-row gap-8">
                     <div>
-                      <p className="font-serif text-5xl">
-                        {PRODUCT.rating}
-                      </p>
+                      <p className="font-serif text-5xl">{PRODUCT.rating}</p>
 
                       <div className="flex mt-2">
                         <Stars rating={PRODUCT.rating} />
@@ -655,13 +613,8 @@ export default function ProductDetailsPage() {
 
                     <div className="flex-1 space-y-2">
                       {[5, 4, 3, 2, 1].map((star) => (
-                        <div
-                          key={star}
-                          className="flex items-center gap-3"
-                        >
-                          <span className="text-xs w-6">
-                            {star}
-                          </span>
+                        <div key={star} className="flex items-center gap-3">
+                          <span className="text-xs w-6">{star}</span>
 
                           <div className="flex-1 h-2 bg-[#E4DED2] rounded-full overflow-hidden">
                             <div
@@ -671,10 +624,10 @@ export default function ProductDetailsPage() {
                                   star === 5
                                     ? "82%"
                                     : star === 4
-                                    ? "12%"
-                                    : star === 3
-                                    ? "4%"
-                                    : "1%",
+                                      ? "12%"
+                                      : star === 3
+                                        ? "4%"
+                                        : "1%",
                               }}
                             />
                           </div>
@@ -684,9 +637,7 @@ export default function ProductDetailsPage() {
                   </div>
 
                   <div className="mt-8 border-t border-[#E4DED2] pt-6">
-                    <p className="text-sm font-medium mb-2">
-                      "Beautiful chair and excellent craftsmanship."
-                    </p>
+                    <p className="text-sm text-[#8A8378]">No reviews yet.</p>
 
                     <div className="flex items-center gap-2">
                       <Stars rating={5} />
@@ -705,21 +656,14 @@ export default function ProductDetailsPage() {
         {/* RELATED PRODUCTS */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 sm:mt-20">
           <div className="mb-8">
-            <p className="text-sm text-[#B65C38] mb-1">
-              You may also like
-            </p>
+            <p className="text-sm text-[#B65C38] mb-1">You may also like</p>
 
-            <h2 className="font-serif text-3xl">
-              Related products
-            </h2>
+            <h2 className="font-serif text-3xl">Related products</h2>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {RELATED_PRODUCTS.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
+            {relatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>
@@ -728,49 +672,30 @@ export default function ProductDetailsPage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 mb-16">
           <div className="grid grid-cols-1 sm:grid-cols-3 border-y border-[#E4DED2] py-7 gap-6">
             <div className="flex items-center gap-3">
-              <LuTruck
-                size={22}
-                className="text-[#1F3A2E]"
-              />
+              <LuTruck size={22} className="text-[#1F3A2E]" />
 
               <div>
-                <p className="text-sm font-medium">
-                  Free shipping
-                </p>
+                <p className="text-sm font-medium">Free shipping</p>
 
-                <p className="text-xs text-[#8A8378]">
-                  On orders over $75
-                </p>
+                <p className="text-xs text-[#8A8378]">On orders over $75</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <LuRotateCcw
-                size={22}
-                className="text-[#1F3A2E]"
-              />
+              <LuRotateCcw size={22} className="text-[#1F3A2E]" />
 
               <div>
-                <p className="text-sm font-medium">
-                  30-day returns
-                </p>
+                <p className="text-sm font-medium">30-day returns</p>
 
-                <p className="text-xs text-[#8A8378]">
-                  Simple and hassle-free
-                </p>
+                <p className="text-xs text-[#8A8378]">Simple and hassle-free</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <LuShieldCheck
-                size={22}
-                className="text-[#1F3A2E]"
-              />
+              <LuShieldCheck size={22} className="text-[#1F3A2E]" />
 
               <div>
-                <p className="text-sm font-medium">
-                  Secure checkout
-                </p>
+                <p className="text-sm font-medium">Secure checkout</p>
 
                 <p className="text-xs text-[#8A8378]">
                   Safe and encrypted payments
@@ -797,18 +722,31 @@ export default function ProductDetailsPage() {
               </div>
 
               <p className="text-sm text-[#9B9689]">
-                Everyday goods for the home, made in small
-                batches with natural materials.
+                Everyday goods for the home, made in small batches with natural
+                materials.
               </p>
             </div>
 
             <div className="text-sm text-[#9B9689]">
-              © {new Date().getFullYear()} Fieldhouse. All
-              rights reserved.
+              © {new Date().getFullYear()} Fieldhouse. All rights reserved.
             </div>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function ProductDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F7F3EC] px-6 py-20 text-center text-[#8A8378]">
+          Loading product...
+        </div>
+      }
+    >
+      <ProductDetailsContent />
+    </Suspense>
   );
 }

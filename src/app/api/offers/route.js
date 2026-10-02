@@ -1,24 +1,43 @@
 import { NextResponse } from "next/server";
 import Offer from "@/lib/models/Offer";
-import { getUserId } from "@/lib/getUserId";
 import { normalizeOfferInput, serializeOffer } from "@/lib/offerHelpers";
 import connectMongoDB from "@/lib/databse/mongodb";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/offers  — list all offers, newest first
 export async function GET(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.OFFERS_READ);
+    if (!access.ok) return access.response;
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(Number(searchParams.get("page")) || 1, 1);
+    const limit = Math.min(
+      Math.max(Number(searchParams.get("limit")) || 25, 1),
+      100,
+    );
     await connectMongoDB();
 
-    const offers = await Offer.find().sort({ createdAt: -1 });
+    const [offers, total] = await Promise.all([
+      Offer.find()
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Offer.countDocuments(),
+    ]);
 
     return NextResponse.json(
-      { success: true, offers: offers.map(serializeOffer) },
+      {
+        success: true,
+        offers: offers.map(serializeOffer),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
       { status: 200 },
     );
   } catch (err) {
@@ -33,13 +52,12 @@ export async function GET(request) {
 // POST /api/offers — create a new offer
 export async function POST(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.OFFERS_MANAGE);
+    if (!access.ok) return access.response;
     await connectMongoDB();
 
     const body = await request.json();
-    const userId = getUserId(request);
+    const userId = access.user._id;
     if (!userId) {
       return NextResponse.json(
         {

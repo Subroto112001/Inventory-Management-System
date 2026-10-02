@@ -8,7 +8,7 @@ export async function POST(request) {
         success: true,
         message: "Logout successful!",
       },
-      { status: 200 }
+      { status: 200 },
     );
 
     clearAuthCookie(response);
@@ -24,12 +24,9 @@ export async function POST(request) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          process.env.NODE_ENV === "development"
-            ? error?.message || "Logout failed"
-            : "Internal server error",
+        message: "Unable to complete logout",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

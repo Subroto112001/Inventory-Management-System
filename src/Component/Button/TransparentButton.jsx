@@ -1,15 +1,25 @@
-import Link from 'next/link';
-import React from 'react'
+import Link from "next/link";
+import React from "react";
 
-const TransparentButton = ({ value, path }) => {
+const buttonClassName =
+  "border border-[var(--theme-primary)] text-[var(--theme-primary)] py-2 px-4 rounded-md bg-transparent hover:bg-[var(--theme-primary)] hover:text-[var(--theme-primary-text)] cursor-pointer transition-all";
+
+const TransparentButton = ({ value, path, href, onClick, type = "button" }) => {
+  const destination = href ?? path;
+
+  if (destination) {
+    return (
+      <Link className={buttonClassName} href={destination}>
+        {value}
+      </Link>
+    );
+  }
+
   return (
-    <Link
-      className="border border-[#611F69] text-[#611F69] py-2 px-4 rounded-md bg-transparent hover:bg-[#611F69] hover:text-white cursor-pointer transition-all"
-      href={path}
-    >
+    <button className={buttonClassName} onClick={onClick} type={type}>
       {value}
-    </Link>
+    </button>
   );
 };
 
-export default TransparentButton
+export default TransparentButton;

@@ -101,7 +101,6 @@ const Page = () => {
     CustomerdataProvider();
 
   const { offers, loadingOffers, fetchOffers } = OfferdataProvider();
-  console.log("offer", offers);
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setLoadError("");
@@ -971,7 +970,7 @@ const Page = () => {
                 </div>
 
                 <Link
-                  href="/order?view=orders"
+                  href="/dash/order?view=orders"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all orders"
                 >
@@ -1102,7 +1101,7 @@ const Page = () => {
 
               <div className="mt-6">
                 <Link
-                  href="/customers"
+                  href="/dash/customer"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all customers"
                 >
@@ -1136,7 +1135,7 @@ const Page = () => {
                 </span>
 
                 <Link
-                  href="/offers"
+                  href="/dash/offers"
                   className="btn-link text-label-sm flex items-center gap-1"
                   aria-label="View all offers"
                 >

@@ -2,20 +2,137 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
 import Offer from "@/lib/models/Offer";
-import { requireAuth } from "@/lib/auth";
+import Brand from "@/lib/models/Brand";
+import Category from "@/lib/models/Category";
+import { requirePermission } from "@/lib/authorization";
+import { PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
+import { increaseStock } from "@/lib/inventory/stockService";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+function serializePublicProduct(product) {
+  return {
+    id: product._id.toString(),
+    name: product.productName,
+    productName: product.productName,
+    sku: product.productSKU,
+    price: product.price,
+    discount: product.discount || 0,
+    image: product.image?.url || "",
+    images: product.image?.url ? [product.image.url] : [],
+    description: product.description || "",
+    unit: product.unit || "",
+    brand: product.brand?.brandName || product.brandName || "",
+    category: product.category?.categoryName || "",
+    availability: product.currentStock > 0 ? "In Stock" : "Out of Stock",
+    inStock: product.currentStock > 0,
+    isActive: product.isActive,
+    createdAt: product.createdAt,
+  };
+}
 
 // =========================
 // GET PRODUCTS
 // =========================
 export async function GET(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const { searchParams } = new URL(request.url);
+    const publicRead = searchParams.get("public") === "1";
+
+    if (publicRead) {
+      await connectMongoDB();
+
+      const page = Math.max(Number(searchParams.get("page")) || 1, 1);
+      const limit = Math.min(
+        Math.max(Number(searchParams.get("limit")) || 12, 1),
+        48,
+      );
+      const search = searchParams.get("search")?.trim();
+      const category = searchParams.get("category")?.trim();
+      const brand = searchParams.get("brand")?.trim();
+      const availability = searchParams.get("availability") === "in-stock";
+      const sort = searchParams.get("sort") || "newest";
+      const filter = { isActive: true };
+
+      if (search) {
+        filter.$or = [
+          { productName: { $regex: search, $options: "i" } },
+          { productSKU: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+        ];
+      }
+      if (availability) filter.currentStock = { $gt: 0 };
+      if (category) {
+        const categoryFilter = /^[a-f\d]{24}$/i.test(category)
+          ? { _id: category }
+          : {
+              categoryName: {
+                $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+                $options: "i",
+              },
+            };
+        const categoryDoc = await Category.findOne(categoryFilter)
+          .select("_id")
+          .lean();
+        if (!categoryDoc)
+          return NextResponse.json({
+            success: true,
+            products: [],
+            pagination: { page, limit, total: 0, totalPages: 0 },
+          });
+        filter.category = categoryDoc._id;
+      }
+      if (brand) {
+        const brandFilter = /^[a-f\d]{24}$/i.test(brand)
+          ? { _id: brand }
+          : {
+              brandName: {
+                $regex: `^${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+                $options: "i",
+              },
+            };
+        const brandDoc = await Brand.findOne(brandFilter).select("_id").lean();
+        if (!brandDoc)
+          return NextResponse.json({
+            success: true,
+            products: [],
+            pagination: { page, limit, total: 0, totalPages: 0 },
+          });
+        filter.brand = brandDoc._id;
+      }
+
+      const sortMap = {
+        newest: { createdAt: -1 },
+        priceAsc: { price: 1 },
+        priceDesc: { price: -1 },
+      };
+      const [products, total] = await Promise.all([
+        Product.find(filter)
+          .populate("brand", "brandName logo")
+          .populate("category", "categoryName")
+          .sort(sortMap[sort] || sortMap.newest)
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .lean(),
+        Product.countDocuments(filter),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        products: products.map(serializePublicProduct),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
     }
+
+    const access = await requirePermission(request, PERMISSIONS.PRODUCTS_READ);
+    if (!access.ok) return access.response;
 
     await connectMongoDB();
 
@@ -123,9 +240,11 @@ export async function POST(request) {
     // -------------------------
     // Authentication
     // -------------------------
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.PRODUCTS_CREATE,
+    );
+    if (!access.ok) return access.response;
 
     // -------------------------
     // Read FormData
@@ -205,7 +324,19 @@ export async function POST(request) {
     // -------------------------
     // Stock
     // -------------------------
-    const parsedInitialStock = Number(initialStock) || 0;
+    const parsedInitialStock = Number(initialStock ?? 0);
+    const parsedLowStockAlert = Number(lowStockAlert ?? 0);
+    if (
+      !Number.isInteger(parsedInitialStock) ||
+      parsedInitialStock < 0 ||
+      !Number.isInteger(parsedLowStockAlert) ||
+      parsedLowStockAlert < 0
+    ) {
+      return NextResponse.json(
+        { message: "Stock values must be non-negative whole numbers" },
+        { status: 400 },
+      );
+    }
 
     // -------------------------
     // Create Product
@@ -234,9 +365,9 @@ export async function POST(request) {
 
       initialStock: parsedInitialStock,
 
-      currentStock: parsedInitialStock,
+      currentStock: 0,
 
-      lowStockAlert: Number(lowStockAlert) || 0,
+      lowStockAlert: parsedLowStockAlert,
 
       // Cloudinary
       image: uploadedImage
@@ -245,7 +376,25 @@ export async function POST(request) {
             url: uploadedImage.url,
           }
         : undefined,
+      createdBy: access.user._id,
     });
+
+    if (parsedInitialStock > 0) {
+      try {
+        await increaseStock({
+          productId: newProduct._id,
+          delta: parsedInitialStock,
+          movementType: "INITIAL_STOCK",
+          reason: "Initial stock on product creation",
+          referenceType: "PRODUCT",
+          referenceId: newProduct._id,
+          performedBy: access.user._id,
+        });
+      } catch (stockError) {
+        await Product.deleteOne({ _id: newProduct._id });
+        throw stockError;
+      }
+    }
 
     // -------------------------
     // Response

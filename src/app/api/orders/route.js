@@ -3,21 +3,52 @@ import connectMongoDB from "@/lib/databse/mongodb"; // আপনার ডির
 import Order from "@/lib/models/Order";
 import Product from "@/lib/models/Product";
 import mongoose from "mongoose";
-import { requireAuth } from "@/lib/auth";
+import { isCustomer, requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
+import { decreaseStock } from "@/lib/inventory/stockService";
+import Offer from "@/lib/models/Offer";
+import { calculateTax, getTaxSettings } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-
 export async function GET(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.ORDERS_READ);
+    if (!access.ok) return access.response;
+    const authenticatedUser = access.user;
     await connectMongoDB();
-    const orders = await Order.find().sort({ createdAt: -1 }).lean();
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(Number(searchParams.get("page")) || 1, 1);
+    const limit = Math.min(
+      Math.max(Number(searchParams.get("limit")) || 25, 1),
+      100,
+    );
+    const filter = isCustomer(authenticatedUser)
+      ? { customerUser: authenticatedUser._id }
+      : {};
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Order.countDocuments(filter),
+    ]);
 
-    return NextResponse.json({ success: true, orders }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Fetch Orders API Error:", error);
     return NextResponse.json(
@@ -29,10 +60,9 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const authenticatedUser = await requireAuth(request);
-    if (!authenticatedUser) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.ORDERS_CREATE);
+    if (!access.ok) return access.response;
+    const authenticatedUser = access.user;
     const body = await request.json();
     const {
       customerName,
@@ -51,6 +81,7 @@ export async function POST(request) {
       tax,
       deliveryCharge,
       grandTotal,
+      couponCode,
     } = body;
 
     if (!cart || cart.length === 0) {
@@ -62,50 +93,153 @@ export async function POST(request) {
 
     await connectMongoDB();
 
-    // Map cart items and validate MongoDB ObjectIds
+    const productIds = cart.map((item) => item.id || item._id);
+    if (productIds.some((id) => !id || !mongoose.Types.ObjectId.isValid(id))) {
+      return NextResponse.json(
+        { message: "One or more products are invalid" },
+        { status: 400 },
+      );
+    }
+    const products = await Product.find({
+      _id: { $in: productIds },
+      isActive: true,
+    }).lean();
+    const productsById = new Map(
+      products.map((product) => [product._id.toString(), product]),
+    );
+
     const orderItems = [];
-    const bulkStockUpdates = [];
+    let calculatedSubtotal = 0;
 
     for (const item of cart) {
       const rawProductId = item.id || item._id;
+      const product = productsById.get(rawProductId.toString());
+      const quantity = Number(item.quantity);
 
-      if (!rawProductId || !mongoose.Types.ObjectId.isValid(rawProductId)) {
+      if (!product) {
         return NextResponse.json(
-          {
-            message: `Invalid product ID for item: ${item.productName || item.name}`,
-          },
+          { message: "One or more products are unavailable" },
           { status: 400 },
+        );
+      }
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+        return NextResponse.json(
+          { message: "Each quantity must be between 1 and 10" },
+          { status: 400 },
+        );
+      }
+      if (product.currentStock < quantity) {
+        return NextResponse.json(
+          { message: `${product.productName} has insufficient stock` },
+          { status: 409 },
         );
       }
 
       const productId = new mongoose.Types.ObjectId(rawProductId);
+      calculatedSubtotal += product.price * quantity;
 
       orderItems.push({
         product: productId,
-        name: item.productName || item.name,
-        sku: item.productSKU || item.sku,
-        quantity: Number(item.quantity),
-        price: Number(item.price),
-      });
-
-      bulkStockUpdates.push({
-        updateOne: {
-          filter: { _id: productId },
-          update: { $inc: { currentStock: -Number(item.quantity) } },
-        },
+        name: product.productName,
+        sku: product.productSKU,
+        quantity,
+        price: product.price,
       });
     }
 
+    const taxSettings = await getTaxSettings();
+    let appliedOffer = null;
+    let discount = 0;
+    const normalizedCoupon = String(couponCode || "")
+      .trim()
+      .toUpperCase();
+    if (normalizedCoupon) {
+      appliedOffer = await Offer.findOne({
+        offerCode: normalizedCoupon,
+      }).lean();
+      const now = new Date();
+      if (
+        !appliedOffer ||
+        !appliedOffer.isActive ||
+        now < appliedOffer.startDate ||
+        now > appliedOffer.endDate ||
+        (appliedOffer.usageLimit &&
+          appliedOffer.usageCount >= appliedOffer.usageLimit) ||
+        calculatedSubtotal < (appliedOffer.minPurchase || 0)
+      ) {
+        return NextResponse.json(
+          { message: "This coupon is invalid or unavailable" },
+          { status: 400 },
+        );
+      }
+      if (
+        appliedOffer.applyTo === "Specific Products" &&
+        orderItems.some(
+          (item) =>
+            !appliedOffer.products.some(
+              (productId) => productId.toString() === item.product.toString(),
+            ),
+        )
+      ) {
+        return NextResponse.json(
+          { message: "This coupon does not apply to all cart items" },
+          { status: 400 },
+        );
+      }
+      if (appliedOffer.perCustomerLimit && authenticatedUser._id) {
+        const previousUses = await Order.countDocuments({
+          customerUser: authenticatedUser._id,
+          "financials.promotionCode": normalizedCoupon,
+        });
+        if (previousUses >= appliedOffer.perCustomerLimit)
+          return NextResponse.json(
+            { message: "This coupon has reached its customer usage limit" },
+            { status: 400 },
+          );
+      }
+      discount = Math.min(
+        appliedOffer.discountType === "Percentage"
+          ? (calculatedSubtotal * appliedOffer.discountValue) / 100
+          : appliedOffer.discountValue,
+        appliedOffer.maxDiscountAmount || Number.MAX_SAFE_INTEGER,
+        calculatedSubtotal,
+      );
+    }
+    const taxableSubtotal = Math.max(0, calculatedSubtotal - discount);
+    const calculatedTax = calculateTax(taxableSubtotal, taxSettings);
+
     // Payment calculations
     let paymentStatus = "Pending";
-    const numAmountReceived = Number(amountReceived) || 0;
-    const numGrandTotal = Number(grandTotal) || 0;
+    const numAmountReceived = isCustomer(authenticatedUser)
+      ? 0
+      : Number(amountReceived) || 0;
+    const calculatedDelivery =
+      orderType === "Home Delivery" && calculatedSubtotal < 75 ? 12 : 0;
+    const numTax = calculatedTax.tax;
+    const numDeliveryCharge = isCustomer(authenticatedUser)
+      ? calculatedDelivery
+      : Number(deliveryCharge) || 0;
+    const numGrandTotal =
+      taxableSubtotal +
+      (taxSettings.inclusive ? 0 : numTax) +
+      numDeliveryCharge;
 
-    if (paymentMethod === "Cash" && numAmountReceived >= numGrandTotal) {
+    if (
+      !isCustomer(authenticatedUser) &&
+      paymentMethod === "Cash" &&
+      numAmountReceived >= numGrandTotal
+    ) {
       paymentStatus = "Paid";
-    } else if (paymentMethod === "Cash" && numAmountReceived > 0) {
+    } else if (
+      !isCustomer(authenticatedUser) &&
+      paymentMethod === "Cash" &&
+      numAmountReceived > 0
+    ) {
       paymentStatus = "Partial";
-    } else if (paymentMethod === "Mobile Banking" || paymentMethod === "Card") {
+    } else if (
+      !isCustomer(authenticatedUser) &&
+      (paymentMethod === "Mobile Banking" || paymentMethod === "Card")
+    ) {
       paymentStatus = "Paid";
     }
 
@@ -139,27 +273,85 @@ export async function POST(request) {
     // Safe ObjectId conversion for processedBy
     const processedById = authenticatedUser._id;
 
-    const newOrder = await Order.create({
+    const orderData = {
       customer: {
-        name: customerName,
-        phone: customerPhone || undefined,
+        name: isCustomer(authenticatedUser)
+          ? `${authenticatedUser.firstName} ${authenticatedUser.lastName || ""}`.trim()
+          : customerName,
+        phone: isCustomer(authenticatedUser)
+          ? authenticatedUser.phoneNumber || undefined
+          : customerPhone || undefined,
         address: customerAddress,
       },
       items: orderItems,
       orderType,
       status: "Confirmed",
       financials: {
-        subtotal: Number(subtotal),
-        tax: Number(tax),
-        deliveryCharge: Number(deliveryCharge),
+        subtotal: calculatedSubtotal,
+        discount,
+        tax: numTax,
+        taxRate: calculatedTax.taxRate,
+        taxName: taxSettings.name,
+        promotionCode: appliedOffer?.offerCode,
+        deliveryCharge: numDeliveryCharge,
         grandTotal: numGrandTotal,
       },
       payment: paymentDetails,
-      processedBy: processedById,
-    });
+      processedBy: isCustomer(authenticatedUser) ? undefined : processedById,
+      customerUser: isCustomer(authenticatedUser)
+        ? authenticatedUser._id
+        : undefined,
+    };
 
-    if (bulkStockUpdates.length > 0) {
-      await Product.bulkWrite(bulkStockUpdates);
+    let newOrder;
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const createdOrders = await Order.create([orderData], { session });
+        newOrder = createdOrders[0];
+        for (const item of orderItems) {
+          await decreaseStock({
+            productId: item.product,
+            delta: item.quantity,
+            movementType: "SALE",
+            reason: `Order ${newOrder.orderNumber}`,
+            referenceType: "ORDER",
+            referenceId: newOrder._id,
+            performedBy: authenticatedUser._id,
+            session,
+          });
+        }
+        if (appliedOffer) {
+          const consumed = await Offer.findOneAndUpdate(
+            {
+              _id: appliedOffer._id,
+              $or: [
+                { usageLimit: { $exists: false } },
+                { usageLimit: null },
+                { $expr: { $lt: ["$usageCount", "$usageLimit"] } },
+              ],
+            },
+            { $inc: { usageCount: 1 } },
+            { new: true, session },
+          );
+          if (!consumed) throw new Error("This coupon is no longer available");
+        }
+      });
+    } catch (transactionError) {
+      if (
+        /transaction|replica set|mongos/i.test(transactionError.message || "")
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Order creation requires a MongoDB deployment with transaction support",
+          },
+          { status: 503 },
+        );
+      }
+      throw transactionError;
+    } finally {
+      await session.endSession();
     }
 
     return NextResponse.json(
@@ -188,8 +380,15 @@ export async function POST(request) {
       );
     }
 
+    if (/insufficient stock/i.test(error.message || "")) {
+      return NextResponse.json(
+        { message: "One or more products no longer have enough stock" },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
-      { message: error.message || "Internal server error" },
+      { success: false, message: "Unable to create order" },
       { status: 500 },
     );
   }

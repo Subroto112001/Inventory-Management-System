@@ -15,7 +15,7 @@ import {
   MdManageAccounts,
 } from "react-icons/md";
 
-const Header = () => {
+const Header = ({ settings }) => {
   const router = useRouter();
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -55,27 +55,27 @@ const Header = () => {
   const moreOptions = [
     {
       label: "Add Brand",
-      href: "/brands/createbrand",
+      href: "/dash/brands/createbrand",
       icon: <MdBusiness />,
     },
     {
       label: "Add New Product",
-      href: "/addnewproduct",
+      href: "/dash/addnewproduct",
       icon: <MdInventory2 />,
     },
     {
       label: "Add New Customer",
-      href: "/customer",
+      href: "/dash/customer",
       icon: <MdPeople />,
     },
     {
       label: "Add an Offer",
-      href: "/offers",
+      href: "/dash/offers",
       icon: <MdLocalOffer />,
     },
     {
       label: "User Management",
-      href: "/user",
+      href: "/dash/user",
       icon: <MdManageAccounts />,
     },
   ];
@@ -85,12 +85,20 @@ const Header = () => {
       <div className="flex justify-between items-center">
         {/* Logo / Title */}
         <div className="flex items-center gap-2">
-          <span className="text-[24px] text-white" aria-hidden="true">
-            <RiShoppingBag4Line />
-          </span>
+          {settings.logo?.url ? (
+            <img
+              src={settings.logo.url}
+              alt={settings.storeName}
+              className="h-8 w-8 object-contain"
+            />
+          ) : (
+            <span className="text-[24px] text-white" aria-hidden="true">
+              <RiShoppingBag4Line />
+            </span>
+          )}
 
           <h1 className="text-white font-semibold text-lg m-0">
-            Business Management System
+            {settings.storeName}
           </h1>
         </div>
 
@@ -101,9 +109,9 @@ const Header = () => {
         >
           {/* Create New Order */}
           <Link
-            href="/create_neworder"
+            href="/dash/create_neworder"
             aria-label="Create New Order"
-            className="bg-white px-3 py-2 text-[16px] text-[#611F69] font-medium rounded-md cursor-pointer hover:bg-gray-100 transition-all"
+            className="bg-white px-3 py-2 text-[16px] text-[var(--theme-primary)] font-medium rounded-md cursor-pointer hover:bg-gray-100 transition-all"
           >
             Create New Order
           </Link>
@@ -160,7 +168,7 @@ const Header = () => {
 
           {/* Profile */}
           <Link
-            href="/profile"
+            href="/dash/profile"
             aria-label="User Profile"
             className="text-[24px] text-white cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#611F69]"
           >

@@ -1,10 +1,25 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 const { Schema, Types } = mongoose;
 
+const addressSchema = new Schema(
+  {
+    label: { type: String, trim: true, maxlength: 30, default: "Home" },
+    fullName: { type: String, trim: true, required: true, maxlength: 100 },
+    phone: { type: String, trim: true, required: true, maxlength: 30 },
+    address: { type: String, trim: true, required: true, maxlength: 250 },
+    city: { type: String, trim: true, required: true, maxlength: 80 },
+    area: { type: String, trim: true, maxlength: 80 },
+    postalCode: { type: String, trim: true, required: true, maxlength: 20 },
+    country: { type: String, trim: true, required: true, maxlength: 80 },
+    isDefault: { type: Boolean, default: false },
+  },
+  { timestamps: true },
+);
+
 const SYSTEM_ROLES = [
+  "Customer",
   "System Admin",
   "Admin",
   "Warehouse Manager",
@@ -17,7 +32,14 @@ const SYSTEM_ROLES = [
   "Forklift Operator",
 ];
 
-const DEPARTMENTS = ["IT", "Logistics", "Operations", "Finance", "HR"];
+const DEPARTMENTS = [
+  "Customer",
+  "IT",
+  "Logistics",
+  "Operations",
+  "Finance",
+  "HR",
+];
 
 const ACCOUNT_STATUSES = ["Active", "Offline", "Suspended"];
 
@@ -131,6 +153,7 @@ const userSchema = new Schema(
     },
     district: { type: String, trim: true },
     country: { type: String, default: "Bangladesh" },
+    addresses: { type: [addressSchema], default: [] },
 
     // --- System Status ---
     // UI-এর "Account Status" dropdown এর সাথে মিল রেখে isActive/isBlocked
@@ -157,6 +180,7 @@ const userSchema = new Schema(
     tokenFamily: { type: String },
     // Session tracking for absolute timeout
     sessionCreatedAt: { type: Date },
+    authVersion: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
 );
@@ -173,28 +197,6 @@ userSchema.pre("save", async function () {
 
 userSchema.methods.compareHashPassword = async function (humanPass) {
   return await bcrypt.compare(humanPass, this.password);
-};
-
-userSchema.methods.generateAccessToken = function () {
-  return jwt.sign(
-    {
-      userid: this._id,
-      email: this.email,
-      role: this.role,
-      department: this.department,
-      warehouseId: this.assignedWarehouse,
-    },
-    process.env.ACCESTOKEN_SECRET.trim(),
-    { expiresIn: process.env.ACCESTOKEN_EXPIRE.trim() },
-  );
-};
-
-userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    { userid: this._id },
-    process.env.REFRESHTOKEN_SECRET.trim(),
-    { expiresIn: process.env.REFRESHTOKEN_EXPIRE.trim() },
-  );
 };
 
 // Export enums so controllers/frontend validation can reuse the same source of truth

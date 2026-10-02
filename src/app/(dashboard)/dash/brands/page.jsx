@@ -1270,7 +1270,7 @@ const Page = () => {
                             </p>
                             {!searchTerm && statusFilter === "All" && (
                               <Link
-                                href="/brand/add"
+                                href="/dash/brands/createbrand"
                                 className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
                               >
                                 <MdAdd size={17} />

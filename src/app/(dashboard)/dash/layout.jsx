@@ -9,8 +9,12 @@ export const metadata = {
 };
 
 export default async function DashboardLayout({ children }) {
-  if (!(await getAuthenticatedUser(await cookies()))) {
+  const user = await getAuthenticatedUser(await cookies());
+  if (!user) {
     redirect("/login");
+  }
+  if (user.role === "Customer") {
+    redirect("/");
   }
 
   return <MainLayout>{children}</MainLayout>;

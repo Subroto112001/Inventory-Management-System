@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Customer from "@/lib/models/Customer";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -9,17 +9,35 @@ export const revalidate = 0;
 // GET: Fetch all customers
 export async function GET(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.CUSTOMERS_READ);
+    if (!access.ok) return access.response;
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(Number(searchParams.get("page")) || 1, 1);
+    const limit = Math.min(
+      Math.max(Number(searchParams.get("limit")) || 25, 1),
+      100,
+    );
     await connectMongoDB();
 
-    const customers = await Customer.find().sort({ createdAt: -1 }).lean();
+    const [customers, total] = await Promise.all([
+      Customer.find()
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Customer.countDocuments(),
+    ]);
 
     return NextResponse.json(
       {
         success: true,
         customers,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
       { status: 200 },
     );
@@ -39,9 +57,11 @@ export async function GET(request) {
 // POST: Create customer
 export async function POST(request) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.CUSTOMERS_CREATE,
+    );
+    if (!access.ok) return access.response;
     const body = await request.json();
 
     const { fullName, email, phoneNumber, address, notes } = body;

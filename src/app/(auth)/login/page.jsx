@@ -44,7 +44,7 @@ export default function LoginPage() {
 
       // Redirect user to the dashboard after a brief delay
       setTimeout(() => {
-        router.push("/");
+        router.push(data.user?.role === "Customer" ? "/" : "/dash");
         router.refresh();
       }, 1500);
     } catch (err) {

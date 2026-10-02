@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
 // Adjust the import paths based on your project's directory structure
 import Warehouse from "@/lib/models/Warehouse";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import connectMongoDB from "@/lib/databse/mongodb";
 
 export async function GET(request) {
   try {
-    // Fetch all warehouses, sorted by newest first
-    // Populating the manager field allows you to display manager names on the frontend later
-    const warehouses = await Warehouse.find()
-      .populate("createdBy")
-      .sort({ createdAt: -1 })
-      .lean(); 
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.WAREHOUSES_READ,
+    );
+    if (!access.ok) return access.response;
 
+    await connectMongoDB();
+    const warehouses = await Warehouse.find()
+      .populate("createdBy", "firstName lastName email role")
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json(
       {
@@ -36,15 +40,12 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // await connectDB();
-    const user = await requireAuth(request);
-console.log(user);
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized access. Please log in." },
-        { status: 401 },
-      );
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.WAREHOUSES_MANAGE,
+    );
+    if (!access.ok) return access.response;
+    const user = access.user;
 
     await connectMongoDB();
 

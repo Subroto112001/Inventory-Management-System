@@ -37,8 +37,12 @@ const MENU_GROUPS = [
   {
     title: "Overview",
     items: [
-      { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/" },
-      { name: "Reports", icon: <HiOutlineDocumentReport />, link: "/report" },
+      { name: "Dashboard", icon: <LuLayoutDashboard />, link: "/dash" },
+      {
+        name: "Reports",
+        icon: <HiOutlineDocumentReport />,
+        link: "/dash/report",
+      },
     ],
   },
   {
@@ -47,32 +51,38 @@ const MENU_GROUPS = [
       {
         name: "Products",
         icon: <MdOutlineProductionQuantityLimits />,
-        link: "/products",
+        link: "/dash/products",
       },
-      { name: "Stock", icon: <CgShutterstock />, link: "/stock" },
-      { name: "Warehouse", icon: <PiWarehouse />, link: "/warehouse" },
-      { name: "Brands", icon: <TbBrandBumble />, link: "/brands" },
-      { name: "Category", icon: <BiCategory />, link: "/category" },
+      { name: "Stock", icon: <CgShutterstock />, link: "/dash/stock" },
+      { name: "Warehouse", icon: <PiWarehouse />, link: "/dash/warehouse" },
+      { name: "Brands", icon: <TbBrandBumble />, link: "/dash/brands" },
+      { name: "Category", icon: <BiCategory />, link: "/dash/category" },
     ],
   },
   {
     title: "Sales and purchasing",
     items: [
-      { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/order" },
-      { name: "Sales", icon: <VscGraph />, link: "/create_neworder" },
-      { name: "Procurement (PO)", icon: <LuCar />, link: "/procurement" },
-      { name: "Promotions", icon: <BiSolidOffer />, link: "/promotions" },
-      { name: "Offers", icon: <MdLocalOffer />, link: "/offers" },
+      { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/dash/order" },
+      { name: "Sales", icon: <VscGraph />, link: "/dash/create_neworder" },
+      { name: "Procurement (PO)", icon: <LuCar />, link: "/dash/procurement" },
+      { name: "Promotions", icon: <BiSolidOffer />, link: "/dash/promotions" },
+      { name: "Offers", icon: <MdLocalOffer />, link: "/dash/offers" },
     ],
   },
   {
     title: "People",
     items: [
-      { name: "Customers", icon: <FaClipboardUser />, link: "/customer" },
+      { name: "Customers", icon: <FaClipboardUser />, link: "/dash/customer" },
       {
         name: "Users",
         icon: <FaRegUser />,
-        link: "/user",
+        link: "/dash/user",
+        allowedRoles: ["Admin", "System Admin"],
+      },
+      {
+        name: "Brand settings",
+        icon: <LuBuilding2 />,
+        link: "/dash/settings",
         allowedRoles: ["Admin", "System Admin"],
       },
     ],
@@ -90,7 +100,7 @@ const MENU_GROUPS = [
  *   screens. Set it to false if your header has its own button, then open the
  *   drawer from there with: window.dispatchEvent(new Event("toggle-sidebar"))
  */
-const Sidebar = ({ showMobileButton = true }) => {
+const Sidebar = ({ showMobileButton = true, settings }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { mydata, loading } = useCurrentUser();
@@ -119,16 +129,20 @@ const Sidebar = ({ showMobileButton = true }) => {
 
   // Restore the saved collapsed state after mount (avoids hydration mismatch)
   useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
-    } catch {
-      /* storage unavailable, keep default */
-    }
+    const timer = setTimeout(() => {
+      try {
+        setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
+      } catch {
+        /* storage unavailable, keep default */
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Close the drawer after navigating
   useEffect(() => {
-    setMobileOpen(false);
+    const timer = setTimeout(() => setMobileOpen(false), 0);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   // Lock page scroll while the drawer is open, close it with Escape
@@ -186,6 +200,7 @@ const Sidebar = ({ showMobileButton = true }) => {
 
   const role = mydata?.role;
   const displayName = mydata?.firstName || mydata?.role || role || "Account";
+  const storeName = settings?.storeName || "Inventory System";
 
   /**
    * Filter by role first, then by the search text.
@@ -241,7 +256,7 @@ const Sidebar = ({ showMobileButton = true }) => {
           onClick={() => setMobileOpen(true)}
           aria-label="Open navigation menu"
           aria-expanded={mobileOpen}
-          className="fixed left-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-xl bg-[#611F69] text-xl text-white shadow-lg shadow-[#611F69]/30 transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/50 focus-visible:ring-offset-2 lg:hidden print:hidden"
+          className="fixed left-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--theme-primary)] text-xl text-[var(--theme-primary-text)] shadow-lg shadow-black/10 transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)]/50 focus-visible:ring-offset-2 lg:hidden print:hidden"
         >
           <LuMenu />
         </button>
@@ -258,7 +273,7 @@ const Sidebar = ({ showMobileButton = true }) => {
 
       <nav
         aria-label="Sidebar Navigation"
-        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] border-r border-gray-100 bg-white shadow-2xl transition-[transform,width,visibility] duration-300 ease-out motion-reduce:transition-none lg:static lg:z-auto lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:visible print:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] border-r border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-2xl transition-[transform,width,visibility] duration-300 ease-out motion-reduce:transition-none lg:static lg:z-auto lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:visible print:hidden ${
           mobileOpen ? "visible translate-x-0" : "invisible -translate-x-full"
         } ${rail ? "lg:w-[76px]" : "lg:w-64"}`}
       >
@@ -268,7 +283,7 @@ const Sidebar = ({ showMobileButton = true }) => {
           onClick={toggleCollapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
-          className="absolute -right-3 top-8 z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-[#611F69] hover:bg-[#611F69] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/40 lg:flex"
+          className="absolute -right-3 top-8 z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-[var(--theme-border)] bg-[var(--theme-surface)] text-[var(--theme-muted)] shadow-sm transition-colors hover:border-[var(--theme-primary)] hover:bg-[var(--theme-primary)] hover:text-[var(--theme-primary-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)]/40 lg:flex"
         >
           <LuChevronLeft
             className={`text-sm transition-transform duration-300 motion-reduce:transition-none ${
@@ -280,21 +295,31 @@ const Sidebar = ({ showMobileButton = true }) => {
         <div className="flex h-full flex-col p-3">
           {/* Brand */}
           <div
-            className={`flex items-center gap-3 rounded-xl bg-[#611F69] p-3 text-white ${
+            className={`flex items-center gap-3 rounded-xl bg-[var(--theme-primary)] p-3 text-[var(--theme-primary-text)] ${
               rail ? "justify-center" : ""
             }`}
           >
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-xl text-[#611F69]"
-              aria-hidden="true"
-            >
-              <LuBuilding2 />
-            </span>
+            {settings?.logo?.url ? (
+              <img
+                src={settings.logo.url}
+                alt={storeName}
+                className="h-10 w-10 shrink-0 rounded-lg bg-[var(--theme-primary-text)] object-contain"
+              />
+            ) : (
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--theme-primary-text)] text-xl text-[var(--theme-primary)]"
+                aria-hidden="true"
+              >
+                <LuBuilding2 />
+              </span>
+            )}
             <div className={`min-w-0 ${labelClass}`}>
               <p className="truncate text-[17px] font-medium leading-tight">
-                Skyirpto Product
+                {storeName}
               </p>
-              <p className="text-[13px] text-white/70">Operation</p>
+              <p className="text-[13px] text-[var(--theme-primary-text)]/70">
+                Operations
+              </p>
             </div>
             <button
               type="button"
@@ -315,14 +340,14 @@ const Sidebar = ({ showMobileButton = true }) => {
                 onMouseEnter={(e) => showTip(e, "Search menu")}
                 onMouseLeave={() => setTip(null)}
                 aria-label="Search menu"
-                className="flex w-full items-center justify-center rounded-xl p-2.5 text-xl text-gray-500 transition-colors hover:bg-[#611F69]/10 hover:text-[#611F69] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/40"
+                className="flex w-full items-center justify-center rounded-xl p-2.5 text-xl text-[var(--theme-muted)] transition-colors hover:bg-[var(--theme-primary)]/10 hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)]/40"
               >
                 <LuSearch />
               </button>
             ) : (
-              <label className="group flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 transition-colors focus-within:border-[#611F69] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#611F69]/15">
+              <label className="group flex items-center gap-2 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-background)] px-3 py-2 transition-colors focus-within:border-[var(--theme-primary)] focus-within:bg-[var(--theme-surface)] focus-within:ring-2 focus-within:ring-[var(--theme-primary)]/15">
                 <LuSearch
-                  className="shrink-0 text-gray-400 transition-colors group-focus-within:text-[#611F69]"
+                  className="shrink-0 text-[var(--theme-muted)] transition-colors group-focus-within:text-[var(--theme-primary)]"
                   aria-hidden="true"
                 />
                 <input
@@ -333,9 +358,9 @@ const Sidebar = ({ showMobileButton = true }) => {
                   onKeyDown={onSearchKeyDown}
                   placeholder="Search menu"
                   aria-label="Search menu"
-                  className="min-w-0 flex-1 bg-transparent text-base text-gray-700 outline-none placeholder:text-gray-400 lg:text-sm"
+                  className="min-w-0 flex-1 bg-transparent text-base text-[var(--theme-text)] outline-none placeholder:text-[var(--theme-muted)] lg:text-sm"
                 />
-                <kbd className="hidden rounded border border-gray-200 bg-white px-1.5 text-[11px] text-gray-400 lg:block">
+                <kbd className="hidden rounded border border-[var(--theme-border)] bg-[var(--theme-surface)] px-1.5 text-[11px] text-[var(--theme-muted)] lg:block">
                   Ctrl K
                 </kbd>
               </label>
@@ -408,17 +433,19 @@ const Sidebar = ({ showMobileButton = true }) => {
                             onMouseLeave={() => setTip(null)}
                             onFocus={(e) => showTip(e, item.name)}
                             onBlur={() => setTip(null)}
-                            className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#611F69]/40 motion-reduce:transition-none lg:py-2.5 ${
+                            className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)]/40 motion-reduce:transition-none lg:py-2.5 ${
                               rail ? "justify-center" : ""
                             } ${
                               active
-                                ? "bg-[#611F69] font-medium text-white shadow-md shadow-[#611F69]/25"
-                                : "text-gray-600 hover:bg-[#611F69]/10 hover:text-[#611F69]"
+                                ? "bg-[var(--theme-primary)] font-medium text-[var(--theme-primary-text)] shadow-md shadow-black/10"
+                                : "text-[var(--theme-muted)] hover:bg-[var(--theme-primary)]/10 hover:text-[var(--theme-primary)]"
                             }`}
                           >
                             <span
                               className={`shrink-0 text-xl transition-transform duration-200 group-hover:scale-110 motion-reduce:transition-none ${
-                                active ? "text-white" : "text-[#611F69]"
+                                active
+                                  ? "text-[var(--theme-primary-text)]"
+                                  : "text-[var(--theme-primary)]"
                               }`}
                               aria-hidden="true"
                             >
@@ -443,22 +470,24 @@ const Sidebar = ({ showMobileButton = true }) => {
 
           {/* Signed-in user */}
           <div
-            className={`mt-3 flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-2.5 ${
+            className={`mt-3 flex items-center gap-3 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-background)] p-2.5 ${
               rail ? "justify-center" : ""
             }`}
           >
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#611F69]/10 text-sm font-medium text-[#611F69]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--theme-primary)]/10 text-sm font-medium text-[var(--theme-primary)]"
               aria-hidden="true"
             >
               {loading ? "" : displayName.charAt(0).toUpperCase()}
             </span>
             <div className={`min-w-0 ${labelClass}`}>
-              <p className="truncate text-sm font-medium text-gray-800">
+              <p className="truncate text-sm font-medium text-[var(--theme-text)]">
                 {loading ? "Loading..." : displayName}
               </p>
               {role && mydata?.name && (
-                <p className="truncate text-xs text-gray-500">{role}</p>
+                <p className="truncate text-xs text-[var(--theme-muted)]">
+                  {role}
+                </p>
               )}
             </div>
           </div>

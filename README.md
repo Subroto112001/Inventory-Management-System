@@ -41,7 +41,7 @@ Find these values in the Cloudinary dashboard under **Product environment settin
 
 ## Invitation Email Setup
 
-Public registration is disabled. A System Admin creates each user from the User Management page, and the user receives a six digit code by email before setting a password.
+Customer registration is available from the storefront signup page. Staff accounts are created by a System Admin from the User Management page, and invited staff receive a six digit code by email before setting a password.
 
 Configure Nodemailer with an SMTP account in `.env.local`:
 
@@ -58,6 +58,22 @@ APP_URL=http://localhost:3000
 `SMTP_SECURE=true` is normally used with port `465`. Keep SMTP credentials server-side and never expose them as `NEXT_PUBLIC_*` variables.
 
 For Gmail, `SMTP_HOST`, `SMTP_PORT`, and `SMTP_SECURE` may be omitted; the application defaults to `smtp.gmail.com`, port `465`, with TLS enabled. `SMTP_PASS` must be a Gmail App Password, not the normal account password.
+
+## Inventory and Customer Workflow Notes
+
+Phase 4 inventory uses product-level stock as the authoritative balance and records changes in the stock movement ledger. Warehouse-specific stock is not yet implemented. Authorized inventory tests, concurrent inventory tests, and dedicated database-backed integration tests were not available in the development environment.
+
+Phase 5 provides authenticated customer profiles, embedded address books, real customer order history, ownership-safe order details, cancellation with centralized stock restoration, and permission-protected staff status transitions. Payment gateway, refunds, suppliers, procurement, and warehouse transfers remain outside this phase.
+
+Phase 6 adds supplier and purchase-order APIs, transactional purchase receiving, persisted VAT settings, historical invoices, return processing, attendance persistence, coupon validation, and server-side reports. Purchase receiving and completed returns require MongoDB transaction support. Authenticated database-backed workflow tests were not available in the development environment, and the existing promotions campaign screen remains presentation-only; offer/coupon rules are persisted and validated server-side.
+
+## Production Hardening Notes
+
+Phase 8 hardens active JWT authentication with HTTP-only, secure-in-production, SameSite-strict cookies, database account-status checks, auth-version revocation after password/role/status changes, bounded login throttling, safe client error messages, upload MIME/size validation, theme URL/color validation, collection pagination limits, and audit records for centralized stock changes and store-settings updates.
+
+Production deployments must provide `MONGODB_URI`, a 32-character-or-longer `JWT_SECRET`, Cloudinary credentials when uploads are enabled, and server-side SMTP credentials when invitations are enabled. Login throttling is process-local and should be replaced with a shared store such as Redis before horizontally scaled deployment. MongoDB transactions require a replica set or MongoDB-compatible transaction deployment.
+
+Payment processing is not production-ready because no payment gateway/webhook is connected. Database backups, restore drills, secret rotation, monitoring, and alerting remain deployment responsibilities. Authenticated integration, concurrency, and ownership tests were not executed because test credentials and isolated test data were unavailable. Full ESLint currently reports 34 existing errors and 45 warnings in unrelated legacy UI/provider files; targeted Phase 8 files pass.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 

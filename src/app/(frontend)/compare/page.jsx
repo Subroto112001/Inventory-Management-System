@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LuSearch,
   LuUser,
@@ -182,17 +182,51 @@ function EmptyCompare({ onBrowse }) {
 ========================================================= */
 
 export default function ComparePage() {
-  const [compareIds, setCompareIds] = useState(INITIAL_COMPARE_IDS);
+  void ALL_PRODUCTS;
+  void INITIAL_COMPARE_IDS;
+  const [catalog, setCatalog] = useState([]);
+  const [compareIds, setCompareIds] = useState([]);
   const [toast, setToast] = useState("");
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      const response = await fetch("/api/product?limit=100", {
+        cache: "no-store",
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setCatalog(
+          (data.products || []).map((product) => ({
+            id: product.id,
+            name: product.productName,
+            category: product.category || "",
+            price: product.price,
+            oldPrice: null,
+            rating: 0,
+            reviews: 0,
+            badge: product.inStock ? "In stock" : "Out of stock",
+            image: product.image || "",
+            material: product.description || "—",
+            dimensions: "—",
+            weight: product.unit || "—",
+            warranty: "—",
+            inStock: product.inStock,
+          })),
+        );
+      }
+    };
+    const timer = setTimeout(loadProducts, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   const products = useMemo(
-    () => ALL_PRODUCTS.filter((p) => compareIds.includes(p.id)),
-    [compareIds],
+    () => catalog.filter((p) => compareIds.includes(p.id)),
+    [catalog, compareIds],
   );
 
   const availableToAdd = useMemo(
-    () => ALL_PRODUCTS.filter((p) => !compareIds.includes(p.id)),
-    [compareIds],
+    () => catalog.filter((p) => !compareIds.includes(p.id)),
+    [catalog, compareIds],
   );
 
   const showToast = (msg) => {

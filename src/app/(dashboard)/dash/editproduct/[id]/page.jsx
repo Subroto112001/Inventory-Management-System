@@ -291,7 +291,7 @@ const EditProductPage = () => {
       }
 
       alert("Product updated successfully!");
-      router.push("/products");
+      router.push("/dash/products");
     } catch (err) {
       console.error("Update Product Error:", err);
       setPublishError("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
@@ -317,7 +317,7 @@ const EditProductPage = () => {
           {loadError}
         </div>
         <Link
-          href="/products"
+          href="/dash/products"
           className="inline-block mt-4 text-[#611F69] font-medium"
         >
           ← Back To Products
@@ -336,7 +336,7 @@ const EditProductPage = () => {
 
       <div>
         <Link
-          href="/products"
+          href="/dash/products"
           className="inline-flex gap-2 items-center text-gray-700 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
           aria-label="Go back to products page"
         >

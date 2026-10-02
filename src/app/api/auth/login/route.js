@@ -3,12 +3,31 @@ import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs"; // Used to compare hashed passwords
 import { signAccessToken } from "@/lib/auth";
+import {
+  checkRateLimit,
+  clearRateLimit,
+  recordRateLimitFailure,
+} from "@/lib/rateLimit";
 
 export async function POST(request) {
   try {
     // 1. Parse request body
     const body = await request.json();
     const { email, password, rememberMe = false } = body;
+    const normalizedEmail = String(email || "")
+      .trim()
+      .toLowerCase();
+    const clientKey = `${request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"}:${normalizedEmail}`;
+    const rate = checkRateLimit(clientKey);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Too many login attempts. Try again later.",
+        },
+        { status: 429, headers: { "Retry-After": String(rate.retryAfter) } },
+      );
+    }
 
     // 2. Validate fields
     if (!email || !password) {
@@ -25,13 +44,12 @@ export async function POST(request) {
     await connectMongoDB();
 
     // 4. Find user
-    const normalizedEmail = email.trim().toLowerCase();
-
     const user = await User.findOne({
       email: normalizedEmail,
     }).select("+password");
 
     if (!user) {
+      recordRateLimitFailure(clientKey);
       return NextResponse.json(
         {
           success: false,
@@ -45,6 +63,7 @@ export async function POST(request) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      recordRateLimitFailure(clientKey);
       return NextResponse.json(
         {
           success: false,
@@ -67,6 +86,7 @@ export async function POST(request) {
 
     // 7. Create token
     const token = signAccessToken(user, rememberMe ? "30d" : "1d");
+    clearRateLimit(clientKey);
 
     user.lastLogin = new Date();
 
@@ -111,10 +131,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          process.env.NODE_ENV === "development"
-            ? error?.message || "Unknown error"
-            : "Internal server error",
+        message: "Unable to complete login",
       },
       { status: 500 },
     );

@@ -421,7 +421,7 @@ const Page = () => {
             </div>
 
             <Link
-              href="/create_category"
+              href="/dash/category/create"
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#611F69] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#501854] active:scale-[0.98] sm:w-auto"
             >
               <MdAdd size={20} />
@@ -592,7 +592,7 @@ const Page = () => {
                 </span>
 
                 <Link
-                  href="/category/create"
+                  href="/dash/category/create"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[#611F69] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#501854]"
                 >
                   <MdAdd size={17} />
@@ -854,7 +854,7 @@ const Page = () => {
 
                           {!searchTerm && statusFilter === "All" && (
                             <Link
-                              href="/create_category"
+                              href="/dash/category/create"
                               className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#611F69] hover:underline"
                             >
                               Create your first category

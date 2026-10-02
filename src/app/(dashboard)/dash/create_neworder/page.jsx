@@ -167,7 +167,7 @@ export default function CreateOrderPage() {
   const fetchProducts = async () => {
     setLoadingProducts(true);
     try {
-      const res = await fetch("/api/products", { cache: "no-store" });
+      const res = await fetch("/api/product", { cache: "no-store" });
       const data = await res?.json();
 
       if (res.ok) {
@@ -185,8 +185,6 @@ export default function CreateOrderPage() {
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  console.log(products);
 
   // Order & Delivery States
   const [orderType, setOrderType] = useState("Take Away"); // "Take Away" or "Home Delivery"
@@ -384,7 +382,7 @@ export default function CreateOrderPage() {
 
       <header className="mb-6 print:hidden">
         <Link
-          href="/products"
+          href="/dash/products"
           className="inline-flex gap-2 items-center text-gray-800 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
           aria-label="Go back to products page"
         >

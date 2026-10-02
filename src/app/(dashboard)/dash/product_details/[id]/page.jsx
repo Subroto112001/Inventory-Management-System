@@ -10,7 +10,7 @@ import {
   MdInventory2,
   MdLocalOffer,
 } from "react-icons/md";
-import placeholder from "../../../../assets/image/Camera.png";
+import placeholder from "../../../../../assets/image/Camera.png";
 
 const ProductDetailsPage = () => {
   const params = useParams();
@@ -30,7 +30,6 @@ const ProductDetailsPage = () => {
       });
 
       const data = await res.json();
-      console.log(data);
       if (!res.ok) {
         throw new Error(data.message || "Failed to load product");
       }
@@ -73,7 +72,7 @@ const ProductDetailsPage = () => {
           <p className="text-red-500">{error || "Product not found."}</p>
 
           <Link
-            href="/product"
+            href="/dash/products"
             className="bg-[#611F69] text-white py-2 px-4 rounded-md border border-[#611F69] hover:bg-transparent hover:text-[#611F69] transition-all"
           >
             Back to Products

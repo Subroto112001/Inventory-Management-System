@@ -54,7 +54,7 @@ const ProductCard = ({
           <div className="flex flex-col gap-2 border-b border-gray-100 pb-2">
             <p className="text-gray-400 text-[14px]">{SKU}</p>
             <Link
-              href={`/product_details/${id}`}
+              href={`/dash/product_details/${id}`}
               className="text-[20px] font-bold truncate text-[#611F69] cursor-pointer hover:underline"
             >
               {name}
@@ -79,7 +79,7 @@ const ProductCard = ({
                 aria-orientation="vertical"
               >
                 <Link
-                  href={`/editproduct/${id}`}
+                  href={`/dash/editproduct/${id}`}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 hover:text-[#611F69] focus:outline-none focus:bg-gray-100 transition-colors"
                   role="menuitem"
                   aria-label={`Edit ${name}`}

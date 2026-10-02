@@ -376,6 +376,30 @@ const STATUS_STYLES = {
   },
 };
 
+const mapOrderStatus = (status) =>
+  status === "Pending" || status === "Confirmed" ? "Processing" : status;
+
+const mapApiOrder = (order) => ({
+  dbId: order._id,
+  id: order.orderNumber,
+  date: new Date(order.createdAt).toLocaleDateString(),
+  status: mapOrderStatus(order.status),
+  payment: order.payment?.method || "Pending",
+  paymentStatus: order.payment?.paymentStatus || "Pending",
+  shipping: Number(order.financials?.deliveryCharge || 0),
+  discount: 0,
+  address: order.customer?.address || "No delivery address provided",
+  tracking: null,
+  estimated: order.status === "Delivered" ? "Delivered" : "To be confirmed",
+  items: (order.items || []).map((item) => ({
+    name: item.name,
+    category: "",
+    price: Number(item.price || 0),
+    quantity: Number(item.quantity || 0),
+    image: "",
+  })),
+});
+
 const TRACK_STEPS = ["Placed", "Processing", "Shipped", "Delivered"];
 
 const PERKS = [
@@ -576,7 +600,7 @@ function EmptyState({ icon: Icon, title, text, action, onAction }) {
    ORDER CARD
 ========================================================= */
 
-function OrderCard({ order, onBuyAgain }) {
+function OrderCard({ order, onBuyAgain, onCancel }) {
   const [open, setOpen] = useState(false);
 
   const total = orderTotal(order);
@@ -688,6 +712,7 @@ function OrderCard({ order, onBuyAgain }) {
           {order.status === "Processing" && (
             <button
               type="button"
+              onClick={() => onCancel(order)}
               className="text-sm px-4 py-2 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#B65C38] hover:text-[#B65C38] transition-colors"
             >
               Cancel order
@@ -988,7 +1013,7 @@ function DashboardView({
             </div>
           ) : (
             <p className="text-sm text-[#8A8378]">
-              You haven't saved an address yet.
+              You haven&apos;t saved an address yet.
             </p>
           )}
         </Panel>
@@ -1072,7 +1097,7 @@ function DashboardView({
    VIEW: ORDERS
 ========================================================= */
 
-function OrdersView({ orders, onBuyAgain }) {
+function OrdersView({ orders, onBuyAgain, onCancel }) {
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Newest first");
@@ -1227,7 +1252,12 @@ function OrdersView({ orders, onBuyAgain }) {
       {visible.length > 0 ? (
         <div className="space-y-5">
           {visible.map((order) => (
-            <OrderCard key={order.id} order={order} onBuyAgain={onBuyAgain} />
+            <OrderCard
+              key={order.id}
+              order={order}
+              onBuyAgain={onBuyAgain}
+              onCancel={onCancel}
+            />
           ))}
         </div>
       ) : (
@@ -1396,6 +1426,7 @@ function WishlistView({ wishlist, onRemove, onAddToCart, onAddAll, goShop }) {
 function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
   const [editing, setEditing] = useState(null); // null | "new" | id
   const [form, setForm] = useState(EMPTY_ADDRESS);
+  const [error, setError] = useState("");
 
   const update = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -1415,10 +1446,15 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
     setForm(EMPTY_ADDRESS);
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    onSave(editing, form);
-    cancel();
+    try {
+      await onSave(editing, form);
+      setError("");
+      cancel();
+    } catch (saveError) {
+      setError(saveError.message || "Unable to save address");
+    }
   };
 
   return (
@@ -1439,6 +1475,11 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
       {editing !== null && (
         <form onSubmit={submit}>
           <Panel title={editing === "new" ? "New address" : "Edit address"}>
+            {error && (
+              <p className="mb-4 text-sm text-[#B65C38]" role="alert">
+                {error}
+              </p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-[#211F1D] mb-1.5">
@@ -1612,7 +1653,16 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
                 {!address.isDefault && (
                   <button
                     type="button"
-                    onClick={() => onSetDefault(address.id)}
+                    onClick={async () => {
+                      try {
+                        await onSetDefault(address.id);
+                        setError("");
+                      } catch (setDefaultError) {
+                        setError(
+                          setDefaultError.message || "Unable to update address",
+                        );
+                      }
+                    }}
                     className="text-sm px-3 py-1.5 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
                   >
                     Set as default
@@ -1621,7 +1671,16 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
 
                 <button
                   type="button"
-                  onClick={() => onDelete(address.id)}
+                  onClick={async () => {
+                    try {
+                      await onDelete(address.id);
+                      setError("");
+                    } catch (deleteError) {
+                      setError(
+                        deleteError.message || "Unable to delete address",
+                      );
+                    }
+                  }}
                   className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-sm text-[#B65C38] hover:bg-[#F3DED5] transition-colors ml-auto"
                 >
                   <LuTrash2 size={14} />
@@ -1654,10 +1713,14 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
   });
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const saveDetails = (e) => {
+  const saveDetails = async (e) => {
     e.preventDefault();
-    onSaveProfile(details);
-    onToast("Account details saved");
+    try {
+      await onSaveProfile(details);
+      onToast("Account details saved");
+    } catch (error) {
+      onToast(error.message || "Unable to update account");
+    }
   };
 
   const savePassword = (e) => {
@@ -1846,7 +1909,7 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
         ) : (
           <div className="bg-[#F3DED5] rounded-sm p-4">
             <p className="text-sm text-[#211F1D] mb-4">
-              Are you sure? This can't be undone.
+              Are you sure? This can&apos;t be undone.
             </p>
 
             <div className="flex gap-3">
@@ -1888,12 +1951,15 @@ function AccountPageContent() {
   const view = ACCOUNT_VIEWS.has(requestedView) ? requestedView : "orders";
   const [cartCount, setCartCount] = useState(3);
   const [wishlist, setWishlist] = useState(INITIAL_WISHLIST);
-  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES);
+  const [addresses, setAddresses] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loadingAccount, setLoadingAccount] = useState(true);
+  const [accountError, setAccountError] = useState("");
   const [profile, setProfile] = useState({
-    firstName: "Subroto",
-    lastName: "Barman",
-    email: "you@example.com",
-    phone: "+880 1700-000000",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
   });
   const [toast, setToast] = useState("");
 
@@ -1915,6 +1981,58 @@ function AccountPageContent() {
     const id = setTimeout(() => setToast(""), 2400);
     return () => clearTimeout(id);
   }, [toast]);
+
+  const loadAccount = async () => {
+    setLoadingAccount(true);
+    setAccountError("");
+    try {
+      const [accountResponse, ordersResponse] = await Promise.all([
+        fetch("/api/account", { cache: "no-store" }),
+        fetch("/api/orders", { cache: "no-store" }),
+      ]);
+      const accountData = await accountResponse.json();
+      const ordersData = await ordersResponse.json();
+      if (!accountResponse.ok || !ordersResponse.ok) {
+        throw new Error(
+          accountData.message ||
+            ordersData.message ||
+            "Unable to load your account",
+        );
+      }
+      const user = accountData.user;
+      setProfile({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phoneNumber || "",
+      });
+      setAddresses(
+        (accountData.user.addresses || []).map((item) => ({
+          id: item._id,
+          label: item.label,
+          name: item.fullName,
+          phone: item.phone,
+          line1: item.address,
+          line2: item.area || "",
+          city: item.city,
+          state: "",
+          postalCode: item.postalCode,
+          country: item.country,
+          isDefault: item.isDefault,
+        })),
+      );
+      setOrders((ordersData.orders || []).map(mapApiOrder));
+    } catch (error) {
+      setAccountError(error.message || "Unable to load your account");
+    } finally {
+      setLoadingAccount(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(loadAccount, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const goTo = (next) => {
     setMobileOpen(false);
@@ -1951,37 +2069,103 @@ function AccountPageContent() {
   };
 
   /* Addresses */
-  const saveAddress = (id, data) => {
-    if (id === "new") {
-      setAddresses((list) => {
-        const isFirst = list.length === 0;
-        return [...list, { ...data, id: `a${Date.now()}`, isDefault: isFirst }];
-      });
-      showToast("Address added");
-    } else {
-      setAddresses((list) =>
-        list.map((a) => (a.id === id ? { ...a, ...data } : a)),
-      );
-      showToast("Address updated");
-    }
+  const saveAddress = async (id, data) => {
+    const payload = {
+      label: data.label,
+      fullName: data.name,
+      phone: data.phone,
+      address: data.line1,
+      area: data.line2,
+      city: data.city,
+      postalCode: data.postalCode,
+      country: data.country,
+    };
+    const response = await fetch(
+      id === "new" ? "/api/account/addresses" : `/api/account/addresses/${id}`,
+      {
+        method: id === "new" ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Unable to save address");
+    setAddresses(
+      result.addresses.map((item) => ({
+        id: item._id,
+        label: item.label,
+        name: item.fullName,
+        phone: item.phone,
+        line1: item.address,
+        line2: item.area || "",
+        city: item.city,
+        state: "",
+        postalCode: item.postalCode,
+        country: item.country,
+        isDefault: item.isDefault,
+      })),
+    );
+    showToast(id === "new" ? "Address added" : "Address updated");
   };
 
-  const deleteAddress = (id) => {
-    setAddresses((list) => {
-      const remaining = list.filter((a) => a.id !== id);
-
-      if (remaining.length > 0 && !remaining.some((a) => a.isDefault)) {
-        remaining[0] = { ...remaining[0], isDefault: true };
-      }
-
-      return remaining;
+  const deleteAddress = async (id) => {
+    const response = await fetch(`/api/account/addresses/${id}`, {
+      method: "DELETE",
     });
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Unable to delete address");
+    setAddresses((list) => list.filter((item) => item.id !== id));
     showToast("Address deleted");
   };
 
-  const setDefaultAddress = (id) => {
-    setAddresses((list) => list.map((a) => ({ ...a, isDefault: a.id === id })));
+  const setDefaultAddress = async (id) => {
+    const response = await fetch(`/api/account/addresses/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isDefault: true }),
+    });
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Unable to update address");
+    setAddresses((list) =>
+      list.map((item) => ({ ...item, isDefault: item.id === id })),
+    );
     showToast("Default address updated");
+  };
+
+  const saveProfile = async (data) => {
+    const response = await fetch("/api/account", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phone,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Unable to update profile");
+    setProfile({ ...profile, ...data });
+  };
+
+  const cancelOrder = async (order) => {
+    try {
+      const response = await fetch(`/api/orders/${order.dbId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Cancelled" }),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.message || "Unable to cancel order");
+      await loadAccount();
+      showToast("Order cancelled");
+    } catch (error) {
+      showToast(error.message || "Unable to cancel order");
+    }
   };
 
   const heading = VIEW_TITLES[view];
@@ -2012,6 +2196,24 @@ function AccountPageContent() {
           <LuCheck size={16} className="text-[#C9A659]" />
           {toast}
         </div>
+      )}
+
+      {loadingAccount && (
+        <p
+          className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 text-sm text-[#8A8378]"
+          role="status"
+        >
+          Loading your account...
+        </p>
+      )}
+
+      {accountError && !loadingAccount && (
+        <p
+          className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 text-sm text-[#B65C38]"
+          role="alert"
+        >
+          {accountError}
+        </p>
       )}
 
       <main>
@@ -2121,7 +2323,7 @@ function AccountPageContent() {
               {view === "dashboard" && (
                 <DashboardView
                   profile={profile}
-                  orders={ORDERS}
+                  orders={orders}
                   wishlist={wishlist}
                   addresses={addresses}
                   goTo={goTo}
@@ -2130,7 +2332,11 @@ function AccountPageContent() {
               )}
 
               {view === "orders" && (
-                <OrdersView orders={ORDERS} onBuyAgain={buyAgain} />
+                <OrdersView
+                  orders={orders}
+                  onBuyAgain={buyAgain}
+                  onCancel={cancelOrder}
+                />
               )}
 
               {view === "wishlist" && (

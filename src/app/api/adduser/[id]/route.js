@@ -6,14 +6,12 @@ import User, {
   DEPARTMENTS,
   ACCOUNT_STATUSES,
 } from "@/lib/models/User";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export async function PUT(request, { params }) {
   try {
-    const authenticatedUser = await requireAuth(request);
-    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
+    if (!access.ok) return access.response;
     const { id } = params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -99,6 +97,9 @@ export async function PUT(request, { params }) {
     const nameParts = name.trim().split(/\s+/);
     const firstName = nameParts[0];
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+    const roleChanged = existingUser.role !== role;
+    const statusChanged =
+      existingUser.accountStatus !== (status || existingUser.accountStatus);
 
     existingUser.firstName = firstName;
     existingUser.lastName = lastName;
@@ -109,6 +110,9 @@ export async function PUT(request, { params }) {
     existingUser.phoneNumber = phoneNumber || undefined;
     existingUser.jobTitle = jobTitle || undefined;
     existingUser.assignedWarehouse = assignedWarehouse || undefined;
+    if (roleChanged || statusChanged) {
+      existingUser.authVersion = (existingUser.authVersion || 0) + 1;
+    }
 
     await existingUser.save();
 
@@ -154,10 +158,8 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const authenticatedUser = await requireAuth(request);
-    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "Unauthorized For this Job" }, { status: 403 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
+    if (!access.ok) return access.response;
     const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -183,4 +185,3 @@ export async function DELETE(request, { params }) {
     );
   }
 }
-

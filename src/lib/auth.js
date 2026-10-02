@@ -3,6 +3,7 @@ import crypto from "crypto";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
+import { validateServerEnv } from "@/lib/env";
 
 const TOKEN_COOKIE = "token";
 
@@ -12,6 +13,7 @@ function getToken(cookieSource) {
 }
 
 export function getJwtSecret() {
+  validateServerEnv(["JWT_SECRET"]);
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error(
@@ -28,6 +30,7 @@ export function signAccessToken(user, expiresIn = "1d") {
       email: user.email,
       role: user.role,
       department: user.department,
+      authVersion: user.authVersion || 0,
     },
     getJwtSecret(),
     { expiresIn },
@@ -61,13 +64,26 @@ export async function getAuthenticatedUser(request) {
   const user = await User.findById(payload.id).select(
     "-password -refreshToken",
   );
-  if (!user || user.accountStatus !== "Active") return null;
+  if (
+    !user ||
+    user.accountStatus !== "Active" ||
+    (payload.authVersion ?? 0) !== (user.authVersion || 0)
+  )
+    return null;
   return user;
 }
 
 export async function requireAuth(request) {
   const user = await getAuthenticatedUser(request);
   return user;
+}
+
+export function isCustomer(user) {
+  return user?.role === "Customer";
+}
+
+export function isStaff(user) {
+  return Boolean(user) && user.role !== "Customer";
 }
 
 export function clearAuthCookie(response) {

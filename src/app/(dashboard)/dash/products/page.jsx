@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GoPlusCircle } from "react-icons/go";
 import { IoSearchOutline } from "react-icons/io5";
-import placeholder from "../../../assets/image/Camera.png";
+import placeholder from "../../../../assets/image/Camera.png";
 import DeleteModal from "@/Component/Modal/DeleteModal";
 
 const Page = () => {
@@ -83,7 +83,7 @@ const Page = () => {
               <p>Manage Your Inventory Catalog & Product Information</p>
             </div>
             <Link
-              href="/addnewproduct"
+              href="/dash/addnewproduct"
               className="bg-[#611F69] text-white py-2 px-4 border  border-[#611f69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611f69]  transition-all"
             >
               <span>

@@ -1,10 +1,12 @@
 // lib/mongodb.js
 import mongoose from "mongoose";
+import { validateServerEnv } from "@/lib/env";
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || "ims";
 
 const connectMongoDB = async () => {
   try {
+    validateServerEnv(["MONGODB_URI"]);
     // if already connected, return the existing connection
     if (mongoose.connection.readyState === 1) {
       return mongoose.connection.asPromise();

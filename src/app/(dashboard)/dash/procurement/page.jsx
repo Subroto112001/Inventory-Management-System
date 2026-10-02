@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MdBusiness,
   MdPerson,
@@ -82,6 +82,10 @@ const SHOP_PRODUCTS = [
 export default function PurchaseOrderPage() {
   // States for Supplier and Officer Info
   const [supplierName, setSupplierName] = useState("");
+  const [supplierId, setSupplierId] = useState("");
+  const [suppliers, setSuppliers] = useState([]);
+  const [catalog, setCatalog] = useState([]);
+  const [saveError, setSaveError] = useState("");
   const [supplierContact, setSupplierContact] = useState("");
   const [officerName, setOfficerName] = useState("");
 
@@ -91,6 +95,21 @@ export default function PurchaseOrderPage() {
   const [currentQty, setCurrentQty] = useState("");
   const [currentUnit, setCurrentUnit] = useState("Pcs");
 
+  useEffect(() => {
+    const loadProcurementData = async () => {
+      const [supplierResponse, productResponse] = await Promise.all([
+        fetch("/api/suppliers", { cache: "no-store" }),
+        fetch("/api/product?limit=100", { cache: "no-store" }),
+      ]);
+      const supplierData = await supplierResponse.json();
+      const productData = await productResponse.json();
+      if (supplierResponse.ok) setSuppliers(supplierData.suppliers || []);
+      if (productResponse.ok) setCatalog(productData.products || []);
+    };
+    const timer = setTimeout(loadProcurementData, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Handle adding product to the list
   const handleAddProduct = (e) => {
     e.preventDefault();
@@ -98,9 +117,15 @@ export default function PurchaseOrderPage() {
 
     const newProduct = {
       id: Date.now().toString(),
+      productId:
+        catalog.find((item) => item.productName === currentProduct)?.id ||
+        catalog.find((item) => item.productName === currentProduct)?._id,
       name: currentProduct,
       qty: currentQty,
       unit: currentUnit,
+      unitCost: Number(
+        catalog.find((item) => item.productName === currentProduct)?.price || 0,
+      ),
     };
 
     setProducts([...products, newProduct]);
@@ -125,6 +150,40 @@ export default function PurchaseOrderPage() {
       return;
     }
     window.print();
+  };
+
+  const handleSavePurchaseOrder = async () => {
+    if (
+      !supplierId ||
+      products.length === 0 ||
+      products.some((item) => !item.productId)
+    ) {
+      setSaveError(
+        "Select an active supplier and products from the database before saving.",
+      );
+      return;
+    }
+    const response = await fetch("/api/purchase-orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        supplierId,
+        items: products.map((item) => ({
+          productId: item.productId,
+          quantity: Number(item.qty),
+          unitCost: item.unitCost,
+        })),
+        notes: `Prepared by ${officerName || "staff"}`,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setSaveError(data.message || "Unable to save purchase order");
+      return;
+    }
+    setSaveError(
+      `Purchase order ${data.purchaseOrder.purchaseOrderNumber} saved as Draft.`,
+    );
   };
 
   return (
@@ -171,13 +230,19 @@ export default function PurchaseOrderPage() {
                     list="supplier-options"
                     type="text"
                     value={supplierName}
-                    onChange={(e) => setSupplierName(e.target.value)}
+                    onChange={(e) => {
+                      setSupplierName(e.target.value);
+                      const supplier = suppliers.find(
+                        (item) => item.name === e.target.value,
+                      );
+                      setSupplierId(supplier?._id || "");
+                    }}
                     placeholder="Select from list or type new..."
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
                   />
                   <datalist id="supplier-options">
-                    {PREDEFINED_SUPPLIERS.map((supplier, idx) => (
-                      <option key={idx} value={supplier} />
+                    {suppliers.map((supplier) => (
+                      <option key={supplier._id} value={supplier.name} />
                     ))}
                   </datalist>
                 </div>
@@ -252,8 +317,11 @@ export default function PurchaseOrderPage() {
                   required
                 />
                 <datalist id="product-options">
-                  {SHOP_PRODUCTS.map((product, idx) => (
-                    <option key={idx} value={product} />
+                  {catalog.map((product) => (
+                    <option
+                      key={product.id || product._id}
+                      value={product.productName}
+                    />
                   ))}
                 </datalist>
               </div>
@@ -351,8 +419,7 @@ export default function PurchaseOrderPage() {
 
               <div className="text-right">
                 <p>
-                  <span className="font-bold">Memo No:</span> PO-
-                  {Math.floor(10000 + Math.random() * 90000)}
+                  <span className="font-bold">Memo No:</span> PO- DRAFT
                 </p>
                 <p className="mt-1">
                   <span className="font-bold">Date:</span>{" "}
@@ -479,6 +546,13 @@ export default function PurchaseOrderPage() {
           {/* Action Button (Hidden on Print) */}
           <div className="p-4 bg-gray-50 border-t border-gray-200 print:hidden">
             <button
+              onClick={handleSavePurchaseOrder}
+              disabled={products.length === 0}
+              className="w-full mb-3 flex items-center justify-center gap-2 py-3 border border-[#611F69] text-[#611F69] font-bold rounded-lg hover:bg-[#611F69]/10 disabled:opacity-50"
+            >
+              Save Purchase Order
+            </button>
+            <button
               onClick={handlePrint}
               disabled={products.length === 0}
               className="w-full flex items-center justify-center gap-2 py-3 bg-[#611F69] text-white font-bold rounded-lg shadow hover:bg-[#4a1752] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#611F69]/50 transition-all text-lg"
@@ -487,6 +561,11 @@ export default function PurchaseOrderPage() {
               <MdPrint size={24} aria-hidden="true" />
               Generate & Print Memo
             </button>
+            {saveError && (
+              <p className="mt-3 text-sm text-red-600" role="alert">
+                {saveError}
+              </p>
+            )}
           </div>
         </aside>
       </div>

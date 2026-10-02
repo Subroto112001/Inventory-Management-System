@@ -5,13 +5,21 @@ const { Schema, Types } = mongoose;
 const ORDER_TYPES = ["Take Away", "Home Delivery"];
 const PAYMENT_METHODS = ["Cash", "Mobile Banking", "Card"];
 const DELIVERY_PAYMENT_TYPES = ["COD", "Pre-paid", "N/A"];
-const ORDER_STATUSES = [
+export const ORDER_STATUSES = [
   "Pending",
   "Confirmed",
   "Shipped",
   "Delivered",
   "Cancelled",
 ];
+
+export const ORDER_STATUS_TRANSITIONS = {
+  Pending: ["Confirmed", "Cancelled"],
+  Confirmed: ["Shipped", "Cancelled"],
+  Shipped: ["Delivered"],
+  Delivered: [],
+  Cancelled: [],
+};
 
 const orderItemSchema = new Schema({
   product: {
@@ -92,7 +100,16 @@ const orderSchema = new Schema(
     // --- Payment & Financials ---
     financials: {
       subtotal: { type: Number, required: true, min: 0 },
+      discount: { type: Number, default: 0, min: 0 },
       tax: { type: Number, required: true, min: 0 },
+      taxRate: { type: Number, default: 0, min: 0, max: 100 },
+      taxName: { type: String, trim: true, maxlength: 50 },
+      promotionCode: {
+        type: String,
+        trim: true,
+        uppercase: true,
+        maxlength: 30,
+      },
       deliveryCharge: { type: Number, default: 0, min: 0 },
       grandTotal: { type: Number, required: true, min: 0 },
     },
@@ -139,10 +156,10 @@ const orderSchema = new Schema(
     processedBy: {
       type: Types.ObjectId,
       ref: "User",
-      required: [
-        true,
-        "Order must be associated with the user who processed it",
-      ],
+    },
+    customerUser: {
+      type: Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true },

@@ -107,7 +107,7 @@ export default function CartSidebar() {
             </p>
 
             <Link
-              href="/shop"
+              href="/product"
               onClick={closeCart}
               className="mt-6 bg-[#1F3A2E] text-[#F7F3EC] px-6 py-3 rounded-sm text-sm hover:bg-[#16281F] transition-colors"
             >

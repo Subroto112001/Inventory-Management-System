@@ -3,15 +3,43 @@ import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
 import Offer from "@/lib/models/Offer";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission } from "@/lib/authorization";
+import { PERMISSIONS } from "@/lib/authorization";
+import Brand from "@/lib/models/Brand";
+import Category from "@/lib/models/Category";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+function serializePublicProduct(product) {
+  return {
+    id: product._id.toString(),
+    name: product.productName,
+    productName: product.productName,
+    sku: product.productSKU,
+    price: product.price,
+    discount: product.discount || 0,
+    image: product.image?.url || "",
+    images: product.image?.url ? [product.image.url] : [],
+    description: product.description || "",
+    unit: product.unit || "",
+    brand: product.brand?.brandName || product.brandName || "",
+    category: product.category?.categoryName || "",
+    availability: product.currentStock > 0 ? "In Stock" : "Out of Stock",
+    inStock: product.currentStock > 0,
+    isActive: product.isActive,
+  };
+}
+
 export async function GET(request, { params }) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const publicRead = new URL(request.url).searchParams.get("public") === "1";
+    if (!publicRead) {
+      const access = await requirePermission(
+        request,
+        PERMISSIONS.PRODUCTS_READ,
+      );
+      if (!access.ok) return access.response;
     }
     const { id } = await params;
 
@@ -23,13 +51,26 @@ export async function GET(request, { params }) {
     }
 
     await connectMongoDB();
-    const product = await Product.findById(id).lean();
+    const product = await Product.findOne({
+      _id: id,
+      ...(publicRead ? { isActive: true } : {}),
+    })
+      .populate("brand", "brandName logo")
+      .populate("category", "categoryName")
+      .lean();
 
     if (!product) {
       return NextResponse.json(
         { message: "Product not found" },
         { status: 404 },
       );
+    }
+
+    if (publicRead) {
+      return NextResponse.json({
+        success: true,
+        product: serializePublicProduct(product),
+      });
     }
 
     const now = new Date();
@@ -105,9 +146,11 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.PRODUCTS_UPDATE,
+    );
+    if (!access.ok) return access.response;
     const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -135,6 +178,20 @@ export async function PUT(request, { params }) {
     if (!productName || !productSKU || price === undefined || price === "") {
       return NextResponse.json(
         { message: "Product name, SKU, and price are required!" },
+        { status: 400 },
+      );
+    }
+
+    const parsedInitialStock = Number(initialStock ?? 0);
+    const parsedLowStockAlert = Number(lowStockAlert ?? 0);
+    if (
+      !Number.isInteger(parsedInitialStock) ||
+      parsedInitialStock < 0 ||
+      !Number.isInteger(parsedLowStockAlert) ||
+      parsedLowStockAlert < 0
+    ) {
+      return NextResponse.json(
+        { message: "Stock values must be non-negative whole numbers" },
         { status: 400 },
       );
     }
@@ -174,8 +231,8 @@ export async function PUT(request, { params }) {
     existingProduct.wholesalePrice =
       wholesalePrice === "" ? undefined : Number(wholesalePrice);
     existingProduct.discount = Number(discount) || 0;
-    existingProduct.initialStock = Number(initialStock) || 0;
-    existingProduct.lowStockAlert = Number(lowStockAlert) || 0;
+    existingProduct.initialStock = parsedInitialStock;
+    existingProduct.lowStockAlert = parsedLowStockAlert;
     // note: currentStock ইচ্ছাকৃতভাবে এখানে টাচ করা হয়নি —
     // এটা initialStock এডিট করলে বদলানো উচিত না, বরং stock adjustment API দিয়ে বদলানো উচিত
 
@@ -218,9 +275,11 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.PRODUCTS_DELETE,
+    );
+    if (!access.ok) return access.response;
     const { id } = await params;
     const productId = id?.trim();
 

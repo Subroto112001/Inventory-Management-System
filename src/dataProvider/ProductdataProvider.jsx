@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -20,10 +19,7 @@ const useProducts = () => {
       if (res.ok) {
         setProducts(data.products || []);
       } else {
-        console.error(
-          "Failed to load products:",
-          data.message
-        );
+        console.error("Failed to load products:", data.message);
       }
     } catch (err) {
       console.error("Failed to load products:", err);
@@ -38,6 +34,7 @@ const useProducts = () => {
 
   return {
     products,
+    setProducts,
     loadingProducts,
     fetchProducts,
   };

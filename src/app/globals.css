@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+:root {
+  --theme-primary: #1f3a2e;
+  --theme-primary-hover: #16281f;
+  --theme-primary-text: #ffffff;
+  --theme-secondary: #b65c38;
+  --theme-secondary-hover: #9e4d2e;
+  --theme-secondary-text: #ffffff;
+  --theme-accent: #b65c38;
+  --theme-background: #f7f3ec;
+  --theme-surface: #ffffff;
+  --theme-text: #211f1d;
+  --theme-muted: #8a8378;
+  --theme-border: #e4ded2;
+  --theme-success: #1f3a2e;
+  --theme-warning: #c9a659;
+  --theme-error: #b65c38;
+  --theme-font: "League Spartan";
+}
+
+body {
+  background: var(--theme-background);
+  color: var(--theme-text);
+  font-family: var(--theme-font), sans-serif;
+}

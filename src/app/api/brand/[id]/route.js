@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Brand from "@/lib/models/Brand";
 import Product from "@/lib/models/Product";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -16,17 +16,8 @@ export async function GET(request, { params }) {
   try {
     await connectMongoDB();
 
-    const user = await requireAuth(request);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-        },
-        { status: 401 },
-      );
-    }
+    const access = await requirePermission(request, PERMISSIONS.BRANDS_READ);
+    if (!access.ok) return access.response;
 
     const { id } = await params;
 
@@ -84,17 +75,9 @@ export async function PUT(request, { params }) {
   try {
     await connectMongoDB();
 
-    const user = await requireAuth(request);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-        },
-        { status: 401 },
-      );
-    }
+    const access = await requirePermission(request, PERMISSIONS.BRANDS_MANAGE);
+    if (!access.ok) return access.response;
+    const user = access.user;
 
     const { id } = await params;
 
@@ -309,17 +292,8 @@ export async function DELETE(request, { params }) {
   try {
     await connectMongoDB();
 
-    const user = await requireAuth(request);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-        },
-        { status: 401 },
-      );
-    }
+    const access = await requirePermission(request, PERMISSIONS.BRANDS_MANAGE);
+    if (!access.ok) return access.response;
 
     const { id } = await params;
 

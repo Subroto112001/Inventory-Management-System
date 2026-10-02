@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { useCart } from "@/Component/website/Cart/CartContext";
 import {
   LuSearch,
   LuUser,
@@ -40,31 +41,6 @@ const NAV_LINKS = [
   { label: "Decor & Accents", href: "#" },
   { label: "Brands", href: "#" },
   { label: "Sale", href: "#" },
-];
-
-/* =========================================================
-   REAL PRODUCT IMAGES
-   ========================================================= */
-
-const CHECKOUT_PRODUCTS = [
-  {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=500&q=85",
-    name: "Alder Oak Lounge Chair",
-    category: "Furniture",
-    price: 189,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    image:
-      "https://images.unsplash.com/photo-1572119865084-43c285814d63?auto=format&fit=crop&w=500&q=85",
-    name: "Hand-Thrown Ceramic Mug",
-    category: "Kitchen & Dining",
-    price: 58,
-    quantity: 2,
-  },
 ];
 
 const PERKS = [
@@ -130,6 +106,7 @@ function InputField({
 }
 
 export default function CheckoutPage() {
+  const { items, clearCart } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
   const scrollerRef = useRef(null);
 
@@ -137,6 +114,11 @@ export default function CheckoutPage() {
   const [sameBilling, setSameBilling] = useState(true);
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
+  const [orderState, setOrderState] = useState({
+    loading: false,
+    error: "",
+    success: "",
+  });
 
   const [form, setForm] = useState({
     email: "",
@@ -171,7 +153,8 @@ export default function CheckoutPage() {
     }
   };
 
-  const subtotal = CHECKOUT_PRODUCTS.reduce(
+  const checkoutProducts = items;
+  const subtotal = checkoutProducts.reduce(
     (total, product) => total + product.price * product.quantity,
     0,
   );
@@ -188,10 +171,51 @@ export default function CheckoutPage() {
     }
   };
 
-  const placeOrder = (e) => {
+  const placeOrder = async (e) => {
     e.preventDefault();
-
-    alert("Order placed successfully!");
+    if (!checkoutProducts.length) {
+      setOrderState({
+        loading: false,
+        error: "Your cart is empty.",
+        success: "",
+      });
+      return;
+    }
+    setOrderState({ loading: true, error: "", success: "" });
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: `${form.firstName} ${form.lastName}`.trim(),
+          customerPhone: form.phone,
+          customerAddress: [
+            form.address,
+            form.apartment,
+            form.city,
+            form.state,
+            form.postalCode,
+          ]
+            .filter(Boolean)
+            .join(", "),
+          cart: checkoutProducts,
+          orderType: "Home Delivery",
+          deliveryPaymentType: paymentMethod === "cod" ? "COD" : "Pre-paid",
+          paymentMethod: paymentMethod === "cod" ? "Cash" : "Card",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Unable to place order");
+      clearCart();
+      setOrderState({
+        loading: false,
+        error: "",
+        success: `Order ${data.order?.orderNumber || "created"} successfully.`,
+      });
+    } catch (error) {
+      setOrderState({ loading: false, error: error.message, success: "" });
+    }
   };
 
   return (
@@ -833,7 +857,7 @@ export default function CheckoutPage() {
                     </h2>
 
                     <span className="text-xs text-[#8A8378]">
-                      {CHECKOUT_PRODUCTS.reduce(
+                      {checkoutProducts.reduce(
                         (sum, product) => sum + product.quantity,
                         0,
                       )}{" "}
@@ -844,7 +868,7 @@ export default function CheckoutPage() {
 
                 {/* Products */}
                 <div className="p-5 sm:p-6 space-y-5">
-                  {CHECKOUT_PRODUCTS.map((product) => (
+                  {checkoutProducts.map((product) => (
                     <div key={product.id} className="flex gap-3">
                       {/* Real Product Image */}
                       <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
@@ -972,11 +996,28 @@ export default function CheckoutPage() {
                   {/* Place Order */}
                   <button
                     type="submit"
+                    disabled={orderState.loading}
                     className="w-full mt-3 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors flex items-center justify-center gap-2"
                   >
                     <LuLock size={15} />
-                    Place order · ${total.toFixed(2)}
+                    {orderState.loading
+                      ? "Placing order..."
+                      : `Place order · $${total.toFixed(2)}`}
                   </button>
+
+                  {orderState.error && (
+                    <p className="text-xs text-red-700" role="alert">
+                      {orderState.error}{" "}
+                      <Link href="/login" className="font-semibold underline">
+                        Log in
+                      </Link>
+                    </p>
+                  )}
+                  {orderState.success && (
+                    <p className="text-xs text-[#1F3A2E]" role="status">
+                      {orderState.success}
+                    </p>
+                  )}
 
                   <p className="text-[11px] text-[#8A8378] text-center leading-relaxed pt-1">
                     Your payment information is protected using secure

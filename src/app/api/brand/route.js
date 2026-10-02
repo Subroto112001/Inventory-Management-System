@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Brand from "@/lib/models/Brand";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 
 export const dynamic = "force-dynamic";
@@ -14,17 +14,8 @@ export async function GET(request) {
   try {
     await connectMongoDB();
 
-    const user = await requireAuth(request);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-        },
-        { status: 401 },
-      );
-    }
+    const access = await requirePermission(request, PERMISSIONS.BRANDS_READ);
+    if (!access.ok) return access.response;
 
     const { searchParams } = new URL(request.url);
 
@@ -103,17 +94,9 @@ export async function POST(request) {
   try {
     await connectMongoDB();
 
-    const user = await requireAuth(request);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-        },
-        { status: 401 },
-      );
-    }
+    const access = await requirePermission(request, PERMISSIONS.BRANDS_MANAGE);
+    if (!access.ok) return access.response;
+    const user = access.user;
 
     // ---------------------------------------------------------
     // Frontend is sending multipart/form-data

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Customer from "@/lib/models/Customer";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,9 +10,11 @@ export const revalidate = 0;
 // PUT: Update a customer
 export async function PUT(request, { params }) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.CUSTOMERS_UPDATE,
+    );
+    if (!access.ok) return access.response;
     const { id } = params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -146,9 +148,11 @@ export async function PUT(request, { params }) {
 // DELETE: Remove a customer
 export async function DELETE(request, { params }) {
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.CUSTOMERS_DELETE,
+    );
+    if (!access.ok) return access.response;
     const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {

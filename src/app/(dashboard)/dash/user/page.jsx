@@ -64,7 +64,7 @@ const UsersPage = () => {
   useEffect(() => {
     if (!loadingCurrentUser) {
       if (!mydata || mydata.role !== "System Admin") {
-        router.push("/");
+        router.push("/dash");
       }
     }
   }, [mydata, loadingCurrentUser, router]);

@@ -69,7 +69,7 @@ const AddWarehousePage = () => {
       });
 
       setTimeout(() => {
-        router.push("/warehouse");
+        router.push("/dash/warehouse");
       }, 1500);
     } catch (err) {
       setFormStatus({ type: "error", message: err.message });

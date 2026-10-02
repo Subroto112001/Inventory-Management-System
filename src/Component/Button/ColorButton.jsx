@@ -1,14 +1,14 @@
-import React from 'react'
+import React from "react";
 
 const ColorButton = ({ value, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="border border-[#611F69] py-2 px-4 rounded-md bg-[#611F69] hover:bg-white text-white hover:text-[#611F69] cursor-pointer transition-all"
+      className="border border-[var(--theme-primary)] py-2 px-4 rounded-md bg-[var(--theme-primary)] hover:bg-[var(--theme-surface)] text-[var(--theme-primary-text)] hover:text-[var(--theme-primary)] cursor-pointer transition-all"
     >
       {value}
     </button>
   );
 };
 
-export default ColorButton
+export default ColorButton;

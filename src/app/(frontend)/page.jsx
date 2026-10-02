@@ -2,15 +2,13 @@
 
 import {
   CATEGORIES,
-  EXCLUSIVE_PRODUCTS,
-  FEATURED_PRODUCTS,
   HERO_SLIDES,
-  NEW_ARRIVALS,
   OFFER_SLIDES,
   PERKS,
   SIDE_BANNERS,
 } from "@/frontEndDataProvider/HomepageDataProvider";
 import Link from "next/link";
+import { useCart } from "@/Component/website/Cart/CartContext";
 import { useEffect, useRef, useState } from "react";
 import {
   LuSearch,
@@ -41,7 +39,6 @@ import {
  * */
 
 const FEATURED_TABS = ["Kitchen & Dining", "Furniture", "Lighting", "Textiles"];
-
 
 /* =========================================================
    STARS
@@ -74,15 +71,19 @@ function Stars({ rating }) {
 function ProductCard({ product }) {
   const { image, category, name, price, oldPrice, rating, reviews, badge } =
     product;
+  const { addItem } = useCart();
+  const inStock = product.inStock ?? true;
 
   return (
     <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200">
       <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
-        />
+        <Link href={`/product/product_details?id=${product.id}`}>
+          <img
+            src={image || "/placeholder-product.svg"}
+            alt={name}
+            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
+          />
+        </Link>
 
         {badge ? (
           <span className="absolute top-3 left-3 bg-[#1F3A2E] text-[#F7F3EC] text-xs px-2 py-1 rounded-sm">
@@ -100,10 +101,12 @@ function ProductCard({ product }) {
 
         <button
           type="button"
-          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2"
+          disabled={!inStock}
+          onClick={() => addItem(product)}
+          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <LuShoppingCart size={14} />
-          Add to cart
+          {inStock ? "Add to cart" : "Out of stock"}
         </button>
       </div>
 
@@ -134,8 +137,6 @@ function ProductCard({ product }) {
   );
 }
 
-
-
 export default function EcommerceHomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const scrollerRef = useRef(null);
@@ -143,6 +144,37 @@ export default function EcommerceHomePage() {
   const [heroActive, setHeroActive] = useState(0);
   const [offerActive, setOfferActive] = useState(0);
   const [activeTab, setActiveTab] = useState(FEATURED_TABS[0]);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/product?public=1&page=1&limit=48&sort=newest", {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.message || "Unable to load products");
+        return data;
+      })
+      .then((data) => setProducts(data.products || []))
+      .catch((error) => {
+        if (error.name !== "AbortError") setProducts([]);
+      })
+      .finally(() => setProductsLoading(false));
+    return () => controller.abort();
+  }, []);
+
+  const featuredProducts = products
+    .filter((product) =>
+      product.category?.toLowerCase().startsWith(activeTab.toLowerCase()),
+    )
+    .slice(0, 4);
+  const exclusiveProducts = products
+    .filter((product) => product.discount > 0)
+    .slice(0, 4);
+  const newArrivals = products.slice(0, 4);
 
   /* Hero autoplay */
   useEffect(() => {
@@ -407,9 +439,13 @@ export default function EcommerceHomePage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {EXCLUSIVE_PRODUCTS.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {productsLoading ? (
+              <p className="text-sm text-[#8A8378]">Loading products...</p>
+            ) : (
+              exclusiveProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))
+            )}
           </div>
         </section>
 
@@ -545,7 +581,7 @@ export default function EcommerceHomePage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {FEATURED_PRODUCTS[activeTab].map((p) => (
+            {featuredProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -574,7 +610,7 @@ export default function EcommerceHomePage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
-            {NEW_ARRIVALS.map((p) => (
+            {newArrivals.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>

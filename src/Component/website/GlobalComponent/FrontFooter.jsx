@@ -8,26 +8,23 @@ import {
   LuPhone,
 } from "react-icons/lu";
 
-export default function FrontFooter() {
+export default function FrontFooter({ settings }) {
   return (
-    <footer className="bg-[#211F1D] text-[#D8D3C8] mt-16">
+    <footer className="bg-[var(--theme-text)] text-[var(--theme-surface)] mt-16">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8">
         {/* Brand */}
         <div className="col-span-2 sm:col-span-1">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-sm bg-[#C9A659] text-[#211F1D] flex items-center justify-center font-serif text-base">
-              F
+            <span className="w-8 h-8 rounded-sm bg-[var(--theme-accent)] text-[var(--theme-primary-text)] flex items-center justify-center font-serif text-base">
+              {settings.storeName.charAt(0)}
             </span>
 
             <span className="font-serif text-lg text-[#F7F3EC]">
-              FIELDHOUSE
+              {settings.storeName}
             </span>
           </div>
 
-          <p className="text-sm text-[#9B9689] mb-4">
-            Everyday goods for the home, made in small batches with natural
-            materials.
-          </p>
+          <p className="text-sm text-[#9B9689] mb-4">{settings.tagline}</p>
 
           <div className="flex items-center gap-3">
             <a
@@ -152,7 +149,10 @@ export default function FrontFooter() {
       {/* Footer Bottom */}
       <div className="border-t border-white/10">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#9B9689]">
-          <p>© {new Date().getFullYear()} Fieldhouse. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {settings.storeName}. All rights
+            reserved.
+          </p>
 
           <div className="flex items-center gap-3">
             <span className="border border-white/15 rounded-sm px-2 py-1">

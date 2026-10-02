@@ -2,6 +2,11 @@ import { CartProvider } from "@/Component/website/Cart/CartContext";
 import CartSidebar from "@/Component/website/Cart/Cartsidebar";
 import FrontFooter from "@/Component/website/GlobalComponent/FrontFooter";
 import FrontHeader from "@/Component/website/GlobalComponent/FrontHeader";
+import {
+  getStoreSettings,
+  normalizeTheme,
+  themeStyleVars,
+} from "@/lib/storeSettings";
 import { League_Spartan } from "next/font/google";
 
 const leagueSpartan = League_Spartan({
@@ -10,13 +15,22 @@ const leagueSpartan = League_Spartan({
   display: "swap",
 });
 
-export default function FrontendLayout({ children }) {
+export default async function FrontendLayout({ children }) {
+  const settings = await getStoreSettings();
+  const theme = normalizeTheme(settings);
+
   return (
-    <div className={leagueSpartan.className}>
+    <div
+      className={leagueSpartan.className}
+      style={{
+        ...themeStyleVars(settings),
+        fontFamily: theme.fontFamily,
+      }}
+    >
       <CartProvider>
-        <FrontHeader />
+        <FrontHeader settings={theme} />
         <main>{children}</main>
-        <FrontFooter />
+        <FrontFooter settings={theme} />
         <CartSidebar />
       </CartProvider>
     </div>

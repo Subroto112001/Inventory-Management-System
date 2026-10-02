@@ -6,7 +6,7 @@ import {
   isValidObjectId,
 } from "@/lib/offerHelpers";
 import connectMongoDB from "@/lib/databse/mongodb";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +22,8 @@ export async function GET(request, { params }) {
   }
 
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.OFFERS_READ);
+    if (!access.ok) return access.response;
     await connectMongoDB();
 
     const offer = await Offer.findById(id);
@@ -61,9 +60,8 @@ export async function PUT(request, { params }) {
   }
 
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.OFFERS_MANAGE);
+    if (!access.ok) return access.response;
     await connectMongoDB();
 
     const body = await request.json();
@@ -122,9 +120,8 @@ export async function DELETE(request, { params }) {
   }
 
   try {
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.OFFERS_MANAGE);
+    if (!access.ok) return access.response;
     await connectMongoDB();
 
     const offer = await Offer.findByIdAndDelete(id);

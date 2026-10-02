@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Category from "@/lib/models/Category";
 import Product from "@/lib/models/Product";
-import { requireAuth } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 
 export const dynamic = "force-dynamic";
@@ -16,9 +16,11 @@ export async function GET(request) {
     // -------------------------
     // Authentication
     // -------------------------
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.CATEGORIES_READ,
+    );
+    if (!access.ok) return access.response;
 
     // -------------------------
     // Connect Database
@@ -121,9 +123,11 @@ export async function POST(request) {
     // -------------------------
     // Authentication
     // -------------------------
-    if (!(await requireAuth(request))) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const access = await requirePermission(
+      request,
+      PERMISSIONS.CATEGORIES_MANAGE,
+    );
+    if (!access.ok) return access.response;
 
     // -------------------------
     // Read FormData

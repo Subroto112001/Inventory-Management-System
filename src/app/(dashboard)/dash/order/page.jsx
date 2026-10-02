@@ -109,8 +109,8 @@ const MONTHS = [
 
 const SORT_OPTIONS = [
   { label: "Default", value: "default" },
-  { label: "Completed First", value: "completed" },
-  { label: "Not Completed First", value: "not_completed" },
+  { label: "Delivered First", value: "completed" },
+  { label: "Not Delivered First", value: "not_completed" },
 ];
 
 // ==========================================
@@ -119,17 +119,20 @@ const SORT_OPTIONS = [
 const RegularMemoModal = ({ isOpen, onClose, order }) => {
   if (!isOpen || !order) return null;
 
-  let subtotal = 0;
-  let totalVat = 0;
-
-  const orderItems = order.items.map((item) => {
-    const itemTotal = item.qty * item.price;
-    const itemVat = (itemTotal * item.vatRate) / 100;
-    subtotal += itemTotal;
-    totalVat += itemVat;
-    return { ...item, itemTotal };
-  });
-
+  const totals = order.items.reduce(
+    (result, item) => {
+      const quantity = Number(item.qty ?? item.quantity ?? 0);
+      const price = Number(item.price || 0);
+      const itemTotal = quantity * price;
+      const itemVat = (itemTotal * Number(item.vatRate || 0)) / 100;
+      result.items.push({ ...item, qty: quantity, price, itemTotal });
+      result.subtotal += itemTotal;
+      result.totalVat += itemVat;
+      return result;
+    },
+    { items: [], subtotal: 0, totalVat: 0 },
+  );
+  const { items: orderItems, subtotal, totalVat } = totals;
   const grandTotal = subtotal + totalVat;
 
   return (
@@ -274,21 +277,30 @@ const RegularMemoModal = ({ isOpen, onClose, order }) => {
 const MushakModal = ({ isOpen, onClose, order }) => {
   if (!isOpen || !order) return null;
 
-  let totalExclVat = 0;
-  let totalVat = 0;
-  let totalInclVat = 0;
-
-  const enrichedItems = order.items.map((item, index) => {
-    const totalVal = item.qty * item.price;
-    const vatAmt = (totalVal * item.vatRate) / 100;
-    const grandTotal = totalVal + vatAmt;
-
-    totalExclVat += totalVal;
-    totalVat += vatAmt;
-    totalInclVat += grandTotal;
-
-    return { ...item, totalVal, vatAmt, grandTotal, sl: index + 1 };
-  });
+  const totals = order.items.reduce(
+    (result, item, index) => {
+      const quantity = Number(item.qty ?? item.quantity ?? 0);
+      const price = Number(item.price || 0);
+      const totalVal = quantity * price;
+      const vatAmt = (totalVal * Number(item.vatRate || 0)) / 100;
+      const grandTotal = totalVal + vatAmt;
+      result.items.push({
+        ...item,
+        qty: quantity,
+        price,
+        totalVal,
+        vatAmt,
+        grandTotal,
+        sl: index + 1,
+      });
+      result.totalExclVat += totalVal;
+      result.totalVat += vatAmt;
+      result.totalInclVat += grandTotal;
+      return result;
+    },
+    { items: [], totalExclVat: 0, totalVat: 0, totalInclVat: 0 },
+  );
+  const { items: enrichedItems, totalExclVat, totalVat, totalInclVat } = totals;
 
   return (
     <div
@@ -535,10 +547,12 @@ export default function OrdersDashboard() {
   const filterRef = useRef(null);
   const sortRef = useRef(null);
 
-
- const { orders, loadingOrders, error: ordersError, fetchOrders } = useOrders();
-
-  console.log(orders);
+  const {
+    orders,
+    loadingOrders,
+    error: ordersError,
+    fetchOrders,
+  } = useOrders();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -552,44 +566,44 @@ export default function OrdersDashboard() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-const filteredAndSortedOrders = useMemo(() => {
-  let result = orders.filter((order) => {
-    // Month
-    const orderMonthName = new Date(order.createdAt).toLocaleString("en-US", {
-      month: "long",
+  const filteredAndSortedOrders = useMemo(() => {
+    let result = orders.filter((order) => {
+      // Month
+      const orderMonthName = new Date(order.createdAt).toLocaleString("en-US", {
+        month: "long",
+      });
+
+      const matchesMonth =
+        selectedMonth === "All Months" ||
+        orderMonthName.toLowerCase() === selectedMonth.toLowerCase();
+
+      // Search
+      const lowerCaseQuery = searchQuery.toLowerCase();
+
+      const matchesSearch =
+        !searchQuery ||
+        order.orderNumber?.toLowerCase().includes(lowerCaseQuery) ||
+        order.customer?.name?.toLowerCase().includes(lowerCaseQuery) ||
+        order.customer?.phone?.toLowerCase().includes(lowerCaseQuery) ||
+        order.status?.toLowerCase().includes(lowerCaseQuery) ||
+        order.payment?.paymentStatus?.toLowerCase().includes(lowerCaseQuery) ||
+        order.payment?.method?.toLowerCase().includes(lowerCaseQuery);
+
+      return matchesMonth && matchesSearch;
     });
 
-    const matchesMonth =
-      selectedMonth === "All Months" ||
-      orderMonthName.toLowerCase() === selectedMonth.toLowerCase();
+    if (sortBy === "completed") {
+      result.sort((a, b) =>
+        a.status === "Delivered" ? -1 : b.status === "Delivered" ? 1 : 0,
+      );
+    } else if (sortBy === "not_completed") {
+      result.sort((a, b) =>
+        a.status !== "Delivered" ? -1 : b.status !== "Delivered" ? 1 : 0,
+      );
+    }
 
-    // Search
-    const lowerCaseQuery = searchQuery.toLowerCase();
-
-    const matchesSearch =
-      !searchQuery ||
-      order.orderNumber?.toLowerCase().includes(lowerCaseQuery) ||
-      order.customer?.name?.toLowerCase().includes(lowerCaseQuery) ||
-      order.customer?.phone?.toLowerCase().includes(lowerCaseQuery) ||
-      order.status?.toLowerCase().includes(lowerCaseQuery) ||
-      order.payment?.paymentStatus?.toLowerCase().includes(lowerCaseQuery) ||
-      order.payment?.method?.toLowerCase().includes(lowerCaseQuery);
-
-    return matchesMonth && matchesSearch;
-  });
-
-  if (sortBy === "completed") {
-    result.sort((a, b) =>
-      a.status === "Completed" ? -1 : b.status === "Completed" ? 1 : 0,
-    );
-  } else if (sortBy === "not_completed") {
-    result.sort((a, b) =>
-      a.status !== "Completed" ? -1 : b.status !== "Completed" ? 1 : 0,
-    );
-  }
-
-  return result;
-}, [orders, searchQuery, selectedMonth, sortBy]);
+    return result;
+  }, [orders, searchQuery, selectedMonth, sortBy]);
 
   const generateReport = () => {
     if (filteredAndSortedOrders.length === 0) {
@@ -607,6 +621,20 @@ const filteredAndSortedOrders = useMemo(() => {
   const openMemo = (order) => {
     setSelectedOrder(order);
     setIsMemoOpen(true);
+  };
+
+  const updateOrderStatus = async (order, status) => {
+    const response = await fetch(`/api/orders/${order._id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      window.alert(data.message || "Unable to update order status");
+      return;
+    }
+    await fetchOrders();
   };
 
   return (
@@ -890,7 +918,25 @@ const filteredAndSortedOrders = useMemo(() => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-[14px] text-gray-900 print:divide-gray-300">
-                {filteredAndSortedOrders.length > 0 ? (
+                {loadingOrders ? (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      Loading orders...
+                    </td>
+                  </tr>
+                ) : ordersError ? (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="px-6 py-12 text-center text-red-600"
+                    >
+                      {ordersError}
+                    </td>
+                  </tr>
+                ) : filteredAndSortedOrders.length > 0 ? (
                   filteredAndSortedOrders.map((order) => (
                     <tr
                       key={order.orderNumber}
@@ -913,7 +959,7 @@ const filteredAndSortedOrders = useMemo(() => {
                       <td className="px-6 py-4 print:py-2">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            order.status === "Completed"
+                            order.status === "Delivered"
                               ? "bg-green-100 text-green-800"
                               : order.status === "Pending"
                                 ? "bg-yellow-100 text-yellow-800"
@@ -922,9 +968,37 @@ const filteredAndSortedOrders = useMemo(() => {
                         >
                           {order.status}
                         </span>
+                        {order.status !== "Delivered" &&
+                          order.status !== "Cancelled" && (
+                            <select
+                              value={order.status}
+                              onChange={(event) =>
+                                updateOrderStatus(order, event.target.value)
+                              }
+                              className="ml-2 rounded border border-gray-200 px-1 py-1 text-xs"
+                              aria-label={`Update status for ${order.orderNumber}`}
+                            >
+                              <option value={order.status}>
+                                {order.status}
+                              </option>
+                              {order.status === "Pending" && (
+                                <option value="Confirmed">Confirmed</option>
+                              )}
+                              {order.status === "Confirmed" && (
+                                <option value="Shipped">Shipped</option>
+                              )}
+                              {order.status === "Shipped" && (
+                                <option value="Delivered">Delivered</option>
+                              )}
+                              {(order.status === "Pending" ||
+                                order.status === "Confirmed") && (
+                                <option value="Cancelled">Cancelled</option>
+                              )}
+                            </select>
+                          )}
                       </td>
                       <td className="px-6 py-4 font-semibold text-gray-900 print:py-2">
-                        {order?.financials?.grandTotal}git
+                        {order?.financials?.grandTotal}
                       </td>
                       <td className="px-6 py-4 text-right print:hidden flex justify-end gap-2">
                         {/* 1. Standard Memo Button */}
@@ -963,7 +1037,8 @@ const filteredAndSortedOrders = useMemo(() => {
                     >
                       <p className="text-lg font-medium">No results found</p>
                       <p className="text-sm mt-1">
-                        We couldn't find any orders matching your selection.
+                        We couldn&apos;t find any orders matching your
+                        selection.
                       </p>
                     </td>
                   </tr>

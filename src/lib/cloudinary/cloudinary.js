@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { validateUploadEnv } from "@/lib/env";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,6 +16,7 @@ export const uploadImageToCloudinary = async (
       throw new Error("File input is missing");
     }
 
+    validateUploadEnv();
     const missingConfig = [
       ["CLOUDINARY_CLOUD_NAME", process.env.CLOUDINARY_CLOUD_NAME],
       ["CLOUDINARY_API_KEY", process.env.CLOUDINARY_API_KEY],
@@ -35,6 +37,12 @@ export const uploadImageToCloudinary = async (
       typeof fileInput === "object" &&
       typeof fileInput.arrayBuffer === "function"
     ) {
+      if (!fileInput.type?.startsWith("image/")) {
+        throw new Error("Only image files are allowed");
+      }
+      if (fileInput.size > 5 * 1024 * 1024) {
+        throw new Error("Image files must be 5 MB or smaller");
+      }
       const arrayBuffer = await fileInput.arrayBuffer();
 
       const buffer = Buffer.from(arrayBuffer);

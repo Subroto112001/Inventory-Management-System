@@ -28,6 +28,7 @@ export async function POST(request) {
       );
     }
     user.password = password;
+    user.authVersion = (user.authVersion || 0) + 1;
     user.isEmailVerified = true;
     user.passwordSetupTokenHash = undefined;
     user.passwordSetupTokenExpiresAt = undefined;

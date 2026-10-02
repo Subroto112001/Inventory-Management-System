@@ -7,17 +7,16 @@ import User, {
   DEPARTMENTS,
   ACCOUNT_STATUSES,
 } from "@/lib/models/User";
-import { hashSecret, requireAuth } from "@/lib/auth";
+import { hashSecret } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { sendInvitationCode } from "@/lib/mailer";
 // import { getServerSession } from "next-auth";
 // import { authOptions } from "@/lib/auth";
 
 export async function POST(request) {
   try {
-    const authenticatedUser = await requireAuth(request);
-    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
+    if (!access.ok) return access.response;
 
     const body = await request.json();
 
@@ -118,8 +117,6 @@ export async function POST(request) {
       throw mailError;
     }
 
-    console.log("New user created by admin:", newUser.email);
-
     return NextResponse.json(
       {
         message: "User created successfully!",
@@ -165,14 +162,8 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const authenticatedUser = await requireAuth(request);
-
-    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json(
-        { message: "You are unauthorized to access this resource" },
-        { status: 403 },
-      );
-    }
+    const access = await requirePermission(request, PERMISSIONS.USERS_READ);
+    if (!access.ok) return access.response;
 
     await connectMongoDB();
 

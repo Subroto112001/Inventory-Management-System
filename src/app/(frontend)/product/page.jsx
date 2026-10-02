@@ -3,12 +3,10 @@
 import {
   CATEGORIES,
   ProductCard,
-  PRODUCTS,
   SORT_OPTIONS,
-  Stars,
 } from "@/frontEndDataProvider/ProductpageDataProvider";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LuSearch,
   LuUser,
@@ -32,51 +30,56 @@ export default function ProductPage() {
   const [sort, setSort] = useState("Featured");
   const [view, setView] = useState("grid");
   const [page, setPage] = useState(1);
+  const [products, setProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
 
   const productsPerPage = 12;
 
-  const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS];
+  useEffect(() => {
+    const controller = new AbortController();
+    const sortMap = {
+      "Price: Low to High": "priceAsc",
+      "Price: High to Low": "priceDesc",
+      Newest: "newest",
+      Featured: "newest",
+      "Highest Rated": "newest",
+    };
+    const params = new URLSearchParams({
+      public: "1",
+      page: String(page),
+      limit: String(productsPerPage),
+      sort: sortMap[sort] || "newest",
+    });
+    if (activeCategory !== "All Products")
+      params.set("category", activeCategory);
+    if (search.trim()) params.set("search", search.trim());
+    if (inStockOnly) params.set("availability", "in-stock");
 
-    if (activeCategory !== "All Products") {
-      result = result.filter((product) => product.category === activeCategory);
-    }
+    fetch(`/api/product?${params.toString()}`, { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.message || "Unable to load products");
+        return data;
+      })
+      .then((data) => {
+        setProducts(data.products || []);
+        setTotalProducts(data.pagination?.total || 0);
+        setTotalPages(data.pagination?.totalPages || 0);
+      })
+      .catch((fetchError) => {
+        if (fetchError.name !== "AbortError") setError(fetchError.message);
+      })
+      .finally(() => setLoading(false));
 
-    if (search.trim()) {
-      const query = search.toLowerCase();
+    return () => controller.abort();
+  }, [activeCategory, inStockOnly, page, search, sort]);
 
-      result = result.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query),
-      );
-    }
-
-    if (sort === "Price: Low to High") {
-      result.sort((a, b) => a.price - b.price);
-    }
-
-    if (sort === "Price: High to Low") {
-      result.sort((a, b) => b.price - a.price);
-    }
-
-    if (sort === "Highest Rated") {
-      result.sort((a, b) => b.rating - a.rating);
-    }
-
-    if (sort === "Newest") {
-      result.sort((a, b) => b.id - a.id);
-    }
-
-    return result;
-  }, [activeCategory, search, sort]);
-
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-  const visibleProducts = filteredProducts.slice(
-    (page - 1) * productsPerPage,
-    page * productsPerPage,
-  );
+  const visibleProducts = products;
 
   const changeCategory = (category) => {
     setActiveCategory(category);
@@ -182,7 +185,15 @@ export default function ProductPage() {
                 <h3 className="font-medium text-sm mb-3">Availability</h3>
 
                 <label className="flex items-center gap-2 text-sm text-[#5B564C]">
-                  <input type="checkbox" className="accent-[#1F3A2E]" />
+                  <input
+                    type="checkbox"
+                    checked={inStockOnly}
+                    onChange={(event) => {
+                      setInStockOnly(event.target.checked);
+                      setPage(1);
+                    }}
+                    className="accent-[#1F3A2E]"
+                  />
                   In stock
                 </label>
               </div>
@@ -200,7 +211,7 @@ export default function ProductPage() {
                 </span>{" "}
                 of{" "}
                 <span className="text-[#211F1D] font-medium">
-                  {filteredProducts.length}
+                  {totalProducts}
                 </span>{" "}
                 products
               </p>
@@ -253,7 +264,15 @@ export default function ProductPage() {
             </div>
 
             {/* PRODUCTS */}
-            {visibleProducts.length > 0 ? (
+            {loading ? (
+              <div className="bg-white border border-[#E4DED2] rounded-md py-20 text-center text-sm text-[#8A8378]">
+                Loading products...
+              </div>
+            ) : error ? (
+              <div className="bg-white border border-[#E4DED2] rounded-md py-20 text-center text-sm text-red-700">
+                {error}
+              </div>
+            ) : visibleProducts.length > 0 ? (
               <div
                 className={
                   view === "grid"

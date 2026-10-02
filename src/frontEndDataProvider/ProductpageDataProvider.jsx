@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Link from "next/link";
+import { useCart } from "@/Component/website/Cart/CartContext";
 import { LuHeart, LuShoppingCart, LuStar } from "react-icons/lu";
 
 export const CATEGORIES = [
@@ -228,15 +230,19 @@ export const Stars = ({ rating }) => {
 
 export const ProductCard = ({ product }) => {
   const [liked, setLiked] = useState(false);
+  const { addItem } = useCart();
+  const inStock = product.inStock ?? true;
 
   return (
     <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-lg hover:border-[#C9A659] transition-all duration-200">
       <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
-        />
+        <Link href={`/product/product_details?id=${product.id}`}>
+          <img
+            src={product.image || "/placeholder-product.svg"}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
+          />
+        </Link>
 
         {product.badge && (
           <span className="absolute top-3 left-3 bg-[#1F3A2E] text-[#F7F3EC] text-xs px-2 py-1 rounded-sm">
@@ -259,10 +265,12 @@ export const ProductCard = ({ product }) => {
 
         <button
           type="button"
-          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2"
+          disabled={!inStock}
+          onClick={() => addItem(product)}
+          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <LuShoppingCart size={15} />
-          Add to cart
+          {inStock ? "Add to cart" : "Out of stock"}
         </button>
       </div>
 

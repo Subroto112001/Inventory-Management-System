@@ -28,11 +28,11 @@ const NAV_LINKS = [
   { label: "Sale", href: "#" },
 ];
 
-export default function FrontHeader() {
+export default function FrontHeader({ settings }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const scrollerRef = useRef(null);
   const { openCart, itemCount } = useCart();
-  
+
   const scrollNav = (dir) => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollBy({
@@ -43,18 +43,24 @@ export default function FrontHeader() {
   };
 
   return (
-    <header className="bg-[#F7F3EC] sticky top-0 z-40">
+    <header className="bg-[var(--store-surface)] sticky top-0 z-40 text-[var(--store-text)]">
       {/* Announcement Bar */}
-      <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
+      <div className="bg-[var(--store-primary)] text-[var(--store-surface)] text-xs">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <p>Free shipping on orders over $75 · Handmade in small batches</p>
 
           <div className="hidden sm:flex items-center gap-4">
-            <a href="#" className="hover:text-[#C9A659] transition-colors">
+            <a
+              href="#"
+              className="hover:text-[var(--store-accent)] transition-colors"
+            >
               Track order
             </a>
 
-            <a href="#" className="hover:text-[#C9A659] transition-colors">
+            <a
+              href="#"
+              className="hover:text-[var(--store-accent)] transition-colors"
+            >
               Help
             </a>
           </div>
@@ -66,7 +72,7 @@ export default function FrontHeader() {
         {/* Mobile Menu */}
         <button
           type="button"
-          className="lg:hidden text-[#211F1D]"
+          className="lg:hidden text-[var(--store-text)]"
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
         >
@@ -75,12 +81,20 @@ export default function FrontHeader() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
-            F
-          </span>
+          {settings.logo?.url ? (
+            <img
+              src={settings.logo.url}
+              alt={settings.storeName}
+              className="w-9 h-9 rounded-sm object-contain"
+            />
+          ) : (
+            <span className="w-9 h-9 rounded-sm bg-[var(--theme-primary)] text-[var(--theme-primary-text)] flex items-center justify-center font-serif text-lg">
+              {settings.storeName.charAt(0)}
+            </span>
+          )}
 
-          <span className="font-serif text-xl text-[#211F1D] tracking-tight hidden xs:inline">
-            FIELDHOUSE
+          <span className="font-serif text-xl text-[var(--store-text)] tracking-tight hidden xs:inline">
+            {settings.storeName}
           </span>
         </Link>
 
@@ -95,17 +109,17 @@ export default function FrontHeader() {
           <button
             type="button"
             aria-label="Search"
-            className="px-4 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] hover:bg-[#16281F] transition-colors"
+            className="px-4 py-2.5 bg-[var(--store-primary)] text-[var(--store-surface)] hover:opacity-90 transition-opacity"
           >
             <LuSearch size={17} />
           </button>
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
+        <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[var(--store-text)]">
           <Link
             href="/order?view=dashboard"
-            className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors cursor-pointer"
+            className="flex flex-col items-center gap-0.5 hover:text-[var(--store-accent)] transition-colors cursor-pointer"
             aria-label="Account"
           >
             <LuUser size={20} />
@@ -115,14 +129,14 @@ export default function FrontHeader() {
 
           <Link
             href={"/compare"}
-            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[var(--store-accent)] transition-colors"
             aria-label="Compare"
           >
             <LuGitCompare size={20} />
 
             <span className="text-[10px] hidden sm:inline">Compare</span>
 
-            <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1.5 bg-[var(--store-accent)] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
               2
             </span>
           </Link>
@@ -130,7 +144,7 @@ export default function FrontHeader() {
           <button
             type="button"
             onClick={openCart}
-            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors cursor-pointer"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[var(--store-accent)] transition-colors cursor-pointer"
             aria-label="Cart"
           >
             <LuShoppingCart size={20} />
@@ -138,7 +152,7 @@ export default function FrontHeader() {
             <span className="text-[10px] hidden sm:inline">Cart</span>
 
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1.5 bg-[var(--store-accent)] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                 {itemCount}
               </span>
             )}
@@ -158,7 +172,7 @@ export default function FrontHeader() {
           <button
             type="button"
             aria-label="Search"
-            className="px-3 py-2 bg-[#1F3A2E] text-[#F7F3EC]"
+            className="px-3 py-2 bg-[var(--store-primary)] text-[var(--store-surface)]"
           >
             <LuSearch size={16} />
           </button>
@@ -166,13 +180,13 @@ export default function FrontHeader() {
       </div>
 
       {/* Desktop Navigation */}
-      <nav className="hidden lg:block border-t border-[#E4DED2] bg-[#F7F3EC]">
+      <nav className="hidden lg:block border-t border-[#E4DED2] bg-[var(--store-surface)]">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 relative flex items-center">
           <button
             type="button"
             aria-label="Scroll navigation left"
             onClick={() => scrollNav(-1)}
-            className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pr-2"
+            className="shrink-0 text-[var(--theme-muted)] hover:text-[var(--theme-primary)] pr-2"
           >
             <LuChevronLeft size={16} />
           </button>
@@ -185,7 +199,7 @@ export default function FrontHeader() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-[#211F1D] hover:text-[#B65C38] whitespace-nowrap transition-colors"
+                className="text-sm text-[var(--store-text)] hover:text-[var(--store-accent)] whitespace-nowrap transition-colors"
               >
                 {link.label}
               </a>
@@ -196,7 +210,7 @@ export default function FrontHeader() {
             type="button"
             aria-label="Scroll navigation right"
             onClick={() => scrollNav(1)}
-            className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pl-2"
+            className="shrink-0 text-[var(--theme-muted)] hover:text-[var(--theme-primary)] pl-2"
           >
             <LuChevronRight size={16} />
           </button>
@@ -213,8 +227,8 @@ export default function FrontHeader() {
 
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#F7F3EC] p-5 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <span className="font-serif text-lg text-[#211F1D]">
-                FIELDHOUSE
+              <span className="font-serif text-lg text-[var(--theme-text)]">
+                {settings.storeName}
               </span>
 
               <button

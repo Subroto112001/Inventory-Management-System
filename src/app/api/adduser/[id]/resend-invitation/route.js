@@ -2,15 +2,14 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
-import { hashSecret, requireAuth } from "@/lib/auth";
+import { hashSecret } from "@/lib/auth";
+import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { sendInvitationCode } from "@/lib/mailer";
 
 export async function POST(request, { params }) {
   try {
-    const authenticatedUser = await requireAuth(request);
-    if (!authenticatedUser || authenticatedUser.role !== "System Admin") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
-    }
+    const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
+    if (!access.ok) return access.response;
 
     const { id } = await params;
     await connectMongoDB();

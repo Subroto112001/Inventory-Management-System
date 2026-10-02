@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -138,9 +137,7 @@ const CreateBrandPage = () => {
       return {
         ...prev,
         brandName: value,
-        brandCode: shouldUpdateCode
-          ? generateBrandCode(value)
-          : prev.brandCode,
+        brandCode: shouldUpdateCode ? generateBrandCode(value) : prev.brandCode,
       };
     });
 
@@ -195,8 +192,7 @@ const CreateBrandPage = () => {
 
       case "email":
         if (trimmedValue) {
-          const emailRegex =
-            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+          const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
           if (!emailRegex.test(trimmedValue)) {
             message = "Please provide a valid email address";
@@ -326,8 +322,7 @@ const CreateBrandPage = () => {
 
         case "email":
           if (value) {
-            const emailRegex =
-              /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+            const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
             if (!emailRegex.test(value)) {
               message = "Please provide a valid email address";
@@ -481,9 +476,7 @@ const CreateBrandPage = () => {
     const isValid = validateForm();
 
     if (!isValid) {
-      setSubmitError(
-        "Please fix the highlighted fields before submitting.",
-      );
+      setSubmitError("Please fix the highlighted fields before submitting.");
       return;
     }
 
@@ -495,10 +488,7 @@ const CreateBrandPage = () => {
       formData.append("brandName", form.brandName.trim());
 
       if (form.brandCode.trim()) {
-        formData.append(
-          "brandCode",
-          form.brandCode.trim().toUpperCase(),
-        );
+        formData.append("brandCode", form.brandCode.trim().toUpperCase());
       }
 
       if (form.description.trim()) {
@@ -506,24 +496,15 @@ const CreateBrandPage = () => {
       }
 
       if (form.contactPerson.trim()) {
-        formData.append(
-          "contactPerson",
-          form.contactPerson.trim(),
-        );
+        formData.append("contactPerson", form.contactPerson.trim());
       }
 
       if (form.email.trim()) {
-        formData.append(
-          "email",
-          form.email.trim().toLowerCase(),
-        );
+        formData.append("email", form.email.trim().toLowerCase());
       }
 
       if (form.phoneNumber.trim()) {
-        formData.append(
-          "phoneNumber",
-          form.phoneNumber.trim(),
-        );
+        formData.append("phoneNumber", form.phoneNumber.trim());
       }
 
       if (form.website.trim()) {
@@ -562,26 +543,22 @@ const CreateBrandPage = () => {
 
       if (!response.ok) {
         throw new Error(
-          data?.message ||
-            data?.error ||
-            "Failed to create brand.",
+          data?.message || data?.error || "Failed to create brand.",
         );
       }
 
       setSuccessMessage(
-        data?.message ||
-          "Brand has been created successfully.",
+        data?.message || "Brand has been created successfully.",
       );
 
       setTimeout(() => {
-        router.push("/dashboard/brands");
+        router.push("/dash/brands");
       }, 1000);
     } catch (error) {
       console.error("Create brand error:", error);
 
       setSubmitError(
-        error?.message ||
-          "Something went wrong while creating the brand.",
+        error?.message || "Something went wrong while creating the brand.",
       );
     } finally {
       setIsSubmitting(false);
@@ -593,10 +570,7 @@ const CreateBrandPage = () => {
   // ------------------------------------------------------------
 
   const getInitial = () => {
-    const initial = form.brandName
-      ?.trim()
-      ?.charAt(0)
-      ?.toUpperCase();
+    const initial = form.brandName?.trim()?.charAt(0)?.toUpperCase();
 
     return initial || <MdBusiness size={42} />;
   };
@@ -619,7 +593,6 @@ const CreateBrandPage = () => {
   return (
     <div className="min-h-screen bg-[#f7f8fa] px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1500px]">
-
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -690,8 +663,8 @@ const CreateBrandPage = () => {
               </p>
 
               <p className="mt-0.5 text-xs text-slate-500">
-                Complete the available information to create a richer
-                brand profile.
+                Complete the available information to create a richer brand
+                profile.
               </p>
             </div>
 
@@ -711,10 +684,7 @@ const CreateBrandPage = () => {
         {/* Alerts */}
         {submitError && (
           <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <MdClose
-              className="mt-0.5 shrink-0"
-              size={19}
-            />
+            <MdClose className="mt-0.5 shrink-0" size={19} />
 
             <span>{submitError}</span>
           </div>
@@ -722,27 +692,19 @@ const CreateBrandPage = () => {
 
         {successMessage && (
           <div className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            <MdCheck
-              className="mt-0.5 shrink-0"
-              size={19}
-            />
+            <MdCheck className="mt-0.5 shrink-0" size={19} />
 
             <span>{successMessage}</span>
           </div>
         )}
 
-        <form
-          id="create-brand-form"
-          onSubmit={handleSubmit}
-        >
+        <form id="create-brand-form" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-
             {/* ================================================= */}
             {/* Main Form */}
             {/* ================================================= */}
 
             <div className="space-y-6">
-
               {/* Basic Information */}
               <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
@@ -764,12 +726,10 @@ const CreateBrandPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
-
                   {/* Brand Name */}
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
-                      Brand Name{" "}
-                      <span className="text-red-500">*</span>
+                      Brand Name <span className="text-red-500">*</span>
                     </label>
 
                     <input
@@ -784,8 +744,7 @@ const CreateBrandPage = () => {
                     />
 
                     <div className="mt-1.5 flex justify-between">
-                      {errors.brandName &&
-                      touched.brandName ? (
+                      {errors.brandName && touched.brandName ? (
                         <p className="text-xs text-red-500">
                           {errors.brandName}
                         </p>
@@ -813,22 +772,18 @@ const CreateBrandPage = () => {
                         handleChange({
                           target: {
                             name: "brandCode",
-                            value:
-                              e.target.value.toUpperCase(),
+                            value: e.target.value.toUpperCase(),
                           },
                         })
                       }
                       onBlur={handleBlur}
                       maxLength={30}
                       placeholder="e.g. SAM"
-                      className={`${inputClass(
-                        "brandCode",
-                      )} uppercase`}
+                      className={`${inputClass("brandCode")} uppercase`}
                     />
 
                     <div className="mt-1.5 flex justify-between">
-                      {errors.brandCode &&
-                      touched.brandCode ? (
+                      {errors.brandCode && touched.brandCode ? (
                         <p className="text-xs text-red-500">
                           {errors.brandCode}
                         </p>
@@ -858,14 +813,11 @@ const CreateBrandPage = () => {
                       maxLength={1000}
                       rows={5}
                       placeholder="Write a short description about this brand..."
-                      className={`${inputClass(
-                        "description",
-                      )} resize-none`}
+                      className={`${inputClass("description")} resize-none`}
                     />
 
                     <div className="mt-1.5 flex justify-between">
-                      {errors.description &&
-                      touched.description ? (
+                      {errors.description && touched.description ? (
                         <p className="text-xs text-red-500">
                           {errors.description}
                         </p>
@@ -903,7 +855,6 @@ const CreateBrandPage = () => {
 
                 <div className="p-5 sm:p-6">
                   <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 px-5 py-8 text-center transition hover:border-slate-300">
-
                     {logoPreview ? (
                       <div className="relative">
                         <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -943,14 +894,10 @@ const CreateBrandPage = () => {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        fileInputRef.current?.click()
-                      }
+                      onClick={() => fileInputRef.current?.click()}
                       className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
                     >
-                      {logoPreview
-                        ? "Change Logo"
-                        : "Choose Logo"}
+                      {logoPreview ? "Change Logo" : "Choose Logo"}
                     </button>
 
                     <input
@@ -991,7 +938,6 @@ const CreateBrandPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
-
                   {/* Contact Person */}
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -1009,18 +955,15 @@ const CreateBrandPage = () => {
                         onBlur={handleBlur}
                         maxLength={100}
                         placeholder="e.g. Samsung Bangladesh"
-                        className={`${inputClass(
-                          "contactPerson",
-                        )} pl-10`}
+                        className={`${inputClass("contactPerson")} pl-10`}
                       />
                     </div>
 
-                    {errors.contactPerson &&
-                      touched.contactPerson && (
-                        <p className="mt-1.5 text-xs text-red-500">
-                          {errors.contactPerson}
-                        </p>
-                      )}
+                    {errors.contactPerson && touched.contactPerson && (
+                      <p className="mt-1.5 text-xs text-red-500">
+                        {errors.contactPerson}
+                      </p>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -1039,9 +982,7 @@ const CreateBrandPage = () => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         placeholder="contact@example.com"
-                        className={`${inputClass(
-                          "email",
-                        )} pl-10`}
+                        className={`${inputClass("email")} pl-10`}
                       />
                     </div>
 
@@ -1068,18 +1009,15 @@ const CreateBrandPage = () => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         placeholder="+8801XXXXXXXXX"
-                        className={`${inputClass(
-                          "phoneNumber",
-                        )} pl-10`}
+                        className={`${inputClass("phoneNumber")} pl-10`}
                       />
                     </div>
 
-                    {errors.phoneNumber &&
-                      touched.phoneNumber && (
-                        <p className="mt-1.5 text-xs text-red-500">
-                          {errors.phoneNumber}
-                        </p>
-                      )}
+                    {errors.phoneNumber && touched.phoneNumber && (
+                      <p className="mt-1.5 text-xs text-red-500">
+                        {errors.phoneNumber}
+                      </p>
+                    )}
                   </div>
 
                   {/* Website */}
@@ -1098,18 +1036,15 @@ const CreateBrandPage = () => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         placeholder="https://example.com"
-                        className={`${inputClass(
-                          "website",
-                        )} pl-10`}
+                        className={`${inputClass("website")} pl-10`}
                       />
                     </div>
 
-                    {errors.website &&
-                      touched.website && (
-                        <p className="mt-1.5 text-xs text-red-500">
-                          {errors.website}
-                        </p>
-                      )}
+                    {errors.website && touched.website && (
+                      <p className="mt-1.5 text-xs text-red-500">
+                        {errors.website}
+                      </p>
+                    )}
                   </div>
                 </div>
               </section>
@@ -1123,9 +1058,7 @@ const CreateBrandPage = () => {
                     </div>
 
                     <div>
-                      <h2 className="font-semibold text-slate-900">
-                        Address
-                      </h2>
+                      <h2 className="font-semibold text-slate-900">Address</h2>
 
                       <p className="text-xs text-slate-500">
                         Location information for the brand.
@@ -1135,7 +1068,6 @@ const CreateBrandPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
-
                   {/* Address */}
                   <div className="sm:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -1150,17 +1082,12 @@ const CreateBrandPage = () => {
                       maxLength={250}
                       rows={3}
                       placeholder="Full business address"
-                      className={`${inputClass(
-                        "address",
-                      )} resize-none`}
+                      className={`${inputClass("address")} resize-none`}
                     />
 
                     <div className="mt-1.5 flex justify-between">
-                      {errors.address &&
-                      touched.address ? (
-                        <p className="text-xs text-red-500">
-                          {errors.address}
-                        </p>
+                      {errors.address && touched.address ? (
+                        <p className="text-xs text-red-500">{errors.address}</p>
                       ) : (
                         <span />
                       )}
@@ -1188,19 +1115,17 @@ const CreateBrandPage = () => {
                       className={inputClass("district")}
                     />
 
-                    {errors.district &&
-                      touched.district && (
-                        <p className="mt-1.5 text-xs text-red-500">
-                          {errors.district}
-                        </p>
-                      )}
+                    {errors.district && touched.district && (
+                      <p className="mt-1.5 text-xs text-red-500">
+                        {errors.district}
+                      </p>
+                    )}
                   </div>
 
                   {/* Country */}
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700">
-                      Country{" "}
-                      <span className="text-red-500">*</span>
+                      Country <span className="text-red-500">*</span>
                     </label>
 
                     <div className="relative">
@@ -1213,18 +1138,15 @@ const CreateBrandPage = () => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         maxLength={100}
-                        className={`${inputClass(
-                          "country",
-                        )} pl-10`}
+                        className={`${inputClass("country")} pl-10`}
                       />
                     </div>
 
-                    {errors.country &&
-                      touched.country && (
-                        <p className="mt-1.5 text-xs text-red-500">
-                          {errors.country}
-                        </p>
-                      )}
+                    {errors.country && touched.country && (
+                      <p className="mt-1.5 text-xs text-red-500">
+                        {errors.country}
+                      </p>
+                    )}
                   </div>
                 </div>
               </section>
@@ -1235,7 +1157,6 @@ const CreateBrandPage = () => {
             {/* ================================================= */}
 
             <div className="space-y-6">
-
               {/* Live Preview */}
               <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div className="bg-slate-900 px-5 py-5 text-white">
@@ -1243,9 +1164,7 @@ const CreateBrandPage = () => {
                     Live Preview
                   </p>
 
-                  <h2 className="mt-1 text-lg font-semibold">
-                    Brand Profile
-                  </h2>
+                  <h2 className="mt-1 text-lg font-semibold">Brand Profile</h2>
                 </div>
 
                 <div className="p-5">
@@ -1264,8 +1183,7 @@ const CreateBrandPage = () => {
 
                     <div className="min-w-0">
                       <h3 className="truncate text-lg font-bold text-slate-900">
-                        {form.brandName ||
-                          "Your Brand Name"}
+                        {form.brandName || "Your Brand Name"}
                       </h3>
 
                       <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -1336,15 +1254,11 @@ const CreateBrandPage = () => {
                       />
                     )}
 
-                    {(form.district ||
-                      form.country) && (
+                    {(form.district || form.country) && (
                       <PreviewItem
                         icon={<MdLocationOn size={17} />}
                         label="Location"
-                        value={[
-                          form.district,
-                          form.country,
-                        ]
+                        value={[form.district, form.country]
                           .filter(Boolean)
                           .join(", ")}
                       />
@@ -1362,8 +1276,8 @@ const CreateBrandPage = () => {
                     </h2>
 
                     <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Control whether this brand is currently
-                      available for your inventory.
+                      Control whether this brand is currently available for your
+                      inventory.
                     </p>
                   </div>
 
@@ -1422,16 +1336,12 @@ const CreateBrandPage = () => {
 
                 <div className="mt-4 space-y-3">
                   <ChecklistItem
-                    completed={Boolean(
-                      form.brandName.trim(),
-                    )}
+                    completed={Boolean(form.brandName.trim())}
                     text="Brand name"
                   />
 
                   <ChecklistItem
-                    completed={Boolean(
-                      form.brandCode.trim(),
-                    )}
+                    completed={Boolean(form.brandCode.trim())}
                     text="Brand code"
                   />
 
@@ -1444,17 +1354,15 @@ const CreateBrandPage = () => {
                   <ChecklistItem
                     completed={Boolean(
                       form.contactPerson.trim() ||
-                        form.email.trim() ||
-                        form.phoneNumber.trim(),
+                      form.email.trim() ||
+                      form.phoneNumber.trim(),
                     )}
                     text="Contact information"
                     optional
                   />
 
                   <ChecklistItem
-                    completed={Boolean(
-                      form.country.trim(),
-                    )}
+                    completed={Boolean(form.country.trim())}
                     text="Country"
                   />
                 </div>
@@ -1513,9 +1421,7 @@ const PreviewItem = ({ icon, label, value }) => {
           {label}
         </p>
 
-        <p className="truncate text-sm font-medium text-slate-700">
-          {value}
-        </p>
+        <p className="truncate text-sm font-medium text-slate-700">{value}</p>
       </div>
     </div>
   );
@@ -1525,11 +1431,7 @@ const PreviewItem = ({ icon, label, value }) => {
 // Checklist Item
 // ============================================================
 
-const ChecklistItem = ({
-  completed,
-  text,
-  optional = false,
-}) => {
+const ChecklistItem = ({ completed, text, optional = false }) => {
   return (
     <div className="flex items-center gap-3">
       <div
@@ -1544,17 +1446,13 @@ const ChecklistItem = ({
 
       <span
         className={`text-sm ${
-          completed
-            ? "font-medium text-slate-700"
-            : "text-slate-400"
+          completed ? "font-medium text-slate-700" : "text-slate-400"
         }`}
       >
         {text}
 
         {optional && (
-          <span className="ml-1 text-[11px] text-slate-400">
-            (optional)
-          </span>
+          <span className="ml-1 text-[11px] text-slate-400">(optional)</span>
         )}
       </span>
     </div>

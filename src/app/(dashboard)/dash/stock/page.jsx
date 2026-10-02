@@ -1,7 +1,7 @@
 "use client";
 
-import useProducts, { loadingProducts, products } from "@/dataProvider/ProductdataProvider";
-import React, { useState, useMemo, useEffect } from "react";
+import useProducts from "@/dataProvider/ProductdataProvider";
+import React, { useState, useMemo } from "react";
 import {
   MdDownload,
   MdAdd,
@@ -30,11 +30,11 @@ export default function StockManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [updateAmount, setUpdateAmount] = useState("");
-
+  const [updateReason, setUpdateReason] = useState("");
+  const [updateError, setUpdateError] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const { products, loadingProducts, fetchProducts } = useProducts();
-
-
 
   // API থেকে আসা প্রোডাক্ট ডাটাকে টেবিলের ফরম্যাটে ম্যাপ করা হচ্ছে
   // (এখানেই ডামি ডাটার বদলে আসল স্টক ডাটা ব্যবহার হচ্ছে)
@@ -61,10 +61,10 @@ export default function StockManagement() {
     return "In Stock";
   };
 
-  /** 
+  /**
    * Logic to filter stocks according to search query
    * */
-  
+
   const filteredStock = useMemo(() => {
     if (!searchQuery) return stockItems;
     const lowerCaseQuery = searchQuery.toLowerCase();
@@ -78,11 +78,6 @@ export default function StockManagement() {
           .includes(lowerCaseQuery),
     );
   }, [searchQuery, stockItems]);
-
-  // Reset to first page when search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredStock.length / itemsPerPage);
@@ -115,34 +110,54 @@ export default function StockManagement() {
   const openUpdateModal = (item) => {
     setSelectedItem(item);
     setUpdateAmount(item.currentStock.toString());
+    setUpdateReason("");
+    setUpdateError("");
     setIsModalOpen(true);
   };
 
-  const saveStockUpdate = (e) => {
+  const saveStockUpdate = async (e) => {
     e.preventDefault();
     const newStock = parseInt(updateAmount, 10);
 
     if (isNaN(newStock) || newStock < 0) {
-      alert("Please enter a valid stock amount (0 or more).");
+      setUpdateError("Please enter a valid stock amount (0 or more).");
+      return;
+    }
+    const adjustmentQuantity = newStock - selectedItem.currentStock;
+    if (adjustmentQuantity === 0) {
+      setUpdateError("Change the stock amount before saving.");
+      return;
+    }
+    if (!updateReason.trim()) {
+      setUpdateError("A reason is required for every stock adjustment.");
       return;
     }
 
-    // UI-তে সাথে সাথে আপডেট দেখানোর জন্য (optimistic update)
-    setProducts((prevProducts) =>
-      prevProducts.map((p) =>
-        p.id === selectedItem.id ? { ...p, currentStock: newStock } : p,
-      ),
-    );
-
-    // TODO: ডাটাবেজেও পরিবর্তনটা সেভ রাখতে এখানে আপনার আপডেট API কল করুন, যেমন:
-    // await fetch(`/api/products/${selectedItem.id}`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ currentStock: newStock }),
-    // });
-
-    setIsModalOpen(false);
-    setSelectedItem(null);
+    setIsUpdating(true);
+    setUpdateError("");
+    try {
+      const response = await fetch("/api/inventory/adjust", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: selectedItem.id,
+          adjustmentQuantity,
+          movementType: "ADJUSTMENT",
+          reason: updateReason,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to update stock");
+      }
+      await fetchProducts();
+      setIsModalOpen(false);
+      setSelectedItem(null);
+    } catch (error) {
+      setUpdateError(error.message);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   // স্ট্যাটাস অনুযায়ী ব্যাজ এবং ব্যাকগ্রাউন্ডের স্টাইল
@@ -182,7 +197,7 @@ export default function StockManagement() {
         </p>
         {searchQuery && (
           <p className="text-gray-500 text-sm mt-1">
-            Filtered by: "{searchQuery}"
+            Filtered by: &quot;{searchQuery}&quot;
           </p>
         )}
       </div>
@@ -281,7 +296,10 @@ export default function StockManagement() {
             <input
               id="search-stock"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#611F69] transition-all"
               placeholder="Search product, SKU..."
               type="search"
@@ -481,7 +499,8 @@ export default function StockManagement() {
                       No products found
                     </p>
                     <p className="text-sm mt-1">
-                      We couldn't find any stock items matching "{searchQuery}"
+                      We couldn&apos;t find any stock items matching &quot;
+                      {searchQuery}&quot;
                     </p>
                   </td>
                 </tr>
@@ -620,6 +639,30 @@ export default function StockManagement() {
                 </p>
               </div>
 
+              <div className="mb-6">
+                <label
+                  htmlFor="stockReason"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Reason
+                </label>
+                <textarea
+                  id="stockReason"
+                  value={updateReason}
+                  onChange={(e) => setUpdateReason(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent text-gray-900"
+                  rows="3"
+                  maxLength="500"
+                  required
+                />
+              </div>
+
+              {updateError && (
+                <p className="mb-4 text-sm text-red-600" role="alert">
+                  {updateError}
+                </p>
+              )}
+
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
@@ -630,9 +673,10 @@ export default function StockManagement() {
                 </button>
                 <button
                   type="submit"
+                  disabled={isUpdating}
                   className="px-4 py-2 bg-[#611F69] text-white rounded-md hover:bg-[#4a1752] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#611F69]"
                 >
-                  Save Changes
+                  {isUpdating ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

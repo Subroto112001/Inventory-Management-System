@@ -261,7 +261,7 @@ export default function CreateCategoryPage() {
 
       // Redirect after 1 second
       setTimeout(() => {
-        router.push("/category");
+        router.push("/dash/category");
       }, 1000);
     } catch (error) {
       console.error("Create Category Error:", error);
@@ -283,7 +283,7 @@ export default function CreateCategoryPage() {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard/category"
+              href="/dash/category"
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition hover:border-[#611F69] hover:bg-[#611F69] hover:text-white"
             >
               <MdArrowBack size={21} />

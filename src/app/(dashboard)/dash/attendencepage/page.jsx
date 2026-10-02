@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MdAccessTime,
   MdAdd,
@@ -184,12 +184,17 @@ const getStatusDot = (status) => {
 };
 
 export default function AttendancePage() {
-  const [attendance, setAttendance] = useState(dummyAttendance);
+  void dummyAttendance;
+  const [attendance, setAttendance] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loadError, setLoadError] = useState("");
 
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("All Departments");
   const [status, setStatus] = useState("All Status");
-  const [selectedDate, setSelectedDate] = useState("2026-09-22");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().slice(0, 10),
+  );
 
   const [showModal, setShowModal] = useState(false);
 
@@ -199,6 +204,46 @@ export default function AttendancePage() {
     checkOut: "",
     status: "Present",
   });
+
+  const fetchAttendance = async () => {
+    try {
+      const [attendanceResponse, employeeResponse] = await Promise.all([
+        fetch(`/api/attendance?date=${selectedDate}`, { cache: "no-store" }),
+        fetch("/api/adduser", { cache: "no-store" }),
+      ]);
+      const attendanceData = await attendanceResponse.json();
+      const employeeData = await employeeResponse.json();
+      if (!attendanceResponse.ok)
+        throw new Error(attendanceData.message || "Unable to load attendance");
+      setAttendance(
+        (attendanceData.attendance || []).map((item) => ({
+          id: item.employee?._id || item.employee,
+          employeeId: item.employee?._id || item.employee,
+          name: `${item.employee?.firstName || ""} ${item.employee?.lastName || ""}`.trim(),
+          department: item.employee?.department || "",
+          role: item.employee?.role || "",
+          checkIn: item.checkIn
+            ? new Date(item.checkIn).toLocaleTimeString()
+            : "—",
+          checkOut: item.checkOut
+            ? new Date(item.checkOut).toLocaleTimeString()
+            : "—",
+          workingHours: "—",
+          status: item.status,
+        })),
+      );
+      setEmployees(
+        (employeeData.users || []).filter((item) => item.role !== "Customer"),
+      );
+    } catch (error) {
+      setLoadError(error.message || "Unable to load attendance");
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(fetchAttendance, 0);
+    return () => clearTimeout(timer);
+  }, [selectedDate]);
 
   const stats = useMemo(() => {
     const total = attendance.length;
@@ -241,27 +286,28 @@ export default function AttendancePage() {
     setStatus("All Status");
   };
 
-  const handleMarkAttendance = (e) => {
+  const handleMarkAttendance = async (e) => {
     e.preventDefault();
 
     if (!newAttendance.employee) return;
 
-    const employee = attendance.find(
-      (item) => item.id === Number(newAttendance.employee),
-    );
-
-    if (!employee) return;
-
-    const updatedEmployee = {
-      ...employee,
-      checkIn: newAttendance.checkIn || employee.checkIn,
-      checkOut: newAttendance.checkOut || employee.checkOut,
-      status: newAttendance.status,
-    };
-
-    setAttendance((prev) =>
-      prev.map((item) => (item.id === employee.id ? updatedEmployee : item)),
-    );
+    const response = await fetch("/api/attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        employee: newAttendance.employee,
+        date: selectedDate,
+        checkIn: newAttendance.checkIn || undefined,
+        checkOut: newAttendance.checkOut || undefined,
+        status: newAttendance.status,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setLoadError(data.message || "Unable to save attendance");
+      return;
+    }
+    await fetchAttendance();
 
     setNewAttendance({
       employee: "",
@@ -295,6 +341,11 @@ export default function AttendancePage() {
             <p className="text-sm text-gray-500">
               Track employee attendance, working hours and daily presence.
             </p>
+            {loadError && (
+              <p className="mt-2 text-sm text-red-600" role="alert">
+                {loadError}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -821,7 +872,7 @@ export default function AttendancePage() {
                 </h2>
 
                 <p className="mt-1 text-xs text-gray-500">
-                  Add or update today's attendance record.
+                  Add or update today&apos;s attendance record.
                 </p>
               </div>
 
@@ -857,9 +908,10 @@ export default function AttendancePage() {
                 >
                   <option value="">Select employee</option>
 
-                  {attendance.map((employee) => (
-                    <option key={employee.id} value={employee.id}>
-                      {employee.name} — {employee.employeeId}
+                  {employees.map((employee) => (
+                    <option key={employee._id} value={employee._id}>
+                      {employee.firstName} {employee.lastName || ""} —{" "}
+                      {employee.email}
                     </option>
                   ))}
                 </select>

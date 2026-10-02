@@ -1,4 +1,3 @@
-
 "use client";
 
 import ProductCard from "@/Component/Product_card/Product_card";
@@ -18,11 +17,7 @@ import {
 // ==========================================
 // Camera Scanner Modal Component
 // ==========================================
-const CameraScannerModal = ({
-  isOpen,
-  onClose,
-  onScanSuccess,
-}) => {
+const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
   const [isClient, setIsClient] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const scannerRef = useRef(null);
@@ -39,9 +34,7 @@ const CameraScannerModal = ({
     isScanningComplete.current = false;
 
     import("html5-qrcode").then(({ Html5Qrcode }) => {
-      const html5QrCode = new Html5Qrcode(
-        "camera-reader"
-      );
+      const html5QrCode = new Html5Qrcode("camera-reader");
 
       scannerRef.current = html5QrCode;
 
@@ -50,20 +43,12 @@ const CameraScannerModal = ({
           { facingMode: "environment" },
           {
             fps: 15,
-            qrbox: (
-              viewfinderWidth,
-              viewfinderHeight
-            ) => {
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
               const minEdgePercentage = 0.7;
 
-              const minEdgeSize = Math.min(
-                viewfinderWidth,
-                viewfinderHeight
-              );
+              const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
 
-              const qrboxSize = Math.floor(
-                minEdgeSize * minEdgePercentage
-              );
+              const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
 
               return {
                 width: qrboxSize,
@@ -82,23 +67,18 @@ const CameraScannerModal = ({
 
               onScanSuccess(decodedText);
 
-              html5QrCode
-                .stop()
-                .catch(console.error);
+              html5QrCode.stop().catch(console.error);
             }
           },
           () => {
             // Ignore background scan errors
-          }
+          },
         )
         .catch((err) => {
-          console.error(
-            "Camera start error:",
-            err
-          );
+          console.error("Camera start error:", err);
 
           setCameraError(
-            "Camera blocked or not found. Please allow camera access."
+            "Camera blocked or not found. Please allow camera access.",
           );
         });
     });
@@ -115,11 +95,7 @@ const CameraScannerModal = ({
         } catch (e) {}
       }
     };
-  }, [
-    isOpen,
-    isClient,
-    onScanSuccess,
-  ]);
+  }, [isOpen, isClient, onScanSuccess]);
 
   if (!isOpen || !isClient) return null;
 
@@ -131,7 +107,6 @@ const CameraScannerModal = ({
       aria-labelledby="scanner-dialog-title"
     >
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-white">
           <h2
@@ -142,7 +117,6 @@ const CameraScannerModal = ({
               className="text-[#611F69] text-xl"
               aria-hidden="true"
             />
-
             Scan Barcode / QR
           </h2>
 
@@ -152,9 +126,7 @@ const CameraScannerModal = ({
 
               if (scannerRef.current) {
                 try {
-                  scannerRef.current
-                    .stop()
-                    .catch(() => {});
+                  scannerRef.current.stop().catch(() => {});
                 } catch (e) {}
               }
 
@@ -163,10 +135,7 @@ const CameraScannerModal = ({
             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
             aria-label="Close scanner"
           >
-            <MdClose
-              className="text-2xl"
-              aria-hidden="true"
-            />
+            <MdClose className="text-2xl" aria-hidden="true" />
           </button>
         </div>
 
@@ -187,10 +156,8 @@ const CameraScannerModal = ({
         {/* Footer */}
         <div className="p-4 bg-gray-50 border-t border-gray-100 text-sm text-gray-700 text-center font-medium">
           Hold the barcode steady{" "}
-          <span className="text-[#611F69] font-bold">
-            4-6 inches
-          </span>{" "}
-          away from the camera.
+          <span className="text-[#611F69] font-bold">4-6 inches</span> away from
+          the camera.
         </div>
       </div>
     </div>
@@ -219,33 +186,17 @@ const defaultFormState = {
 // Main Page Component
 // ==========================================
 const Page = () => {
-  const [formData, setFormData] =
-    useState(defaultFormState);
+  const [formData, setFormData] = useState(defaultFormState);
 
-  const [
-    isScannerOpen,
-    setIsScannerOpen,
-  ] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const [
-    submitting,
-    setSubmitting,
-  ] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [
-    publishError,
-    setPublishError,
-  ] = useState("");
+  const [publishError, setPublishError] = useState("");
 
-  const [
-    products,
-    setProducts,
-  ] = useState([]);
+  const [products, setProducts] = useState([]);
 
-  const [
-    loadingProducts,
-    setLoadingProducts,
-  ] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   // ==========================================
   // Fetch Products
@@ -254,30 +205,19 @@ const Page = () => {
     setLoadingProducts(true);
 
     try {
-      const res = await fetch(
-        "/api/product",
-        {
-          cache: "no-store",
-        }
-      );
+      const res = await fetch("/api/product", {
+        cache: "no-store",
+      });
 
       const data = await res.json();
 
       if (res.ok) {
-        setProducts(
-          data.products || []
-        );
+        setProducts(data.products || []);
       } else {
-        console.error(
-          "Failed to load products:",
-          data.message
-        );
+        console.error("Failed to load products:", data.message);
       }
     } catch (err) {
-      console.error(
-        "Failed to load products:",
-        err
-      );
+      console.error("Failed to load products:", err);
     } finally {
       setLoadingProducts(false);
     }
@@ -291,20 +231,12 @@ const Page = () => {
   // Handle Input Change
   // ==========================================
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-      type,
-      files,
-    } = e.target;
+    const { name, value, type, files } = e.target;
 
     setFormData((prevData) => ({
       ...prevData,
 
-      [name]:
-        type === "file"
-          ? files?.[0] || null
-          : value,
+      [name]: type === "file" ? files?.[0] || null : value,
     }));
 
     // Clear previous error when user changes input
@@ -318,8 +250,7 @@ const Page = () => {
   // ==========================================
   const handleGenerateSKU = () => {
     const randomSKU = `PRD-${Math.floor(
-      100000000 +
-        Math.random() * 900000000
+      100000000 + Math.random() * 900000000,
     )}`;
 
     setFormData((prevData) => ({
@@ -331,9 +262,7 @@ const Page = () => {
   // ==========================================
   // Barcode / QR Scan Success
   // ==========================================
-  const handleScanSuccess = (
-    decodedText
-  ) => {
+  const handleScanSuccess = (decodedText) => {
     setFormData((prevData) => ({
       ...prevData,
       productSKU: decodedText,
@@ -410,13 +339,8 @@ const Page = () => {
     setPublishError("");
 
     // Required fields
-    if (
-      !formData.productName ||
-      !formData.productSKU
-    ) {
-      setPublishError(
-        "Please fill in the required fields (Name & SKU)."
-      );
+    if (!formData.productName || !formData.productSKU) {
+      setPublishError("Please fill in the required fields (Name & SKU).");
       return;
     }
 
@@ -425,9 +349,7 @@ const Page = () => {
       formData.price === null ||
       formData.price === undefined
     ) {
-      setPublishError(
-        "Price is required."
-      );
+      setPublishError("Price is required.");
       return;
     }
 
@@ -436,25 +358,18 @@ const Page = () => {
     // ==========================================
     if (
       formData.productPicture &&
-      !formData.productPicture.type?.startsWith(
-        "image/"
-      )
+      !formData.productPicture.type?.startsWith("image/")
     ) {
-      setPublishError(
-        "Please select a valid image file."
-      );
+      setPublishError("Please select a valid image file.");
       return;
     }
 
     // Optional file size validation
     if (
       formData.productPicture &&
-      formData.productPicture.size >
-        10 * 1024 * 1024
+      formData.productPicture.size > 10 * 1024 * 1024
     ) {
-      setPublishError(
-        "Image size cannot exceed 10MB."
-      );
+      setPublishError("Image size cannot exceed 10MB.");
       return;
     }
 
@@ -466,84 +381,44 @@ const Page = () => {
       // ==========================================
       const data = new FormData();
 
-      data.append(
-        "productName",
-        formData.productName
-      );
+      data.append("productName", formData.productName);
 
-      data.append(
-        "productSKU",
-        formData.productSKU
-      );
+      data.append("productSKU", formData.productSKU);
 
-      data.append(
-        "price",
-        formData.price
-      );
+      data.append("price", formData.price);
 
-      data.append(
-        "brandName",
-        formData.brandName || ""
-      );
+      data.append("brandName", formData.brandName || "");
 
-      data.append(
-        "unit",
-        formData.unit || ""
-      );
+      data.append("unit", formData.unit || "");
 
-      data.append(
-        "quantity",
-        formData.quantity || "0"
-      );
+      data.append("quantity", formData.quantity || "0");
 
-      data.append(
-        "description",
-        formData.description || ""
-      );
+      data.append("description", formData.description || "");
 
-      data.append(
-        "wholesalePrice",
-        formData.wholesalePrice || ""
-      );
+      data.append("wholesalePrice", formData.wholesalePrice || "");
 
-      data.append(
-        "discount",
-        formData.discount || "0"
-      );
+      data.append("discount", formData.discount || "0");
 
-      data.append(
-        "initialStock",
-        formData.initialStock || "0"
-      );
+      data.append("initialStock", formData.initialStock || "0");
 
-      data.append(
-        "lowStockAlert",
-        formData.lowStockAlert || "0"
-      );
+      data.append("lowStockAlert", formData.lowStockAlert || "0");
 
       // ==========================================
       // Product Image
       // ==========================================
       if (formData.productPicture) {
-        data.append(
-          "image",
-          formData.productPicture
-        );
+        data.append("image", formData.productPicture);
       }
 
       // ==========================================
       // Send Request
       // ==========================================
-      const res = await fetch(
-        "/api/product",
-        {
-          method: "POST",
-          body: data,
-        }
-      );
+      const res = await fetch("/api/product", {
+        method: "POST",
+        body: data,
+      });
 
-      const responseData =
-        await res.json();
+      const responseData = await res.json();
 
       // ==========================================
       // Handle Error
@@ -551,7 +426,7 @@ const Page = () => {
       if (!res.ok) {
         setPublishError(
           responseData.message ||
-            "Something went wrong while publishing the product."
+            "Something went wrong while publishing the product.",
         );
 
         return;
@@ -560,9 +435,7 @@ const Page = () => {
       // ==========================================
       // Success
       // ==========================================
-      alert(
-        "Product published successfully!"
-      );
+      alert("Product published successfully!");
 
       // Reset form
       setFormData({
@@ -571,16 +444,10 @@ const Page = () => {
 
       // Refresh product list
       await fetchProducts();
-
     } catch (err) {
-      console.error(
-        "Publish Product Error:",
-        err
-      );
+      console.error("Publish Product Error:", err);
 
-      setPublishError(
-        "Server error. Please try again."
-      );
+      setPublishError("Server error. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -590,22 +457,15 @@ const Page = () => {
   // Render
   // ==========================================
   return (
-    <main
-      className="p-5"
-      id="main-content"
-    >
+    <main className="p-5" id="main-content">
       {/* ====================================== */}
       {/* Scanner Modal */}
       {/* ====================================== */}
 
       <CameraScannerModal
         isOpen={isScannerOpen}
-        onClose={() =>
-          setIsScannerOpen(false)
-        }
-        onScanSuccess={
-          handleScanSuccess
-        }
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={handleScanSuccess}
       />
 
       <div>
@@ -614,21 +474,15 @@ const Page = () => {
         {/* ====================================== */}
 
         <Link
-          href="/products"
+          href="/dash/products"
           className="inline-flex gap-2 items-center text-gray-700 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
           aria-label="Go back to products page"
         >
-          <span
-            className="text-2xl text-[#611F69]"
-            aria-hidden="true"
-          >
-            {IconProvider?.leftIcon ||
-              "←"}
+          <span className="text-2xl text-[#611F69]" aria-hidden="true">
+            {IconProvider?.leftIcon || "←"}
           </span>
 
-          <span className="text-[16px] font-medium">
-            Back To Products
-          </span>
+          <span className="text-[16px] font-medium">Back To Products</span>
         </Link>
 
         {/* ====================================== */}
@@ -642,15 +496,11 @@ const Page = () => {
             </h1>
 
             <p className="text-gray-600 m-0 text-sm">
-              Fill in the details to add a
-              new product to your inventory
+              Fill in the details to add a new product to your inventory
             </p>
           </div>
 
-          <div
-            className="flex flex-wrap gap-3"
-            aria-label="Product actions"
-          >
+          <div className="flex flex-wrap gap-3" aria-label="Product actions">
             <TransparentButton value="Cancel" />
 
             <TransparentButton value="Save As Draft" />
@@ -681,162 +531,112 @@ const Page = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {input_fields.map(
-            (item, index) => {
+          {input_fields.map((item, index) => {
+            // ==================================
+            // SKU Field
+            // ==================================
 
-              // ==================================
-              // SKU Field
-              // ==================================
-
-              if (
-                item.name ===
-                "productSKU"
-              ) {
-                return (
-                  <div
-                    key={index}
-                    className="flex flex-col gap-1 md:col-span-2 lg:col-span-1"
-                  >
-                    <label
-                      htmlFor={item.name}
-                      className="text-gray-700 font-medium text-sm"
-                    >
-                      {item.label}{" "}
-                      (Scan or Generate)
-                    </label>
-
-                    <div className="flex flex-wrap sm:flex-nowrap gap-2">
-                      <div className="relative flex-1 w-full">
-                        <MdQrCodeScanner
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]"
-                          aria-hidden="true"
-                        />
-
-                        <input
-                          id={item.name}
-                          name={item.name}
-                          type="text"
-                          value={
-                            formData[
-                              item.name
-                            ]
-                          }
-                          onChange={
-                            handleChange
-                          }
-                          className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all bg-gray-50"
-                          placeholder="Type, scan or generate..."
-                        />
-                      </div>
-
-                      {/* Camera */}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsScannerOpen(
-                            true
-                          )
-                        }
-                        className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
-                        aria-label="Open camera to scan barcode"
-                        title="Use Camera to Scan"
-                      >
-                        <MdCameraAlt
-                          className="text-[18px]"
-                          aria-hidden="true"
-                        />
-
-                        <span className="hidden sm:inline">
-                          Camera
-                        </span>
-                      </button>
-
-                      {/* Generate */}
-                      <button
-                        type="button"
-                        onClick={
-                          handleGenerateSKU
-                        }
-                        className="flex items-center justify-center gap-1 px-3 py-2 bg-[#611F69]/10 text-[#611F69] border border-[#611F69]/20 rounded-md hover:bg-[#611F69]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
-                        aria-label="Auto Generate SKU"
-                        title="Auto Generate SKU"
-                      >
-                        <MdAutoFixHigh
-                          className="text-[18px]"
-                          aria-hidden="true"
-                        />
-
-                        <span className="hidden sm:inline">
-                          Generate
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-
-              // ==================================
-              // Normal Fields
-              // ==================================
-
+            if (item.name === "productSKU") {
               return (
                 <div
                   key={index}
-                  className="flex flex-col gap-1"
+                  className="flex flex-col gap-1 md:col-span-2 lg:col-span-1"
                 >
                   <label
                     htmlFor={item.name}
                     className="text-gray-700 font-medium text-sm"
                   >
-                    {item.label}
+                    {item.label} (Scan or Generate)
                   </label>
 
-                  <input
-                    id={item.name}
-                    name={item.name}
-                    type={item.type}
-                    value={
-                      item.type ===
-                      "file"
-                        ? undefined
-                        : formData[
-                            item.name
-                          ]
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    accept={
-                      item.type === "file"
-                        ? "image/*"
-                        : undefined
-                    }
-                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all"
-                    placeholder={
-                      item.type ===
-                      "file"
-                        ? undefined
-                        : `Enter ${item.label.toLowerCase()}`
-                    }
-                  />
+                  <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                    <div className="relative flex-1 w-full">
+                      <MdQrCodeScanner
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]"
+                        aria-hidden="true"
+                      />
 
-                  {/* Show selected file name */}
-                  {item.type ===
-                    "file" &&
-                    formData.productPicture && (
-                      <p className="text-xs text-gray-500 mt-1 truncate">
-                        Selected:{" "}
-                        {
-                          formData
-                            .productPicture
-                            .name
-                        }
-                      </p>
-                    )}
+                      <input
+                        id={item.name}
+                        name={item.name}
+                        type="text"
+                        value={formData[item.name]}
+                        onChange={handleChange}
+                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all bg-gray-50"
+                        placeholder="Type, scan or generate..."
+                      />
+                    </div>
+
+                    {/* Camera */}
+                    <button
+                      type="button"
+                      onClick={() => setIsScannerOpen(true)}
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                      aria-label="Open camera to scan barcode"
+                      title="Use Camera to Scan"
+                    >
+                      <MdCameraAlt className="text-[18px]" aria-hidden="true" />
+
+                      <span className="hidden sm:inline">Camera</span>
+                    </button>
+
+                    {/* Generate */}
+                    <button
+                      type="button"
+                      onClick={handleGenerateSKU}
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-[#611F69]/10 text-[#611F69] border border-[#611F69]/20 rounded-md hover:bg-[#611F69]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                      aria-label="Auto Generate SKU"
+                      title="Auto Generate SKU"
+                    >
+                      <MdAutoFixHigh
+                        className="text-[18px]"
+                        aria-hidden="true"
+                      />
+
+                      <span className="hidden sm:inline">Generate</span>
+                    </button>
+                  </div>
                 </div>
               );
             }
-          )}
+
+            // ==================================
+            // Normal Fields
+            // ==================================
+
+            return (
+              <div key={index} className="flex flex-col gap-1">
+                <label
+                  htmlFor={item.name}
+                  className="text-gray-700 font-medium text-sm"
+                >
+                  {item.label}
+                </label>
+
+                <input
+                  id={item.name}
+                  name={item.name}
+                  type={item.type}
+                  value={item.type === "file" ? undefined : formData[item.name]}
+                  onChange={handleChange}
+                  accept={item.type === "file" ? "image/*" : undefined}
+                  className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all"
+                  placeholder={
+                    item.type === "file"
+                      ? undefined
+                      : `Enter ${item.label.toLowerCase()}`
+                  }
+                />
+
+                {/* Show selected file name */}
+                {item.type === "file" && formData.productPicture && (
+                  <p className="text-xs text-gray-500 mt-1 truncate">
+                    Selected: {formData.productPicture.name}
+                  </p>
+                )}
+              </div>
+            );
+          })}
 
           {/* ==================================== */}
           {/* Description */}
@@ -853,12 +653,8 @@ const Page = () => {
             <textarea
               id="description"
               name="description"
-              value={
-                formData.description
-              }
-              onChange={
-                handleChange
-              }
+              value={formData.description}
+              onChange={handleChange}
               rows="4"
               className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all resize-y"
               placeholder="Enter comprehensive product description..."
@@ -872,14 +668,8 @@ const Page = () => {
 
         <div className="mt-6 flex justify-end">
           <ColorButton
-            value={
-              submitting
-                ? "Publishing..."
-                : "Publish Product"
-            }
-            onClick={
-              handlePublish
-            }
+            value={submitting ? "Publishing..." : "Publish Product"}
+            onClick={handlePublish}
             disabled={submitting}
             aria-label="Publish the new product to inventory"
           />
@@ -903,9 +693,7 @@ const Page = () => {
           </h2>
 
           <span className="text-sm text-gray-500">
-            {loadingProducts
-              ? ""
-              : `${products.length} item(s)`}
+            {loadingProducts ? "" : `${products.length} item(s)`}
           </span>
         </div>
 
@@ -913,93 +701,70 @@ const Page = () => {
           <p className="text-gray-500 text-sm text-center py-8">
             Loading products...
           </p>
-        ) : products.length ===
-          0 ? (
+        ) : products.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-8">
-            No products found. Add your
-            first product above.
+            No products found. Add your first product above.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map(
-              (product) => (
-                <div
-                  key={product.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  {/* ================================= */}
-                  {/* Product Image */}
-                  {/* ================================= */}
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {/* ================================= */}
+                {/* Product Image */}
+                {/* ================================= */}
 
-                  <div className="w-full h-36 bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {product.image ? (
-                      <img
-                        src={
-                          product.image
-                        }
-                        alt={
-                          product.productName
-                        }
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <MdImage
-                        className="text-gray-300 text-5xl"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm truncate">
-                      {
-                        product.productName
-                      }
-                    </h3>
-
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      SKU:{" "}
-                      {
-                        product.productSKU
-                      }
-                    </p>
-
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-[#611F69] font-bold text-sm">
-                        ৳
-                        {
-                          product.price
-                        }
-                      </span>
-
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          product.currentStock >
-                          product.lowStockAlert
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        Stock:{" "}
-                        {
-                          product.currentStock
-                        }
-                      </span>
-                    </div>
-
-                    {product.brandName && (
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Brand:{" "}
-                        {
-                          product.brandName
-                        }
-                      </p>
-                    )}
-                  </div>
+                <div className="w-full h-36 bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.productName}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <MdImage
+                      className="text-gray-300 text-5xl"
+                      aria-hidden="true"
+                    />
+                  )}
                 </div>
-              )
-            )}
+
+                {/* Product Info */}
+                <div className="p-3">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate">
+                    {product.productName}
+                  </h3>
+
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    SKU: {product.productSKU}
+                  </p>
+
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-[#611F69] font-bold text-sm">
+                      ৳{product.price}
+                    </span>
+
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        product.currentStock > product.lowStockAlert
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      Stock: {product.currentStock}
+                    </span>
+                  </div>
+
+                  {product.brandName && (
+                    <p className="text-xs text-gray-500 mt-1.5">
+                      Brand: {product.brandName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>
@@ -1008,4 +773,3 @@ const Page = () => {
 };
 
 export default Page;
-
