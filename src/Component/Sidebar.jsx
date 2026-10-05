@@ -232,10 +232,12 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
     })).filter((group) => group.items.length > 0);
   }, [role, query]);
 
-  const isActive = (link) =>
-    link === "/"
-      ? pathname === "/"
-      : pathname === link || pathname.startsWith(`${link}/`);
+  const isActive = (link) => {
+    if (link === "/" || link === "/dash") {
+      return pathname === link;
+    }
+    return pathname === link || pathname.startsWith(`${link}/`);
+  };
 
   const showTip = (e, label) => {
     if (!rail) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORIES, PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
+import { PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useEffect, useRef, useState } from "react";
@@ -144,6 +144,8 @@ export default function EcommerceHomePage() {
   const [exclusiveProducts, setExclusiveProducts] = useState([]);
   const [exclusiveProductsLoading, setExclusiveProductsLoading] =
     useState(true);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -189,6 +191,19 @@ export default function EcommerceHomePage() {
         if (error.name !== "AbortError") setExclusiveProducts([]);
       })
       .finally(() => setExclusiveProductsLoading(false));
+
+    fetch("/api/category?public=1", { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.message || "Unable to load categories");
+        return data;
+      })
+      .then((data) => setCategories(data.categories || []))
+      .catch((error) => {
+        if (error.name !== "AbortError") setCategories([]);
+      })
+      .finally(() => setCategoriesLoading(false));
 
     return () => controller.abort();
   }, []);
@@ -434,30 +449,44 @@ export default function EcommerceHomePage() {
               </h2>
             </div>
 
-            <a
-              href="#"
+            <Link
+              href="/product"
               className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
             >
               View all categories
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 sm:gap-5">
-            {CATEGORIES.map((cat) => (
-              <a key={cat.name} href="#" className="group text-center">
-                <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[#F7F3EC]">
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-300"
-                  />
-                </div>
+            {categoriesLoading ? (
+              <p className="col-span-full text-sm text-[#8A8378]">
+                Loading categories...
+              </p>
+            ) : categories.length === 0 ? (
+              <p className="col-span-full text-sm text-[#8A8378]">
+                No categories available right now.
+              </p>
+            ) : (
+              categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/product?category=${cat.id}`}
+                  className="group text-center"
+                >
+                  <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[#F7F3EC]">
+                    <img
+                      src={cat.image || "/placeholder-product.svg"}
+                      alt={cat.name}
+                      className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-300"
+                    />
+                  </div>
 
-                <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
-                  {cat.name}
-                </p>
-              </a>
-            ))}
+                  <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
+                    {cat.name}
+                  </p>
+                </Link>
+              ))
+            )}
           </div>
         </section>
 
