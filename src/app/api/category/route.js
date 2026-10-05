@@ -28,6 +28,30 @@ export async function GET(request) {
     await connectMongoDB();
 
     // -------------------------
+    // Lightweight list for dropdowns (e.g. Add Product form)
+    // GET /api/category?list=1
+    // -------------------------
+    const { searchParams } = new URL(request.url);
+    if (searchParams.get("list") === "1") {
+      const list = await Category.find({ isActive: true })
+        .select("categoryName categoryCode")
+        .sort({ categoryName: 1 })
+        .lean();
+
+      return NextResponse.json(
+        {
+          success: true,
+          categories: list.map((c) => ({
+            id: c._id.toString(),
+            categoryName: c.categoryName,
+            categoryCode: c.categoryCode,
+          })),
+        },
+        { status: 200 },
+      );
+    }
+
+    // -------------------------
     // Get Categories
     // -------------------------
     const categories = await Category.find().sort({ createdAt: -1 }).lean();

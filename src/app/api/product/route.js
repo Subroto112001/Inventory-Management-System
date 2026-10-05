@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
 import Offer from "@/lib/models/Offer";
@@ -136,7 +137,10 @@ export async function GET(request) {
 
     await connectMongoDB();
 
-    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    const products = await Product.find()
+      .populate("category", "categoryName categoryCode")
+      .sort({ createdAt: -1 })
+      .lean();
 
     const productIds = products.map((product) => product._id);
 
@@ -188,6 +192,17 @@ export async function GET(request) {
       initialStock: p.initialStock ?? 0,
       currentStock: p.currentStock ?? 0,
       lowStockAlert: p.lowStockAlert ?? 0,
+
+      // Category
+      categoryId: p.category?._id ? p.category._id.toString() : "",
+      categoryName: p.category?.categoryName || "",
+      category: p.category?._id
+        ? {
+            id: p.category._id.toString(),
+            categoryName: p.category.categoryName,
+            categoryCode: p.category.categoryCode,
+          }
+        : null,
 
       // Cloudinary image
       image: p.image?.url || "",
@@ -263,6 +278,9 @@ export async function POST(request) {
     const initialStock = formData.get("initialStock");
     const lowStockAlert = formData.get("lowStockAlert");
 
+    // Category (required) — the selected category's _id
+    const categoryId = formData.get("category")?.toString().trim();
+
     // Image from FormData
     const image = formData.get("image");
 
@@ -274,6 +292,20 @@ export async function POST(request) {
         {
           message: "Product name, SKU, and price are required!",
         },
+        { status: 400 },
+      );
+    }
+
+    if (!categoryId) {
+      return NextResponse.json(
+        { message: "Please select a category for this product!" },
+        { status: 400 },
+      );
+    }
+
+    if (!mongoose.isValidObjectId(categoryId)) {
+      return NextResponse.json(
+        { message: "Invalid category selected!" },
         { status: 400 },
       );
     }
@@ -293,6 +325,27 @@ export async function POST(request) {
     }
 
     await connectMongoDB();
+
+    // -------------------------
+    // Validate category exists
+    // -------------------------
+    const categoryDoc = await Category.findById(categoryId)
+      .select("_id isActive")
+      .lean();
+
+    if (!categoryDoc) {
+      return NextResponse.json(
+        { message: "Selected category was not found!" },
+        { status: 404 },
+      );
+    }
+
+    if (categoryDoc.isActive === false) {
+      return NextResponse.json(
+        { message: "Selected category is inactive!" },
+        { status: 400 },
+      );
+    }
 
     // -------------------------
     // Check duplicate SKU
@@ -369,6 +422,9 @@ export async function POST(request) {
 
       lowStockAlert: parsedLowStockAlert,
 
+      // Category
+      category: categoryDoc._id,
+
       // Cloudinary
       image: uploadedImage
         ? {
@@ -378,6 +434,19 @@ export async function POST(request) {
         : undefined,
       createdBy: access.user._id,
     });
+
+    // -------------------------
+    // Add product to Category.products
+    // -------------------------
+    try {
+      await Category.updateOne(
+        { _id: categoryDoc._id },
+        { $addToSet: { products: newProduct._id } },
+      );
+    } catch (categoryError) {
+      await Product.deleteOne({ _id: newProduct._id });
+      throw categoryError;
+    }
 
     if (parsedInitialStock > 0) {
       try {
@@ -392,6 +461,10 @@ export async function POST(request) {
         });
       } catch (stockError) {
         await Product.deleteOne({ _id: newProduct._id });
+        await Category.updateOne(
+          { _id: categoryDoc._id },
+          { $pull: { products: newProduct._id } },
+        );
         throw stockError;
       }
     }
@@ -409,6 +482,7 @@ export async function POST(request) {
           productName: newProduct.productName,
           productSKU: newProduct.productSKU,
           price: newProduct.price,
+          categoryId: categoryDoc._id.toString(),
 
           image: newProduct.image
             ? {
