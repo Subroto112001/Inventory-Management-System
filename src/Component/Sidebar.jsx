@@ -67,6 +67,18 @@ const MENU_GROUPS = [
       { name: "Procurement (PO)", icon: <LuCar />, link: "/dash/procurement" },
       { name: "Promotions", icon: <BiSolidOffer />, link: "/dash/promotions" },
       { name: "Offers", icon: <MdLocalOffer />, link: "/dash/offers" },
+      {
+        name: "Homepage sliders",
+        icon: <LuLayoutDashboard />,
+        link: "/dash/homepage-sliders",
+        allowedRoles: ["Admin", "System Admin", "Manager"],
+      },
+      {
+        name: "Exclusive products",
+        icon: <MdLocalOffer />,
+        link: "/dash/exclusive-products",
+        allowedRoles: ["Admin", "System Admin", "Manager"],
+      },
     ],
   },
   {

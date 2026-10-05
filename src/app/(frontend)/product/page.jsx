@@ -6,6 +6,7 @@ import {
   SORT_OPTIONS,
 } from "@/frontEndDataProvider/ProductpageDataProvider";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LuSearch,
@@ -24,9 +25,13 @@ import {
 } from "react-icons/lu";
 
 export default function ProductPage() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  const initialCategory = searchParams.get("category") || "All Products";
+
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("All Products");
-  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [search, setSearch] = useState(initialSearch);
   const [sort, setSort] = useState("Featured");
   const [view, setView] = useState("grid");
   const [page, setPage] = useState(1);
@@ -38,6 +43,14 @@ export default function ProductPage() {
   const [inStockOnly, setInStockOnly] = useState(false);
 
   const productsPerPage = 12;
+
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category") || "All Products";
+    const searchFromUrl = searchParams.get("search") || "";
+    setActiveCategory(categoryFromUrl);
+    setSearch(searchFromUrl);
+    setPage(1);
+  }, [searchParams]);
 
   useEffect(() => {
     const controller = new AbortController();

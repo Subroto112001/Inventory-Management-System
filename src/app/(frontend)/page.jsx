@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CATEGORIES,
-  HERO_SLIDES,
-  OFFER_SLIDES,
-  PERKS,
-  SIDE_BANNERS,
-} from "@/frontEndDataProvider/HomepageDataProvider";
+import { CATEGORIES, PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useEffect, useRef, useState } from "react";
@@ -138,7 +132,6 @@ function ProductCard({ product }) {
 }
 
 export default function EcommerceHomePage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const scrollerRef = useRef(null);
 
   const [heroActive, setHeroActive] = useState(0);
@@ -146,6 +139,11 @@ export default function EcommerceHomePage() {
   const [activeTab, setActiveTab] = useState(FEATURED_TABS[0]);
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [slides, setSlides] = useState([]);
+  const [slidesLoading, setSlidesLoading] = useState(true);
+  const [exclusiveProducts, setExclusiveProducts] = useState([]);
+  const [exclusiveProductsLoading, setExclusiveProductsLoading] =
+    useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -163,6 +161,35 @@ export default function EcommerceHomePage() {
         if (error.name !== "AbortError") setProducts([]);
       })
       .finally(() => setProductsLoading(false));
+
+    fetch("/api/homepage/sliders?public=1", { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.message || "Unable to load homepage sliders");
+        return data;
+      })
+      .then((data) => setSlides(data.slides || []))
+      .catch((error) => {
+        if (error.name !== "AbortError") setSlides([]);
+      })
+      .finally(() => setSlidesLoading(false));
+
+    fetch("/api/homepage/exclusive-products?public=1", {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.message || "Unable to load exclusive products");
+        return data;
+      })
+      .then((data) => setExclusiveProducts(data.items || []))
+      .catch((error) => {
+        if (error.name !== "AbortError") setExclusiveProducts([]);
+      })
+      .finally(() => setExclusiveProductsLoading(false));
+
     return () => controller.abort();
   }, []);
 
@@ -171,28 +198,30 @@ export default function EcommerceHomePage() {
       product.category?.toLowerCase().startsWith(activeTab.toLowerCase()),
     )
     .slice(0, 4);
-  const exclusiveProducts = products
-    .filter((product) => product.discount > 0)
-    .slice(0, 4);
+  const heroSlides = slides.filter((slide) => slide.isActive);
+  const offerSlides = heroSlides.length ? heroSlides : [];
+  const sideBanners = heroSlides.slice(1, 3);
   const newArrivals = products.slice(0, 4);
 
   /* Hero autoplay */
   useEffect(() => {
+    if (!heroSlides.length) return undefined;
     const id = setInterval(() => {
-      setHeroActive((a) => (a + 1) % HERO_SLIDES.length);
+      setHeroActive((a) => (a + 1) % heroSlides.length);
     }, 5000);
 
     return () => clearInterval(id);
-  }, []);
+  }, [heroSlides.length]);
 
   /* Offer autoplay */
   useEffect(() => {
+    if (!offerSlides.length) return undefined;
     const id = setInterval(() => {
-      setOfferActive((a) => (a + 1) % OFFER_SLIDES.length);
+      setOfferActive((a) => (a + 1) % offerSlides.length);
     }, 6000);
 
     return () => clearInterval(id);
-  }, []);
+  }, [offerSlides.length]);
 
   /* Navigation scrolling */
   const scrollNav = (dir) => {
@@ -236,47 +265,57 @@ export default function EcommerceHomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
             {/* Main Slider */}
             <div className="relative rounded-md overflow-hidden h-[340px] sm:h-[420px] lg:h-[480px]">
-              {HERO_SLIDES.map((slide, i) => (
-                <div
-                  key={slide.id}
-                  className={`absolute inset-0 transition-opacity duration-700 ${
-                    i === heroActive
-                      ? "opacity-100"
-                      : "opacity-0 pointer-events-none"
-                  }`}
-                >
-                  <img
-                    src={slide.image}
-                    alt={slide.title}
-                    className="w-full h-full object-cover"
-                  />
+              {slidesLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#EFE9DC] text-sm text-[#5B564C]">
+                  Loading homepage slides...
+                </div>
+              ) : heroSlides.length === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#EFE9DC] text-sm text-[#5B564C]">
+                  No active homepage slides available.
+                </div>
+              ) : (
+                heroSlides.map((slide, i) => (
+                  <div
+                    key={slide.id}
+                    className={`absolute inset-0 transition-opacity duration-700 ${
+                      i === heroActive
+                        ? "opacity-100"
+                        : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <img
+                      src={slide.image || "/placeholder-product.svg"}
+                      alt={slide.title}
+                      className="h-full w-full object-cover"
+                    />
 
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#211F1D]/60 via-[#211F1D]/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#211F1D]/60 via-[#211F1D]/20 to-transparent" />
 
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="px-6 sm:px-10 max-w-md">
-                      <p className="text-[#C9A659] text-sm mb-2">
-                        {slide.eyebrow}
-                      </p>
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="max-w-md px-6 sm:px-10">
+                        <p className="mb-2 text-sm text-[#C9A659]">
+                          {slide.badge || "New season"}
+                        </p>
 
-                      <h1 className="font-serif text-2xl sm:text-4xl text-[#F7F3EC] leading-tight mb-3">
-                        {slide.title}
-                      </h1>
+                        <h1 className="mb-3 font-serif text-2xl leading-tight text-[#F7F3EC] sm:text-4xl">
+                          {slide.title}
+                        </h1>
 
-                      <p className="text-[#F7F3EC]/85 text-sm sm:text-base mb-5">
-                        {slide.subtitle}
-                      </p>
+                        <p className="mb-5 text-sm text-[#F7F3EC]/85 sm:text-base">
+                          {slide.subtitle}
+                        </p>
 
-                      <button
-                        type="button"
-                        className="bg-[#C9A659] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors"
-                      >
-                        {slide.cta}
-                      </button>
+                        <Link
+                          href={slide.buttonUrl || "/product"}
+                          className="inline-flex bg-[#C9A659] px-5 py-2.5 text-sm text-[#211F1D] transition-colors hover:bg-[#B08D3E]"
+                        >
+                          {slide.buttonText || "Shop now"}
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
 
               {/* Previous */}
               <button
@@ -284,7 +323,9 @@ export default function EcommerceHomePage() {
                 aria-label="Previous slide"
                 onClick={() =>
                   setHeroActive(
-                    (a) => (a - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
+                    (a) =>
+                      (a - 1 + Math.max(heroSlides.length, 1)) %
+                      Math.max(heroSlides.length, 1),
                   )
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
@@ -297,7 +338,7 @@ export default function EcommerceHomePage() {
                 type="button"
                 aria-label="Next slide"
                 onClick={() =>
-                  setHeroActive((a) => (a + 1) % HERO_SLIDES.length)
+                  setHeroActive((a) => (a + 1) % Math.max(heroSlides.length, 1))
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
               >
@@ -306,7 +347,7 @@ export default function EcommerceHomePage() {
 
               {/* Dots */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {HERO_SLIDES.map((slide, i) => (
+                {heroSlides.map((slide, i) => (
                   <button
                     key={slide.id}
                     type="button"
@@ -324,31 +365,37 @@ export default function EcommerceHomePage() {
 
             {/* Side Banners */}
             <div className="grid grid-rows-2 gap-4 h-[220px] sm:h-[420px] lg:h-[480px]">
-              {SIDE_BANNERS.map((banner) => (
-                <a
-                  key={banner.title}
-                  href="#"
-                  className="relative rounded-md overflow-hidden group block"
-                >
-                  <img
-                    src={banner.image}
-                    alt={banner.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                  />
+              {sideBanners.length ? (
+                sideBanners.map((banner) => (
+                  <Link
+                    key={banner.id}
+                    href={banner.buttonUrl || "/product"}
+                    className="group relative block overflow-hidden rounded-md"
+                  >
+                    <img
+                      src={banner.image || "/placeholder-product.svg"}
+                      alt={banner.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
 
-                  <div className="absolute inset-0 bg-[#211F1D]/35" />
+                    <div className="absolute inset-0 bg-[#211F1D]/35" />
 
-                  <div className="absolute inset-0 flex flex-col justify-end p-4">
-                    <h3 className="text-[#F7F3EC] text-base mb-0.5">
-                      {banner.title}
-                    </h3>
+                    <div className="absolute inset-0 flex flex-col justify-end p-4">
+                      <h3 className="mb-0.5 text-base text-[#F7F3EC]">
+                        {banner.title}
+                      </h3>
 
-                    <p className="text-[#F7F3EC]/85 text-xs">
-                      {banner.subtitle}
-                    </p>
-                  </div>
-                </a>
-              ))}
+                      <p className="text-xs text-[#F7F3EC]/85">
+                        {banner.subtitle || banner.buttonText}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="flex items-center justify-center rounded-md border border-dashed border-[#E4DED2] bg-[#EFE9DC] text-sm text-[#5B564C]">
+                  No side banners available.
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -438,12 +485,18 @@ export default function EcommerceHomePage() {
             </a>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {productsLoading ? (
-              <p className="text-sm text-[#8A8378]">Loading products...</p>
+          <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+            {exclusiveProductsLoading ? (
+              <p className="text-sm text-[#8A8378]">
+                Loading exclusive products...
+              </p>
+            ) : exclusiveProducts.length === 0 ? (
+              <p className="text-sm text-[#8A8378]">
+                No exclusive products available right now.
+              </p>
             ) : (
-              exclusiveProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              exclusiveProducts.map((item) => (
+                <ProductCard key={item.productId} product={item.product} />
               ))
             )}
           </div>
@@ -471,7 +524,8 @@ export default function EcommerceHomePage() {
                   onClick={() =>
                     setOfferActive(
                       (a) =>
-                        (a - 1 + OFFER_SLIDES.length) % OFFER_SLIDES.length,
+                        (a - 1 + Math.max(offerSlides.length, 1)) %
+                        Math.max(offerSlides.length, 1),
                     )
                   }
                   className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
@@ -483,7 +537,9 @@ export default function EcommerceHomePage() {
                   type="button"
                   aria-label="Next offer"
                   onClick={() =>
-                    setOfferActive((a) => (a + 1) % OFFER_SLIDES.length)
+                    setOfferActive(
+                      (a) => (a + 1) % Math.max(offerSlides.length, 1),
+                    )
                   }
                   className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
                 >
@@ -493,57 +549,65 @@ export default function EcommerceHomePage() {
             </div>
 
             <div className="relative h-[300px] sm:h-[360px] rounded-md overflow-hidden">
-              {OFFER_SLIDES.map((slide, i) => (
-                <div
-                  key={slide.id}
-                  className={`absolute inset-0 transition-opacity duration-700 ${
-                    i === offerActive
-                      ? "opacity-100"
-                      : "opacity-0 pointer-events-none"
-                  }`}
-                >
-                  <img
-                    src={slide.image}
-                    alt={slide.title}
-                    className="w-full h-full object-cover"
-                  />
-
-                  <div className="absolute inset-0 bg-[#211F1D]/40" />
-
-                  <div className="absolute inset-0 flex flex-col items-start justify-center px-8 sm:px-14">
-                    <h3 className="font-serif text-2xl sm:text-3xl text-[#F7F3EC] mb-2">
-                      {slide.title}
-                    </h3>
-
-                    <p className="text-[#F7F3EC]/90 text-sm sm:text-base mb-5">
-                      {slide.subtitle}
-                    </p>
-
-                    <button
-                      type="button"
-                      className="bg-[#F7F3EC] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#C9A659] transition-colors"
-                    >
-                      {slide.cta}
-                    </button>
-                  </div>
+              {offerSlides.length === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#1F3A2E] text-sm text-[#F7F3EC]/80">
+                  No active offers available.
                 </div>
-              ))}
-
-              <div className="absolute bottom-4 left-8 sm:left-14 flex gap-2">
-                {OFFER_SLIDES.map((slide, i) => (
-                  <button
+              ) : (
+                offerSlides.map((slide, i) => (
+                  <div
                     key={slide.id}
-                    type="button"
-                    aria-label={`Go to offer ${i + 1}`}
-                    onClick={() => setOfferActive(i)}
-                    className={`h-1.5 rounded-full transition-all ${
+                    className={`absolute inset-0 transition-opacity duration-700 ${
                       i === offerActive
-                        ? "w-6 bg-[#F7F3EC]"
-                        : "w-1.5 bg-[#F7F3EC]/50"
+                        ? "opacity-100"
+                        : "opacity-0 pointer-events-none"
                     }`}
-                  />
-                ))}
-              </div>
+                  >
+                    <img
+                      src={slide.image || "/placeholder-product.svg"}
+                      alt={slide.title}
+                      className="h-full w-full object-cover"
+                    />
+
+                    <div className="absolute inset-0 bg-[#211F1D]/40" />
+
+                    <div className="absolute inset-0 flex flex-col items-start justify-center px-8 sm:px-14">
+                      <h3 className="mb-2 font-serif text-2xl text-[#F7F3EC] sm:text-3xl">
+                        {slide.title}
+                      </h3>
+
+                      <p className="mb-5 text-sm text-[#F7F3EC]/90 sm:text-base">
+                        {slide.subtitle}
+                      </p>
+
+                      <Link
+                        href={slide.buttonUrl || "/product"}
+                        className="bg-[#F7F3EC] px-5 py-2.5 text-sm text-[#211F1D] transition-colors hover:bg-[#C9A659]"
+                      >
+                        {slide.buttonText || "Shop now"}
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
+
+              {offerSlides.length > 0 && (
+                <div className="absolute bottom-4 left-8 flex gap-2 sm:left-14">
+                  {offerSlides.map((slide, i) => (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      aria-label={`Go to offer ${i + 1}`}
+                      onClick={() => setOfferActive(i)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === offerActive
+                          ? "w-6 bg-[#F7F3EC]"
+                          : "w-1.5 bg-[#F7F3EC]/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
