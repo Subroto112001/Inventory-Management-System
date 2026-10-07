@@ -286,7 +286,7 @@ export default function ExclusiveProductsPage() {
             </div>
 
             {/* Scrollable Product List */}
-            <div className="flex-1 overflow-y-auto max-h-[550px] pr-1 space-y-2.5">
+            <div className="flex-1 overflow-y-auto max-h-137.5 pr-1 space-y-2.5">
               {results.length === 0 && !searchLoading ? (
                 <div className="py-8 text-center text-sm text-[#8A8378]">
                   No products found.

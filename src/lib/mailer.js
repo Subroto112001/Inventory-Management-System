@@ -115,3 +115,42 @@ If you did not expect this invitation, contact your system administrator.`;
     html,
   });
 }
+
+export async function sendCustomerVerificationOtp({ email, name, otp }) {
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+  const safeName = String(name || "there").replace(/[<>]/g, "");
+  const html = `
+    <!doctype html>
+    <html lang="en">
+      <body style="margin:0;padding:0;background:#f7f3ec;font-family:Arial,Helvetica,sans-serif;color:#211f1d;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f7f3ec;padding:32px 12px;">
+          <tr><td align="center">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e4ded2;border-radius:12px;overflow:hidden;">
+              <tr><td style="background:#1f3a2e;padding:24px 32px;text-align:center;color:#ffffff;">
+                <div style="font-size:13px;font-weight:bold;letter-spacing:3px;">FIELDHOUSE</div>
+              </td></tr>
+              <tr><td style="padding:32px;">
+                <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;color:#211f1d;">Verify your email</h1>
+                <p style="margin:0 0 12px;font-size:16px;line-height:1.6;">Welcome to Fieldhouse, ${safeName}!</p>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6f685e;">Enter this verification code to finish creating your account:</p>
+                <div style="margin:0 0 22px;padding:20px 12px;border:1px solid #e4ded2;border-radius:10px;background:#f7f3ec;text-align:center;">
+                  <div style="font-size:34px;font-weight:bold;letter-spacing:10px;color:#1f3a2e;">${otp}</div>
+                  <p style="margin:10px 0 0;font-size:13px;color:#6f685e;">This code expires in 10 minutes.</p>
+                </div>
+                <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#6f685e;">For your security, never share this code with anyone. Fieldhouse will never ask you to send it to us.</p>
+                <p style="margin:0;font-size:13px;line-height:1.6;color:#6f685e;">If you did not create this account, you can safely ignore this email.</p>
+              </td></tr>
+              <tr><td style="border-top:1px solid #e4ded2;padding:18px 32px;text-align:center;font-size:12px;color:#6f685e;">Fieldhouse · Thank you for joining us.</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </body>
+    </html>`;
+  await getTransporter().sendMail({
+    from,
+    to: email,
+    subject: "Verify your Fieldhouse account",
+    text: `Hello ${safeName},\n\nWelcome to Fieldhouse. Enter this verification code to finish creating your account: ${otp}\nThis code expires in 10 minutes. For your security, do not share it with anyone. If you did not create this account, you can ignore this email.`,
+    html,
+  });
+}

@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import { clearAuthCookie } from "@/lib/auth";
+import { clearAuthCookie, getAuthenticatedUser } from "@/lib/auth";
+import User from "@/lib/models/User";
+import connectMongoDB from "@/lib/databse/mongodb";
 
 export async function POST(request) {
   try {
+    const user = await getAuthenticatedUser(request);
+    if (user) { await connectMongoDB(); await User.updateOne({ _id: user._id }, { $inc: { authVersion: 1 } }); }
     const response = NextResponse.json(
       {
         success: true,

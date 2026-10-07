@@ -1,47 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import {
-  LuSearch,
-  LuUser,
-  LuGitCompare,
-  LuShoppingCart,
-  LuHeart,
-  LuChevronLeft,
   LuChevronRight,
-  LuMenu,
-  LuX,
   LuTruck,
   LuShieldCheck,
   LuRotateCcw,
   LuHeadphones,
-  LuFacebook,
-  LuInstagram,
-  LuTwitter,
-  LuYoutube,
-  LuMail,
-  LuMapPin,
-  LuPhone,
-  LuCreditCard,
   LuLock,
   LuCheck,
   LuTag,
 } from "react-icons/lu";
-
-const NAV_LINKS = [
-  { label: "Home", href: "#" },
-  { label: "Shop All", href: "#" },
-  { label: "Lighting", href: "#" },
-  { label: "Kitchen & Dining", href: "#" },
-  { label: "Furniture", href: "#" },
-  { label: "Textiles & Bedding", href: "#" },
-  { label: "Outdoor & Garden", href: "#" },
-  { label: "Decor & Accents", href: "#" },
-  { label: "Brands", href: "#" },
-  { label: "Sale", href: "#" },
-];
 
 const PERKS = [
   {
@@ -78,98 +50,66 @@ function SectionTitle({ number, title }) {
   );
 }
 
-function InputField({
-  label,
-  placeholder,
-  type = "text",
-  required = true,
-  value,
-  onChange,
-}) {
-  return (
-    <div>
-      <label className="block text-sm text-[#211F1D] mb-1.5">
-        {label}
-
-        {required && <span className="text-[#B65C38] ml-1">*</span>}
-      </label>
-
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full px-3.5 py-3 bg-white border border-[#E4DED2] rounded-sm text-sm text-[#211F1D] placeholder:text-[#9B9689] outline-none focus:border-[#1F3A2E] focus:ring-1 focus:ring-[#1F3A2E]/10 transition"
-      />
-    </div>
-  );
-}
-
 export default function CheckoutPage() {
   const { items, clearCart } = useCart();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const scrollerRef = useRef(null);
+  const router = useRouter();
+  const [addresses, setAddresses] = useState([]);
+  const [addressId, setAddressId] = useState("");
+  const [quote, setQuote] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(true);
+  const [quoteError, setQuoteError] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
 
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [sameBilling, setSameBilling] = useState(true);
+
   const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
   const [orderState, setOrderState] = useState({
     loading: false,
     error: "",
     success: "",
   });
 
-  const [form, setForm] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    phone: "",
-    address: "",
-    apartment: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "Bangladesh",
-    cardNumber: "",
-    expiry: "",
-    cvv: "",
-    cardName: "",
-  });
-
-  const updateField = (field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const scrollNav = (dir) => {
-    if (scrollerRef.current) {
-      scrollerRef.current.scrollBy({
-        left: dir * 220,
-        behavior: "smooth",
-      });
-    }
-  };
+  const [form, setForm] = useState({ email: "", firstName: "", lastName: "", phone: "" });
 
   const checkoutProducts = items;
-  const subtotal = checkoutProducts.reduce(
-    (total, product) => total + product.price * product.quantity,
-    0,
-  );
+  const cartPayload = useMemo(() => items.map(({ id, quantity }) => ({ id, quantity })), [items]);
+  const cartKey = JSON.stringify(cartPayload);
+  const subtotal = quote?.subtotal ?? 0;
+  const shipping = quote?.shipping ?? 0;
+  const discount = quote?.discount ?? 0;
+  const total = quote?.total ?? 0;
+  const quoteMatchesCart = Boolean(quote && JSON.stringify(quote.items?.map(({ id, quantity }) => ({ id, quantity })) || []) === cartKey && (appliedCoupon ? String(quote.couponCode).toUpperCase() === appliedCoupon : !quote.couponCode));
 
-  const shipping = subtotal >= 75 ? 0 : 12;
+  useEffect(() => {
+    let active = true;
+    fetch("/api/account", { cache: "no-store" }).then(async (response) => {
+      if (response.status === 401) { router.replace("/login?next=%2Fcheckout"); return null; }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Unable to load your account");
+      return data.user;
+    }).then((user) => {
+      if (!active || !user) return;
+      const savedAddresses = Array.isArray(user.addresses) ? user.addresses : [];
+      setAddresses(savedAddresses);
+      setAddressId(savedAddresses.find((address) => address.isDefault)?._id || savedAddresses[0]?._id || "");
+      setForm((current) => ({ ...current, email: user.email || "", firstName: user.firstName || "", lastName: user.lastName || "", phone: user.phoneNumber || "" }));
+    }).catch((error) => { if (active) setOrderState((state) => ({ ...state, error: error.message })); });
+    return () => { active = false; };
+  }, [router]);
 
-  const discount = couponApplied ? 15 : 0;
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => { if (active) { setQuoteLoading(true); setQuoteError(""); } });
+    const requestItems = JSON.parse(cartKey);
+    if (!requestItems.length) { Promise.resolve().then(() => { if (active) { setQuote(null); setQuoteLoading(false); } }); return () => { active = false; }; }
+    fetch("/api/checkout/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: requestItems, couponCode: appliedCoupon }) })
+      .then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.message || "Unable to calculate totals"); return data; })
+      .then((data) => { if (active) setQuote(data); })
+      .catch((error) => { if (active) { setQuote(null); setQuoteError(error.message); } })
+      .finally(() => { if (active) setQuoteLoading(false); });
+    return () => { active = false; };
+  }, [cartKey, appliedCoupon]);
 
-  const total = subtotal + shipping - discount;
-
-  const applyCoupon = () => {
-    if (coupon.trim().toUpperCase() === "FIELD15") {
-      setCouponApplied(true);
-    }
-  };
+  const applyCoupon = () => setAppliedCoupon(coupon.trim().toUpperCase());
 
   const placeOrder = async (e) => {
     e.preventDefault();
@@ -181,27 +121,20 @@ export default function CheckoutPage() {
       });
       return;
     }
+    if (!addressId) { setOrderState({ loading: false, error: "Choose a saved shipping address before placing your order.", success: "" }); return; }
+    if (!quoteMatchesCart || quoteLoading || quoteError) { setOrderState({ loading: false, error: quoteError || "Please wait while your order total is verified.", success: "" }); return; }
     setOrderState({ loading: true, error: "", success: "" });
     try {
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName: `${form.firstName} ${form.lastName}`.trim(),
-          customerPhone: form.phone,
-          customerAddress: [
-            form.address,
-            form.apartment,
-            form.city,
-            form.state,
-            form.postalCode,
-          ]
-            .filter(Boolean)
-            .join(", "),
-          cart: checkoutProducts,
+          addressId,
+          cart: checkoutProducts.map(({ id, quantity }) => ({ id, quantity })),
           orderType: "Home Delivery",
-          deliveryPaymentType: paymentMethod === "cod" ? "COD" : "Pre-paid",
-          paymentMethod: paymentMethod === "cod" ? "Cash" : "Card",
+          deliveryPaymentType: "COD",
+          paymentMethod: "Cash",
+          couponCode: appliedCoupon,
         }),
       });
       const data = await response.json();
@@ -220,242 +153,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F3EC] font-sans">
-      {/* =====================================================
-          FONTS
-      ===================================================== */}
-
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
-      />
-
-      <style>{`
-        .font-serif {
-          font-family: 'Fraunces', ui-serif, Georgia, serif;
-        }
-
-        .font-sans {
-          font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-        }
-      `}</style>
-
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
-      <header className="bg-[#F7F3EC] sticky top-0 z-40">
-        {/* Announcement Bar */}
-        <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
-            <p>Free shipping on orders over $75 · Handmade in small batches</p>
-
-            <div className="hidden sm:flex items-center gap-4">
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
-                Track order
-              </a>
-
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
-                Help
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Header */}
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-8">
-          {/* Mobile Menu */}
-          <button
-            type="button"
-            className="lg:hidden text-[#211F1D]"
-            aria-label="Open menu"
-            onClick={() => setMobileOpen(true)}
-          >
-            <LuMenu size={22} />
-          </button>
-
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-2 shrink-0">
-            <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
-              F
-            </span>
-
-            <span className="font-serif text-xl text-[#211F1D] tracking-tight hidden xs:inline">
-              FIELDHOUSE
-            </span>
-          </a>
-
-          {/* Search */}
-          <div className="flex-1 max-w-xl hidden md:flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
-            <input
-              type="text"
-              placeholder="Search for furniture, lighting, decor…"
-              className="flex-1 px-4 py-2.5 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
-            />
-
-            <button
-              type="button"
-              aria-label="Search"
-              className="px-4 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] hover:bg-[#16281F] transition-colors"
-            >
-              <LuSearch size={17} />
-            </button>
-          </div>
-
-          {/* Header Actions */}
-          <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
-            <Link
-              href="/order?view=dashboard"
-              className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
-              aria-label="Account"
-            >
-              <LuUser size={20} />
-              <span className="text-[10px] hidden sm:inline">Account</span>
-            </Link>
-
-            <button
-              type="button"
-              className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
-              aria-label="Compare"
-            >
-              <LuGitCompare size={20} />
-
-              <span className="text-[10px] hidden sm:inline">Compare</span>
-
-              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-                2
-              </span>
-            </button>
-
-            <Link
-              href="/order?view=wishlist"
-              className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
-              aria-label="Wishlist"
-            >
-              <LuHeart size={20} />
-
-              <span className="text-[10px] hidden sm:inline">Wishlist</span>
-
-              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-                1
-              </span>
-            </Link>
-
-            <button
-              type="button"
-              className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
-              aria-label="Cart"
-            >
-              <LuShoppingCart size={20} />
-
-              <span className="text-[10px] hidden sm:inline">Cart</span>
-
-              <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-                3
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Search */}
-        <div className="md:hidden px-4 pb-3">
-          <div className="flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
-            <input
-              type="text"
-              placeholder="Search products…"
-              className="flex-1 px-3 py-2 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
-            />
-
-            <button
-              type="button"
-              aria-label="Search"
-              className="px-3 py-2 bg-[#1F3A2E] text-[#F7F3EC]"
-            >
-              <LuSearch size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:block border-t border-[#E4DED2] bg-[#F7F3EC]">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 relative flex items-center">
-            <button
-              type="button"
-              aria-label="Scroll navigation left"
-              onClick={() => scrollNav(-1)}
-              className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pr-2"
-            >
-              <LuChevronLeft size={16} />
-            </button>
-
-            <div
-              ref={scrollerRef}
-              className="flex items-center gap-7 overflow-x-auto scroll-smooth py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm text-[#211F1D] hover:text-[#B65C38] whitespace-nowrap transition-colors"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              aria-label="Scroll navigation right"
-              onClick={() => scrollNav(1)}
-              className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pl-2"
-            >
-              <LuChevronRight size={16} />
-            </button>
-          </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        {mobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div
-              className="absolute inset-0 bg-[#211F1D]/50"
-              onClick={() => setMobileOpen(false)}
-            />
-
-            <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#F7F3EC] p-5 overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-serif text-lg text-[#211F1D]">
-                  FIELDHOUSE
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="Close menu"
-                >
-                  <LuX size={20} className="text-[#211F1D]" />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                {NAV_LINKS.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="py-2.5 border-b border-[#E4DED2] text-sm text-[#211F1D]"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* =====================================================
-          MAIN CHECKOUT
-      ===================================================== */}
-
       <main>
         {/* Breadcrumb */}
         <section className="border-b border-[#E4DED2]">
@@ -541,112 +238,24 @@ export default function CheckoutPage() {
               {/* Contact */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
                 <SectionTitle number="1" title="Contact information" />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
-                    <InputField
-                      label="Email address"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={form.email}
-                      onChange={(e) => updateField("email", e.target.value)}
-                    />
-                  </div>
-
-                  <InputField
-                    label="First name"
-                    placeholder="First name"
-                    value={form.firstName}
-                    onChange={(e) => updateField("firstName", e.target.value)}
-                  />
-
-                  <InputField
-                    label="Last name"
-                    placeholder="Last name"
-                    value={form.lastName}
-                    onChange={(e) => updateField("lastName", e.target.value)}
-                  />
-
-                  <div className="sm:col-span-2">
-                    <InputField
-                      label="Phone number"
-                      type="tel"
-                      placeholder="+880 1XXXXXXXXX"
-                      value={form.phone}
-                      onChange={(e) => updateField("phone", e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <label className="flex items-center gap-2 mt-5 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 accent-[#1F3A2E]" />
-
-                  <span className="text-sm text-[#5B564C]">
-                    Email me with news and offers
-                  </span>
-                </label>
+                <p className="text-sm text-[#211F1D]">{[form.firstName, form.lastName].filter(Boolean).join(" ")}</p>
+                <p className="mt-1 text-sm text-[#5B564C]">{form.email}</p>
+                <p className="mt-1 text-sm text-[#5B564C]">{form.phone}</p>
+                <Link href="/order?view=dashboard" className="mt-3 inline-block text-sm text-[#1F3A2E] underline">Update account details</Link>
               </div>
 
               {/* Shipping Address */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
                 <SectionTitle number="2" title="Shipping address" />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
-                    <InputField
-                      label="Address"
-                      placeholder="Street address"
-                      value={form.address}
-                      onChange={(e) => updateField("address", e.target.value)}
-                    />
+                {addresses.length ? (
+                  <div className="space-y-3">
+                    {addresses.map((address) => <label key={address._id} className="flex cursor-pointer items-start gap-3 rounded-sm border border-[#E4DED2] p-4">
+                      <input type="radio" name="shippingAddress" value={address._id} checked={addressId === address._id} onChange={() => setAddressId(address._id)} className="mt-1 accent-[#1F3A2E]" />
+                      <span className="text-sm text-[#211F1D]"><strong>{address.label || "Address"}</strong>{address.isDefault ? " (Default)" : ""}<br />{[address.fullName, address.phone, address.address, address.area, address.city, address.postalCode, address.country].filter(Boolean).join(", ")}</span>
+                    </label>)}
                   </div>
-
-                  <div className="sm:col-span-2">
-                    <InputField
-                      label="Apartment, suite, etc."
-                      placeholder="Apartment, suite, unit (optional)"
-                      required={false}
-                      value={form.apartment}
-                      onChange={(e) => updateField("apartment", e.target.value)}
-                    />
-                  </div>
-
-                  <InputField
-                    label="City"
-                    placeholder="City"
-                    value={form.city}
-                    onChange={(e) => updateField("city", e.target.value)}
-                  />
-
-                  <InputField
-                    label="State / Province"
-                    placeholder="State / Province"
-                    value={form.state}
-                    onChange={(e) => updateField("state", e.target.value)}
-                  />
-
-                  <InputField
-                    label="Postal code"
-                    placeholder="Postal code"
-                    value={form.postalCode}
-                    onChange={(e) => updateField("postalCode", e.target.value)}
-                  />
-
-                  <InputField
-                    label="Country"
-                    placeholder="Country"
-                    value={form.country}
-                    onChange={(e) => updateField("country", e.target.value)}
-                  />
-                </div>
-
-                <label className="flex items-center gap-2 mt-5 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 accent-[#1F3A2E]" />
-
-                  <span className="text-sm text-[#5B564C]">
-                    Save this information for next time
-                  </span>
-                </label>
+                ) : <p className="text-sm text-[#5B564C]">Add a saved address to continue checkout. <Link href="/order?view=addresses" className="underline text-[#1F3A2E]">Manage addresses</Link></p>}
+                {addresses.length > 0 && <Link href="/order?view=addresses" className="mt-4 inline-block text-sm text-[#1F3A2E] underline">Manage saved addresses</Link>}
               </div>
 
               {/* Delivery */}
@@ -671,7 +280,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <span className="text-sm text-[#1F3A2E]">
-                    {shipping === 0 ? "FREE" : `$${shipping}`}
+                    {quoteLoading ? "Checking..." : shipping === 0 ? "FREE" : `$${Number(shipping).toFixed(2)}`}
                   </span>
                 </div>
               </div>
@@ -679,142 +288,11 @@ export default function CheckoutPage() {
               {/* Payment */}
               <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
                 <SectionTitle number="4" title="Payment" />
-
-                <p className="text-xs text-[#8A8378] mb-5">
-                  All transactions are secure and encrypted.
-                </p>
-
-                {/* Card */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={`w-full text-left border rounded-sm p-4 transition-colors ${
-                    paymentMethod === "card"
-                      ? "border-[#1F3A2E] bg-[#F7F3EC]"
-                      : "border-[#E4DED2] bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          paymentMethod === "card"
-                            ? "border-[#1F3A2E]"
-                            : "border-[#C9C2B5]"
-                        }`}
-                      >
-                        {paymentMethod === "card" && (
-                          <span className="w-2 h-2 rounded-full bg-[#1F3A2E]" />
-                        )}
-                      </span>
-
-                      <span className="text-sm text-[#211F1D]">
-                        Credit / Debit card
-                      </span>
-                    </div>
-
-                    <LuCreditCard size={20} className="text-[#5B564C]" />
-                  </div>
-                </button>
-
-                {paymentMethod === "card" && (
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="sm:col-span-2">
-                      <InputField
-                        label="Card number"
-                        placeholder="1234 5678 9012 3456"
-                        value={form.cardNumber}
-                        onChange={(e) =>
-                          updateField("cardNumber", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    <InputField
-                      label="Name on card"
-                      placeholder="Name on card"
-                      value={form.cardName}
-                      onChange={(e) => updateField("cardName", e.target.value)}
-                    />
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <InputField
-                        label="Expiry"
-                        placeholder="MM/YY"
-                        value={form.expiry}
-                        onChange={(e) => updateField("expiry", e.target.value)}
-                      />
-
-                      <InputField
-                        label="CVV"
-                        placeholder="123"
-                        value={form.cvv}
-                        onChange={(e) => updateField("cvv", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Cash On Delivery */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("cod")}
-                  className={`w-full text-left border rounded-sm p-4 mt-3 transition-colors ${
-                    paymentMethod === "cod"
-                      ? "border-[#1F3A2E] bg-[#F7F3EC]"
-                      : "border-[#E4DED2] bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          paymentMethod === "cod"
-                            ? "border-[#1F3A2E]"
-                            : "border-[#C9C2B5]"
-                        }`}
-                      >
-                        {paymentMethod === "cod" && (
-                          <span className="w-2 h-2 rounded-full bg-[#1F3A2E]" />
-                        )}
-                      </span>
-
-                      <span className="text-sm text-[#211F1D]">
-                        Cash on delivery
-                      </span>
-                    </div>
-
-                    <span className="text-xs text-[#8A8378]">Available</span>
-                  </div>
-                </button>
-
-                {/* Billing */}
-                <label className="flex items-center gap-2 mt-5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={sameBilling}
-                    onChange={(e) => setSameBilling(e.target.checked)}
-                    className="w-4 h-4 accent-[#1F3A2E]"
-                  />
-
-                  <span className="text-sm text-[#5B564C]">
-                    Billing address is the same as shipping address
-                  </span>
-                </label>
-
-                {!sameBilling && (
-                  <div className="mt-5 p-4 bg-[#F7F3EC] border border-[#E4DED2]">
-                    <p className="text-sm text-[#211F1D] mb-3">
-                      Enter billing address
-                    </p>
-
-                    <textarea
-                      placeholder="Billing address"
-                      rows={4}
-                      className="w-full px-3.5 py-3 bg-white border border-[#E4DED2] rounded-sm text-sm outline-none resize-none focus:border-[#1F3A2E]"
-                    />
-                  </div>
-                )}
+                <div className="border border-[#1F3A2E] bg-[#F7F3EC] rounded-sm p-4 flex items-center justify-between">
+                  <span className="text-sm text-[#211F1D]">Cash on delivery</span>
+                  <span className="text-xs text-[#1F3A2E]">Available</span>
+                </div>
+                <p className="mt-3 text-xs text-[#8A8378]">Online card payments are not enabled yet.</p>
               </div>
 
               {/* Terms */}
@@ -899,7 +377,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="text-sm text-[#211F1D]">
-                        ${(product.price * product.quantity).toFixed(2)}
+                        ${(Number(quote?.items?.find((line) => line.id === product.id)?.price ?? product.price) * product.quantity).toFixed(2)}
                       </div>
                     </div>
                   ))}
@@ -919,7 +397,6 @@ export default function CheckoutPage() {
                         value={coupon}
                         onChange={(e) => setCoupon(e.target.value)}
                         placeholder="Promo code"
-                        disabled={couponApplied}
                         className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#E4DED2] rounded-sm text-sm outline-none focus:border-[#1F3A2E]"
                       />
                     </div>
@@ -927,26 +404,22 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={applyCoupon}
-                      disabled={couponApplied}
+
                       className="px-4 py-2.5 bg-[#211F1D] text-[#F7F3EC] text-sm rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-50"
                     >
-                      {couponApplied ? "Applied" : "Apply"}
+                      {appliedCoupon ? "Update" : "Apply"}
                     </button>
                   </div>
 
-                  {couponApplied && (
+                  {appliedCoupon && (
                     <p className="flex items-center gap-1.5 text-xs text-[#1F3A2E] mt-2">
                       <LuCheck size={13} />
-                      $15 promotional discount applied
+                      {appliedCoupon} applied
                     </p>
                   )}
 
-                  {!couponApplied && (
-                    <p className="text-[11px] text-[#8A8378] mt-2">
-                      Try code <span className="text-[#211F1D]">FIELD15</span>{" "}
-                      for $15 off.
-                    </p>
-                  )}
+                  {quoteError && <p role="alert" className="mt-2 text-xs text-red-700">{quoteError}</p>}
+                  {!appliedCoupon && !quoteError && <p className="text-[11px] text-[#8A8378] mt-2">Enter a promotion code to check its current discount.</p>}
                 </div>
 
                 {/* Totals */}
@@ -955,7 +428,7 @@ export default function CheckoutPage() {
                     <span className="text-[#5B564C]">Subtotal</span>
 
                     <span className="text-[#211F1D]">
-                      ${subtotal.toFixed(2)}
+                      ${Number(subtotal).toFixed(2)}
                     </span>
                   </div>
 
@@ -963,16 +436,19 @@ export default function CheckoutPage() {
                     <span className="text-[#5B564C]">Shipping</span>
 
                     <span className="text-[#211F1D]">
-                      {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
+                      {quoteLoading ? "Checking..." : shipping === 0 ? "FREE" : `$${Number(shipping).toFixed(2)}`}
                     </span>
                   </div>
 
-                  {couponApplied && (
+                  {Number(quote?.tax || 0) > 0 && (
+                    <div className="flex items-center justify-between text-sm"><span className="text-[#5B564C]">{quote?.taxName || "Tax"}</span><span className="text-[#211F1D]">${Number(quote.tax).toFixed(2)}</span></div>
+                  )}
+                  {Boolean(discount) && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-[#1F3A2E]">Discount</span>
 
                       <span className="text-[#1F3A2E]">
-                        -${discount.toFixed(2)}
+                        -${Number(discount).toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -989,14 +465,14 @@ export default function CheckoutPage() {
                     </div>
 
                     <span className="font-serif text-2xl text-[#1F3A2E]">
-                      ${total.toFixed(2)}
+                      ${Number(total).toFixed(2)}
                     </span>
                   </div>
 
                   {/* Place Order */}
                   <button
                     type="submit"
-                    disabled={orderState.loading}
+                    disabled={orderState.loading || quoteLoading || !quoteMatchesCart || !addressId}
                     className="w-full mt-3 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors flex items-center justify-center gap-2"
                   >
                     <LuLock size={15} />
@@ -1082,165 +558,6 @@ export default function CheckoutPage() {
         </section>
       </main>
 
-      {/* =====================================================
-          FOOTER
-      ===================================================== */}
-
-      <footer className="bg-[#211F1D] text-[#D8D3C8]">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-2 sm:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-8 rounded-sm bg-[#C9A659] text-[#211F1D] flex items-center justify-center font-serif text-base">
-                F
-              </span>
-
-              <span className="font-serif text-lg text-[#F7F3EC]">
-                FIELDHOUSE
-              </span>
-            </div>
-
-            <p className="text-sm text-[#9B9689] mb-4">
-              Everyday goods for the home, made in small batches with natural
-              materials.
-            </p>
-
-            <div className="flex items-center gap-3">
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="hover:text-[#C9A659] transition-colors"
-              >
-                <LuFacebook size={16} />
-              </a>
-
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="hover:text-[#C9A659] transition-colors"
-              >
-                <LuInstagram size={16} />
-              </a>
-
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="hover:text-[#C9A659] transition-colors"
-              >
-                <LuTwitter size={16} />
-              </a>
-
-              <a
-                href="#"
-                aria-label="YouTube"
-                className="hover:text-[#C9A659] transition-colors"
-              >
-                <LuYoutube size={16} />
-              </a>
-            </div>
-          </div>
-
-          {/* Shop */}
-          <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
-
-            <ul className="space-y-2.5 text-sm">
-              {[
-                "Shop All",
-                "Furniture",
-                "Lighting",
-                "Kitchen & Dining",
-                "Textiles & Bedding",
-              ].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
-                    className="hover:text-[#C9A659] transition-colors"
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Help */}
-          <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
-
-            <ul className="space-y-2.5 text-sm">
-              {[
-                "Contact us",
-                "Shipping & delivery",
-                "Returns",
-                "FAQ",
-                "Track order",
-              ].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
-                    className="hover:text-[#C9A659] transition-colors"
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex items-start gap-2">
-                <LuMapPin size={15} className="mt-0.5 text-[#C9A659]" />
-
-                <span>
-                  124 Market Street
-                  <br />
-                  Portland, OR 97205
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <LuPhone size={15} className="text-[#C9A659]" />
-
-                <span>+1 (555) 123-4567</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <LuMail size={15} className="text-[#C9A659]" />
-
-                <span>hello@fieldhouse.com</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Bottom */}
-        <div className="border-t border-[#3A3733]">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-[#8F8A80]">
-              © 2026 FIELDHOUSE. All rights reserved.
-            </p>
-
-            <div className="flex items-center gap-4 text-xs text-[#8F8A80]">
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
-                Privacy
-              </a>
-
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
-                Terms
-              </a>
-
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
-                Cookies
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

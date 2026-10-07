@@ -7,6 +7,7 @@ import {
   LuChevronLeft,
   LuChevronRight,
   LuGitCompare,
+  LuHeart,
   LuMenu,
   LuSearch,
   LuShoppingCart,
@@ -14,6 +15,7 @@ import {
   LuX,
 } from "react-icons/lu";
 import { useCart } from "../Cart/CartContext";
+import { useWishlist } from "../Cart/WishlistContext";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -45,12 +47,22 @@ export default function FrontHeader({ settings }) {
   const [loading, setLoading] = useState(false);
   const scrollerRef = useRef(null);
   const { openCart, itemCount } = useCart();
+  const { count: wishlistCount, refresh: refreshWishlist } = useWishlist();
+  const [account, setAccount] = useState(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  useEffect(() => { let active = true; fetch("/api/account", { cache: "no-store" }).then(async (r) => r.ok ? (await r.json()).user : null).then((u) => { if (active) setAccount(u); }).catch(() => {}); return () => { active = false; }; }, [pathname]);
+  useEffect(() => {
+    const timer = setTimeout(() => refreshWishlist(), 0);
+    return () => clearTimeout(timer);
+  }, [pathname, refreshWishlist]);
+
+  const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); setAccount(null); setAccountMenuOpen(false); await refreshWishlist(); router.push("/"); router.refresh(); };
 
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length < 2) {
-      setResults([]);
-      return undefined;
+      const resetTimer = setTimeout(() => setResults([]), 0);
+      return () => clearTimeout(resetTimer);
     }
 
     const timer = setTimeout(async () => {
@@ -228,25 +240,15 @@ export default function FrontHeader({ settings }) {
         </div>
 
         <div className="ml-auto flex items-center gap-4 text-[var(--store-text)] sm:gap-6">
-          <Link
-            href="/order?view=dashboard"
-            className="flex cursor-pointer flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]"
-            aria-label="Account"
-          >
-            <LuUser size={20} />
-            <span className="hidden text-[10px] sm:inline">Account</span>
-          </Link>
-
-          <Link
+          {account ? <div className="relative"><button type="button" onClick={() => setAccountMenuOpen(v => !v)} className="flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-expanded={accountMenuOpen} aria-label="Customer account"><LuUser size={20}/><span className="hidden text-[10px] sm:inline">{account.firstName || "Account"}</span></button>{accountMenuOpen && <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-[#E4DED2] bg-white p-2 shadow-lg"><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=dashboard">My account</Link><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=orders">My orders</Link><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=wishlist">Wishlist</Link><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=addresses">Addresses</Link><button onClick={logout} className="block w-full rounded px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50">Log out</button></div>}</div> : <Link href="/login" className="flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-label="Log in"><LuUser size={20}/><span className="hidden text-[10px] sm:inline">Account</span></Link>}
+          <Link href={account ? "/order?view=wishlist" : "/login?next=%2Forder%3Fview%3Dwishlist"} className="relative flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-label="Wishlist"><LuHeart size={20}/><span className="hidden text-[10px] sm:inline">Wishlist</span>{wishlistCount > 0 && <span className="absolute -right-1.5 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--store-accent)] text-[9px] text-white">{wishlistCount}</span>}</Link>
+<Link
             href="/compare"
             className="relative flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]"
             aria-label="Compare"
           >
             <LuGitCompare size={20} />
             <span className="hidden text-[10px] sm:inline">Compare</span>
-            <span className="absolute -right-1.5 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--store-accent)] text-[9px] text-white">
-              2
-            </span>
           </Link>
 
           <button

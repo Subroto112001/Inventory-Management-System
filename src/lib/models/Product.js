@@ -27,6 +27,13 @@ const productSchema = new Schema(
       trim: true,
       maxlength: [2000, "Description cannot exceed 2000 characters"],
     },
+    specifications: {
+      type: [{
+        name: { type: String, trim: true, required: true, maxlength: 80 },
+        value: { type: String, trim: true, required: true, maxlength: 500 },
+      }],
+      default: [],
+    },
     unit: {
       type: String,
       trim: true, // e.g. "pcs", "kg", "box"

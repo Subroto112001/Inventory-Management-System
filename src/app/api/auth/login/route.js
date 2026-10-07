@@ -84,6 +84,14 @@ export async function POST(request) {
       );
     }
 
+    if (user.role === "Customer" && !user.isEmailVerified) {
+      recordRateLimitFailure(clientKey);
+      return NextResponse.json(
+        { success: false, message: "Please verify your email before logging in." },
+        { status: 403 },
+      );
+    }
+
     // 7. Create token
     const token = signAccessToken(user, rememberMe ? "30d" : "1d");
     clearRateLimit(clientKey);

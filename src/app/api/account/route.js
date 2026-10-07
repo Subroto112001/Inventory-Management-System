@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import User from "@/lib/models/User";
-import { getAuthenticatedUser, isCustomer } from "@/lib/auth";
+import { getAuthenticatedUser, isCustomer, signAccessToken } from "@/lib/auth";
 import connectMongoDB from "@/lib/databse/mongodb";
 
 export const dynamic = "force-dynamic";
@@ -133,10 +133,9 @@ export async function PUT(request) {
     user.password = await bcrypt.hash(newPassword, 12);
     user.authVersion = (user.authVersion || 0) + 1;
     await user.save();
-    return NextResponse.json({
-      success: true,
-      message: "Password updated successfully",
-    });
+    const response = NextResponse.json({ success: true, message: "Password updated successfully" });
+    response.cookies.set("token", signAccessToken(user), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", maxAge: 60 * 60 * 24, path: "/" });
+    return response;
   } catch {
     return NextResponse.json(
       { success: false, message: "Unable to update password" },

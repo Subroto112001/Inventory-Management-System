@@ -24,6 +24,7 @@ function serializePublicProduct(product) {
     image: product.image?.url || "",
     images: product.image?.url ? [product.image.url] : [],
     description: product.description || "",
+    specifications: product.specifications || [],
     unit: product.unit || "",
     brand: product.brand?.brandName || product.brandName || "",
     category: product.category?.categoryName || "",
@@ -184,6 +185,7 @@ export async function GET(request) {
       productSKU: p.productSKU,
       brandName: p.brandName || "",
       description: p.description || "",
+      specifications: p.specifications || [],
       unit: p.unit || "",
       price: p.price,
       wholesalePrice: p.wholesalePrice ?? "",
@@ -273,6 +275,9 @@ export async function POST(request) {
     const unit = formData.get("unit");
     const quantity = formData.get("quantity");
     const description = formData.get("description");
+    let specifications = [];
+    try { specifications = JSON.parse(formData.get("specifications") || "[]"); } catch { return NextResponse.json({ message: "Invalid specifications" }, { status: 400 }); }
+    if (!Array.isArray(specifications) || specifications.length > 50 || specifications.some((item) => !item?.name?.trim() || !item?.value?.trim())) return NextResponse.json({ message: "Each specification needs a name and value" }, { status: 400 });
     const wholesalePrice = formData.get("wholesalePrice");
     const discount = formData.get("discount");
     const initialStock = formData.get("initialStock");
@@ -408,6 +413,7 @@ export async function POST(request) {
       quantity: Number(quantity) || 0,
 
       description: description || "",
+      specifications: specifications.map(({name,value}) => ({name:name.trim(),value:value.trim()})),
 
       wholesalePrice:
         wholesalePrice === "" || wholesalePrice === null

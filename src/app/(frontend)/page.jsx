@@ -3,6 +3,7 @@
 import { PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
+import { useWishlist } from "@/Component/website/Cart/WishlistContext";
 import { useEffect, useRef, useState } from "react";
 import {
   LuSearch,
@@ -66,7 +67,9 @@ function ProductCard({ product }) {
   const { image, category, name, price, oldPrice, rating, reviews, badge } =
     product;
   const { addItem } = useCart();
-  const inStock = product.inStock ?? true;
+  const { has, toggle } = useWishlist();
+  const liked = has(product.id);
+  const inStock = product.inStock ?? false;
 
   return (
     <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200">
@@ -87,10 +90,11 @@ function ProductCard({ product }) {
 
         <button
           type="button"
-          aria-label="Add to wishlist"
+          aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
+          onClick={() => toggle(product).catch(() => {})}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#B65C38]"
         >
-          <LuHeart size={15} />
+          <LuHeart size={15} className={liked ? "fill-[#B65C38] text-[#B65C38]" : ""} />
         </button>
 
         <button

@@ -25,6 +25,7 @@ const INITIAL_FORM = {
   brandName: "",
   unit: "",
   description: "",
+  specifications: "[]",
   price: "",
   wholesalePrice: "",
   discount: "",
@@ -220,6 +221,7 @@ export default function AddProductPage() {
       data.append("brandName", formData.brandName.trim());
       data.append("unit", formData.unit.trim());
       data.append("description", formData.description.trim());
+      data.append("specifications", formData.specifications);
       data.append("price", formData.price);
       data.append("wholesalePrice", formData.wholesalePrice);
       data.append("discount", formData.discount || "0");
@@ -472,6 +474,8 @@ export default function AddProductPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6"><label htmlFor="specifications" className={labelClass}>Product specifications (JSON name/value pairs)</label><textarea id="specifications" name="specifications" value={formData.specifications} onChange={handleChange} rows={5} disabled={loading} className={inputClass} /></div>
 
               {/* PRICING */}
               <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">

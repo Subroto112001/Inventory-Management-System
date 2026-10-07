@@ -20,19 +20,14 @@ import {
 // pages instead of duplicating it)
 // ==========================================
 const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
-  const [isClient, setIsClient] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const scannerRef = useRef(null);
   const isScanningComplete = useRef(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (!isOpen) return;
 
-  useEffect(() => {
-    if (!isOpen || !isClient) return;
-
-    setCameraError("");
+    const resetTimer = setTimeout(() => setCameraError(""), 0);
     isScanningComplete.current = false;
 
     import("html5-qrcode").then(({ Html5Qrcode }) => {
@@ -75,6 +70,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
     });
 
     return () => {
+      clearTimeout(resetTimer);
       if (scannerRef.current) {
         try {
           scannerRef.current
@@ -86,9 +82,9 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
         } catch (e) {}
       }
     };
-  }, [isOpen, isClient, onScanSuccess]);
+  }, [isOpen, onScanSuccess]);
 
-  if (!isOpen || !isClient) return null;
+  if (!isOpen) return null;
 
   return (
     <div
@@ -161,6 +157,7 @@ const defaultFormState = {
   unit: "",
   quantity: "",
   description: "",
+  specifications: "[]",
   wholesalePrice: "",
   discount: "",
   initialStock: "",
@@ -207,6 +204,7 @@ const EditProductPage = () => {
           unit: product.unit ?? "",
           quantity: product.quantity ?? "",
           description: product.description ?? "",
+          specifications: JSON.stringify(product.specifications ?? [], null, 2),
           wholesalePrice: product.wholesalePrice ?? "",
           discount: product.discount ?? "",
           initialStock: product.initialStock ?? "",
@@ -280,7 +278,7 @@ const EditProductPage = () => {
       const res = await fetch(`/api/product/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, specifications: JSON.parse(formData.specifications || "[]") }),
       });
 
       const data = await res.json();
@@ -473,6 +471,7 @@ const EditProductPage = () => {
             );
           })}
 
+          <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3"><label htmlFor="specifications" className="text-gray-700 font-medium text-sm">Product specifications (JSON name/value pairs)</label><textarea id="specifications" name="specifications" value={formData.specifications} onChange={handleChange} rows="5" className="border border-gray-300 rounded-md p-2 font-mono text-sm" /></div>
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
             <label
               htmlFor="description"

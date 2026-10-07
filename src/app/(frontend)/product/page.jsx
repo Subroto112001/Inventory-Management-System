@@ -32,7 +32,7 @@ export default function ProductPage() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [search, setSearch] = useState(initialSearch);
-  const [sort, setSort] = useState("Featured");
+  const [sort, setSort] = useState("Newest");
   const [view, setView] = useState("grid");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
@@ -45,11 +45,14 @@ export default function ProductPage() {
   const productsPerPage = 12;
 
   useEffect(() => {
-    const categoryFromUrl = searchParams.get("category") || "All Products";
-    const searchFromUrl = searchParams.get("search") || "";
-    setActiveCategory(categoryFromUrl);
-    setSearch(searchFromUrl);
-    setPage(1);
+    let active = true;
+    Promise.resolve().then(() => {
+      if (!active) return;
+      setActiveCategory(searchParams.get("category") || "All Products");
+      setSearch(searchParams.get("search") || "");
+      setPage(1);
+    });
+    return () => { active = false; };
   }, [searchParams]);
 
   useEffect(() => {

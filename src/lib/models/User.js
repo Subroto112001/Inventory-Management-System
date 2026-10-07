@@ -154,6 +154,7 @@ const userSchema = new Schema(
     district: { type: String, trim: true },
     country: { type: String, default: "Bangladesh" },
     addresses: { type: [addressSchema], default: [] },
+    wishlist: { type: [{ type: Types.ObjectId, ref: "Product" }], default: [] },
 
     // --- System Status ---
     // UI-এর "Account Status" dropdown এর সাথে মিল রেখে isActive/isBlocked
@@ -167,6 +168,10 @@ const userSchema = new Schema(
       default: "Active",
     },
     isEmailVerified: { type: Boolean, default: false },
+    emailVerificationOtpHash: { type: String, select: false },
+    emailVerificationOtpExpiresAt: { type: Date, select: false },
+    emailVerificationOtpAttempts: { type: Number, default: 0, select: false },
+    emailVerificationOtpLastSentAt: { type: Date, select: false },
     invitationCodeHash: { type: String, select: false },
     invitationCodeExpiresAt: { type: Date, select: false },
     invitationCodeAttempts: { type: Number, default: 0, select: false },
@@ -201,6 +206,23 @@ userSchema.methods.compareHashPassword = async function (humanPass) {
 
 // Export enums so controllers/frontend validation can reuse the same source of truth
 export { SYSTEM_ROLES, DEPARTMENTS, ACCOUNT_STATUSES };
+
+const cachedUserModel = mongoose.models.User;
+const otpSchemaPaths = [
+  "emailVerificationOtpHash",
+  "emailVerificationOtpExpiresAt",
+  "emailVerificationOtpAttempts",
+  "emailVerificationOtpLastSentAt",
+];
+
+if (
+  cachedUserModel &&
+  otpSchemaPaths.some((path) => !cachedUserModel.schema.path(path))
+) {
+  // Next.js development hot reload can retain a Mongoose model compiled before
+  // the OTP fields existed. Recompile it so strict mode does not drop OTP data.
+  delete mongoose.models.User;
+}
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

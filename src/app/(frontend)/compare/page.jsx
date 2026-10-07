@@ -19,111 +19,6 @@ import {
   LuScale,
 } from "react-icons/lu";
 
-/* =========================================================
-   MOCK PRODUCTS (replace with real data / cart compare state)
-========================================================= */
-
-const ALL_PRODUCTS = [
-  {
-    id: 1,
-    name: "Alder Oak Dining Chair",
-    category: "Furniture",
-    price: 189,
-    oldPrice: 229,
-    rating: 4.8,
-    reviews: 62,
-    badge: "Exclusive",
-    image:
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=85",
-    material: "Solid oak, natural oil finish",
-    dimensions: '18" W × 20" D × 33" H',
-    weight: "12 lb",
-    warranty: "2 years",
-    inStock: true,
-  },
-  {
-    id: 3,
-    name: "Brushed Brass Pendant Light",
-    category: "Lighting",
-    price: 145,
-    rating: 4.7,
-    reviews: 38,
-    badge: "New",
-    image:
-      "https://images.unsplash.com/photo-1540932239986-30128078f3c5?auto=format&fit=crop&w=400&q=85",
-    material: "Brushed brass, linen shade",
-    dimensions: '12" Ø × 10" H',
-    weight: "3.2 lb",
-    warranty: "1 year",
-    inStock: true,
-  },
-  {
-    id: 10,
-    name: "Bouclé Reading Armchair",
-    category: "Furniture",
-    price: 540,
-    oldPrice: 620,
-    rating: 4.9,
-    reviews: 54,
-    badge: "Sale",
-    image:
-      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&q=85",
-    material: "Bouclé fabric, solid wood frame",
-    dimensions: '32" W × 34" D × 36" H',
-    weight: "48 lb",
-    warranty: "3 years",
-    inStock: true,
-  },
-  {
-    id: 13,
-    name: "Linen Shade Table Lamp",
-    category: "Lighting",
-    price: 74,
-    rating: 4.6,
-    reviews: 46,
-    image:
-      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=400&q=85",
-    material: "Ceramic base, linen shade",
-    dimensions: '10" Ø × 22" H',
-    weight: "4.5 lb",
-    warranty: "1 year",
-    inStock: true,
-  },
-  {
-    id: 17,
-    name: "Washed Linen Duvet Set",
-    category: "Textiles & Bedding",
-    price: 128,
-    rating: 4.8,
-    reviews: 95,
-    image:
-      "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=400&q=85",
-    material: "100% washed linen",
-    dimensions: 'Queen (90" × 90")',
-    weight: "3.1 lb",
-    warranty: "—",
-    inStock: true,
-  },
-  {
-    id: 12,
-    name: "Woven Rattan Ottoman",
-    category: "Furniture",
-    price: 165,
-    oldPrice: 190,
-    rating: 4.7,
-    reviews: 33,
-    image:
-      "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=400&q=85",
-    material: "Natural rattan, cotton cushion",
-    dimensions: '20" W × 20" D × 16" H',
-    weight: "9 lb",
-    warranty: "1 year",
-    inStock: false,
-  },
-];
-
-const INITIAL_COMPARE_IDS = [1, 3, 10, 13]; // start with 4 items
-
 const COMPARE_ROWS = [
   { key: "price", label: "Price" },
   { key: "rating", label: "Rating" },
@@ -182,15 +77,13 @@ function EmptyCompare({ onBrowse }) {
 ========================================================= */
 
 export default function ComparePage() {
-  void ALL_PRODUCTS;
-  void INITIAL_COMPARE_IDS;
   const [catalog, setCatalog] = useState([]);
   const [compareIds, setCompareIds] = useState([]);
   const [toast, setToast] = useState("");
 
   useEffect(() => {
     const loadProducts = async () => {
-      const response = await fetch("/api/product?limit=100", {
+      const response = await fetch("/api/product?public=1&limit=100", {
         cache: "no-store",
       });
       const data = await response.json();

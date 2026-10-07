@@ -22,6 +22,7 @@ function serializePublicProduct(product) {
     image: product.image?.url || "",
     images: product.image?.url ? [product.image.url] : [],
     description: product.description || "",
+    specifications: product.specifications || [],
     unit: product.unit || "",
     brand: product.brand?.brandName || product.brandName || "",
     category: product.category?.categoryName || "",
@@ -228,6 +229,7 @@ export async function PUT(request, { params }) {
     existingProduct.unit = unit;
     existingProduct.quantity = Number(quantity) || 0;
     existingProduct.description = description;
+    if (specifications !== undefined) { if (!Array.isArray(specifications) || specifications.length > 50 || specifications.some((item) => !item?.name?.trim() || !item?.value?.trim())) return NextResponse.json({ message: "Each specification needs a name and value" }, { status: 400 }); existingProduct.specifications = specifications.map(({name,value}) => ({name:name.trim(),value:value.trim()})); }
     existingProduct.wholesalePrice =
       wholesalePrice === "" ? undefined : Number(wholesalePrice);
     existingProduct.discount = Number(discount) || 0;

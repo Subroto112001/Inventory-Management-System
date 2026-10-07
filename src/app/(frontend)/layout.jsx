@@ -1,5 +1,6 @@
 import { CartProvider } from "@/Component/website/Cart/CartContext";
 import CartSidebar from "@/Component/website/Cart/Cartsidebar";
+import { WishlistProvider } from "@/Component/website/Cart/WishlistContext";
 import FrontFooter from "@/Component/website/GlobalComponent/FrontFooter";
 import FrontHeader from "@/Component/website/GlobalComponent/FrontHeader";
 import {
@@ -28,10 +29,12 @@ export default async function FrontendLayout({ children }) {
       }}
     >
       <CartProvider>
+        <WishlistProvider>
         <FrontHeader settings={theme} />
         <main>{children}</main>
         <FrontFooter settings={theme} />
         <CartSidebar />
+        </WishlistProvider>
       </CartProvider>
     </div>
   );

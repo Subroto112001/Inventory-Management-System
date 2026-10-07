@@ -68,6 +68,7 @@ export async function POST(request) {
       customerName,
       customerPhone,
       customerAddress,
+      addressId,
       cart,
       orderType,
       deliveryPaymentType,
@@ -92,6 +93,9 @@ export async function POST(request) {
     }
 
     await connectMongoDB();
+
+    const savedAddress = isCustomer(authenticatedUser) ? authenticatedUser.addresses.id(addressId) : null;
+    if (isCustomer(authenticatedUser) && !savedAddress) return NextResponse.json({ message: "Select one of your saved delivery addresses" }, { status: 400 });
 
     const productIds = cart.map((item) => item.id || item._id);
     if (productIds.some((id) => !id || !mongoose.Types.ObjectId.isValid(id))) {
@@ -136,14 +140,15 @@ export async function POST(request) {
       }
 
       const productId = new mongoose.Types.ObjectId(rawProductId);
-      calculatedSubtotal += product.price * quantity;
+      const purchasePrice = Math.max(0, Number(product.price) * (1 - Number(product.discount || 0) / 100));
+      calculatedSubtotal += purchasePrice * quantity;
 
       orderItems.push({
         product: productId,
         name: product.productName,
         sku: product.productSKU,
         quantity,
-        price: product.price,
+        price: purchasePrice,
       });
     }
 
@@ -276,12 +281,12 @@ export async function POST(request) {
     const orderData = {
       customer: {
         name: isCustomer(authenticatedUser)
-          ? `${authenticatedUser.firstName} ${authenticatedUser.lastName || ""}`.trim()
+          ? savedAddress.fullName
           : customerName,
         phone: isCustomer(authenticatedUser)
-          ? authenticatedUser.phoneNumber || undefined
+          ? savedAddress.phone
           : customerPhone || undefined,
-        address: customerAddress,
+        address: isCustomer(authenticatedUser) ? [savedAddress.address, savedAddress.area, savedAddress.city, savedAddress.postalCode, savedAddress.country].filter(Boolean).join(", ") : customerAddress,
       },
       items: orderItems,
       orderType,

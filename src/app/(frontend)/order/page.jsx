@@ -1,6 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useCart } from "@/Component/website/Cart/CartContext";
+import { useWishlist } from "@/Component/website/Cart/WishlistContext";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -103,246 +105,6 @@ const ACCOUNT_VIEWS = new Set(Object.keys(VIEW_TITLES));
 
 const HOME_ADDRESS = "House 12, Road 5, Dhanmondi, Dhaka 1205, Bangladesh";
 
-const ORDERS = [
-  {
-    id: "FH-10482",
-    date: "Sep 24, 2026",
-    status: "Processing",
-    payment: "Card",
-    paymentStatus: "Paid",
-    shipping: 0,
-    discount: 15,
-    address: HOME_ADDRESS,
-    tracking: null,
-    estimated: "Sep 30 – Oct 2",
-    items: [
-      {
-        name: "Alder Oak Dining Chair",
-        category: "Furniture",
-        price: 189,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=85",
-      },
-      {
-        name: "Hand-Thrown Stoneware Mug Set",
-        category: "Kitchen & Dining",
-        price: 58,
-        quantity: 2,
-        image:
-          "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=300&q=85",
-      },
-    ],
-  },
-  {
-    id: "FH-10431",
-    date: "Sep 18, 2026",
-    status: "Shipped",
-    payment: "Card",
-    paymentStatus: "Paid",
-    shipping: 0,
-    discount: 0,
-    address: HOME_ADDRESS,
-    tracking: "BD-7781-2290-4415",
-    estimated: "Sep 29 – Oct 1",
-    items: [
-      {
-        name: "Bouclé Reading Armchair",
-        category: "Furniture",
-        price: 540,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=300&q=85",
-      },
-    ],
-  },
-  {
-    id: "FH-10377",
-    date: "Sep 6, 2026",
-    status: "Delivered",
-    payment: "Cash on delivery",
-    paymentStatus: "Paid",
-    shipping: 0,
-    discount: 0,
-    address: HOME_ADDRESS,
-    tracking: "BD-7740-1183-0092",
-    estimated: "Delivered Sep 11",
-    items: [
-      {
-        name: "Linen Shade Table Lamp",
-        category: "Lighting",
-        price: 74,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=300&q=85",
-      },
-      {
-        name: "Washed Linen Duvet Set",
-        category: "Textiles & Bedding",
-        price: 128,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=300&q=85",
-      },
-      {
-        name: "Wool Felt Table Runner",
-        category: "Textiles & Bedding",
-        price: 36,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1583845112203-454c7a2b9b47?auto=format&fit=crop&w=300&q=85",
-      },
-    ],
-  },
-  {
-    id: "FH-10298",
-    date: "Aug 21, 2026",
-    status: "Delivered",
-    payment: "Card",
-    paymentStatus: "Paid",
-    shipping: 12,
-    discount: 0,
-    address: HOME_ADDRESS,
-    tracking: "BD-7702-6634-8810",
-    estimated: "Delivered Aug 26",
-    items: [
-      {
-        name: 'Cast Iron Skillet 10"',
-        category: "Kitchen & Dining",
-        price: 42,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=300&q=85",
-      },
-    ],
-  },
-  {
-    id: "FH-10214",
-    date: "Aug 3, 2026",
-    status: "Cancelled",
-    payment: "Card",
-    paymentStatus: "Refunded",
-    shipping: 0,
-    discount: 0,
-    address: HOME_ADDRESS,
-    tracking: null,
-    estimated: "Cancelled Aug 4",
-    items: [
-      {
-        name: "Teak Outdoor Bench",
-        category: "Furniture",
-        price: 320,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?auto=format&fit=crop&w=300&q=85",
-      },
-    ],
-  },
-  {
-    id: "FH-10156",
-    date: "Jul 15, 2026",
-    status: "Delivered",
-    payment: "Cash on delivery",
-    paymentStatus: "Paid",
-    shipping: 0,
-    discount: 0,
-    address: HOME_ADDRESS,
-    tracking: "BD-7655-9021-3376",
-    estimated: "Delivered Jul 20",
-    items: [
-      {
-        name: "Hand-Knotted Wool Rug",
-        category: "Textiles & Bedding",
-        price: 240,
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1600166898405-da9535204843?auto=format&fit=crop&w=300&q=85",
-      },
-      {
-        name: "Speckled Ceramic Planter",
-        category: "Decor & Accents",
-        price: 32,
-        quantity: 2,
-        image:
-          "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=300&q=85",
-      },
-    ],
-  },
-];
-
-const INITIAL_WISHLIST = [
-  {
-    id: "w1",
-    name: "Brushed Brass Pendant Light",
-    category: "Lighting",
-    price: 145,
-    rating: 4.7,
-    reviews: 38,
-    image:
-      "https://images.unsplash.com/photo-1540932239986-30128078f3c5?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: "w2",
-    name: "Linen Weave Throw Blanket",
-    category: "Textiles & Bedding",
-    price: 76,
-    rating: 4.6,
-    reviews: 51,
-    image:
-      "https://images.unsplash.com/photo-1600369671236-e74521d0bde6?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: "w3",
-    name: "Woven Rattan Ottoman",
-    category: "Furniture",
-    price: 165,
-    oldPrice: 190,
-    rating: 4.7,
-    reviews: 33,
-    image:
-      "https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    id: "w4",
-    name: "Olive Wood Cutting Board",
-    category: "Kitchen & Dining",
-    price: 34,
-    rating: 4.7,
-    reviews: 88,
-    image:
-      "https://images.unsplash.com/photo-1608755728617-aefab37d2ab2?auto=format&fit=crop&w=600&q=85",
-  },
-];
-
-const INITIAL_ADDRESSES = [
-  {
-    id: "a1",
-    label: "Home",
-    name: "Subroto Barman",
-    phone: "+880 1700-000000",
-    line1: "House 12, Road 5",
-    line2: "Dhanmondi",
-    city: "Dhaka",
-    state: "Dhaka Division",
-    postalCode: "1205",
-    country: "Bangladesh",
-    isDefault: true,
-  },
-  {
-    id: "a2",
-    label: "Office",
-    name: "Subroto Barman",
-    phone: "+880 1700-000000",
-    line1: "Level 6, Plot 22, Gulshan Avenue",
-    line2: "",
-    city: "Dhaka",
-    state: "Dhaka Division",
-    postalCode: "1212",
-    country: "Bangladesh",
-    isDefault: false,
-  },
-];
-
 const EMPTY_ADDRESS = {
   label: "Home",
   name: "",
@@ -392,6 +154,8 @@ const mapApiOrder = (order) => ({
   tracking: null,
   estimated: order.status === "Delivered" ? "Delivered" : "To be confirmed",
   items: (order.items || []).map((item) => ({
+    productId: item.product?.toString?.() || item.product,
+    id: item.product?.toString?.() || item.product,
     name: item.name,
     category: "",
     price: Number(item.price || 0),
@@ -1949,8 +1713,9 @@ function AccountPageContent() {
 
   const requestedView = searchParams.get("view");
   const view = ACCOUNT_VIEWS.has(requestedView) ? requestedView : "orders";
-  const [cartCount, setCartCount] = useState(3);
-  const [wishlist, setWishlist] = useState(INITIAL_WISHLIST);
+  const { addItem, itemCount } = useCart();
+  const wishlistState = useWishlist();
+  const [wishlist, setWishlist] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loadingAccount, setLoadingAccount] = useState(true);
@@ -2022,8 +1787,12 @@ function AccountPageContent() {
         })),
       );
       setOrders((ordersData.orders || []).map(mapApiOrder));
+      const wishlistResponse = await fetch("/api/account/wishlist", { cache: "no-store" });
+      if (wishlistResponse.status === 401) throw new Error("Authentication required");
+      if (wishlistResponse.ok) { const wishlistData = await wishlistResponse.json(); setWishlist(wishlistData.products || []); }
     } catch (error) {
-      setAccountError(error.message || "Unable to load your account");
+      if (error.message === "Authentication required") router.replace("/login?next=" + encodeURIComponent("/order?view=" + view));
+      else setAccountError(error.message || "Unable to load your account");
     } finally {
       setLoadingAccount(false);
     }
@@ -2043,30 +1812,11 @@ function AccountPageContent() {
     }
   };
 
-  /* Cart */
-  const addToCart = (item) => {
-    setCartCount((c) => c + 1);
-    showToast(`${item.name} added to cart`);
-  };
-
-  const buyAgain = (order) => {
-    const qty = order.items.reduce((s, i) => s + i.quantity, 0);
-    setCartCount((c) => c + qty);
-    showToast(
-      `${qty} item${qty > 1 ? "s" : ""} from #${order.id} added to cart`,
-    );
-  };
-
-  /* Wishlist */
-  const removeFromWishlist = (id) => {
-    setWishlist((list) => list.filter((i) => i.id !== id));
-    showToast("Removed from wishlist");
-  };
-
-  const addAllToCart = () => {
-    setCartCount((c) => c + wishlist.length);
-    showToast(`${wishlist.length} items added to cart`);
-  };
+  /* Cart and wishlist */
+  const addToCart = (item) => { addItem(item); showToast(item.name + " added to cart"); };
+  const buyAgain = (order) => { order.items.forEach((item) => addItem({ id: item.productId, name: item.name, category: item.category, image: item.image, price: item.price }, item.quantity, { open: false })); showToast("Items added to cart"); };
+  const removeFromWishlist = async (id) => { try { const response=await fetch("/api/account/wishlist/"+encodeURIComponent(id),{method:"DELETE"});const data=await response.json();if(!response.ok)throw new Error(data.message||"Unable to remove item");await wishlistState.refresh();setWishlist(list=>list.filter(item=>item.id!==id));showToast("Removed from wishlist"); } catch(error){showToast(error.message);} };
+  const addAllToCart = () => { wishlist.forEach((item)=>addItem(item,1,{open:false}));showToast(wishlist.length+" items added to cart"); };
 
   /* Addresses */
   const saveAddress = async (id, data) => {
