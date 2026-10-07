@@ -47,6 +47,12 @@ export async function POST(request) {
     }
 
     await connectMongoDB();
+    const signupStartedAt = new Date();
+    await User.deleteOne({
+      email,
+      isEmailVerified: false,
+      verificationExpiresAt: { $lte: signupStartedAt },
+    });
     if (await User.exists({ email })) {
       return NextResponse.json(
         { message: "An account with this email already exists" },
@@ -65,6 +71,7 @@ export async function POST(request) {
       jobTitle: "Customer",
       accountStatus: "Active",
       isEmailVerified: false,
+      verificationExpiresAt: new Date(signupStartedAt.getTime() + 60 * 60 * 1000),
       emailVerificationOtpHash: hash,
       emailVerificationOtpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
       emailVerificationOtpAttempts: 0,

@@ -30,6 +30,7 @@ export async function POST(request) {
     user.password = password;
     user.authVersion = (user.authVersion || 0) + 1;
     user.isEmailVerified = true;
+    user.verificationExpiresAt = undefined;
     user.passwordSetupTokenHash = undefined;
     user.passwordSetupTokenExpiresAt = undefined;
     await user.save();

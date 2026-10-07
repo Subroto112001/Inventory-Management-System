@@ -29,15 +29,27 @@ export async function POST(request) {
     if (!user) return NextResponse.json(GENERIC_RESPONSE);
 
     const now = new Date();
+    const expiredAccount = await User.deleteOne({
+      _id: user._id,
+      isEmailVerified: false,
+      verificationExpiresAt: { $lte: now },
+    });
+    if (expiredAccount.deletedCount) return NextResponse.json(GENERIC_RESPONSE);
     const cutoff = new Date(now.getTime() - COOLDOWN_MS);
     const { otp, hash } = createEmailOtp();
     const updated = await User.findOneAndUpdate(
       {
         _id: user._id,
         isEmailVerified: false,
-        $or: [
-          { emailVerificationOtpLastSentAt: { $exists: false } },
-          { emailVerificationOtpLastSentAt: { $lte: cutoff } },
+        $and: [
+          { $or: [
+            { emailVerificationOtpLastSentAt: { $exists: false } },
+            { emailVerificationOtpLastSentAt: { $lte: cutoff } },
+          ] },
+          { $or: [
+            { verificationExpiresAt: { $exists: false } },
+            { verificationExpiresAt: { $gt: new Date() } },
+          ] },
         ],
       },
       {

@@ -168,6 +168,7 @@ const userSchema = new Schema(
       default: "Active",
     },
     isEmailVerified: { type: Boolean, default: false },
+    verificationExpiresAt: { type: Date, select: false },
     emailVerificationOtpHash: { type: String, select: false },
     emailVerificationOtpExpiresAt: { type: Date, select: false },
     emailVerificationOtpAttempts: { type: Number, default: 0, select: false },
@@ -188,6 +189,11 @@ const userSchema = new Schema(
     authVersion: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
+);
+
+userSchema.index(
+  { verificationExpiresAt: 1 },
+  { expireAfterSeconds: 0, name: "unverified_account_expiry_ttl" },
 );
 
 // --- Middleware & Methods ---
@@ -213,6 +219,7 @@ const otpSchemaPaths = [
   "emailVerificationOtpExpiresAt",
   "emailVerificationOtpAttempts",
   "emailVerificationOtpLastSentAt",
+  "verificationExpiresAt",
 ];
 
 if (

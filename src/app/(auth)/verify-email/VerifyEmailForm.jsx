@@ -107,7 +107,10 @@ export default function VerifyEmailForm({ initialEmail = "", sendFailed = false,
         setMessage("Something went wrong. Please try again.");
         return;
       }
-      if (data.status === "verified" || data.status === "already-verified") {
+      if (data.status === "account-expired") {
+        setStatus("account-expired");
+        setMessage("Your verification period has expired. Please create a new account.");
+      } else if (data.status === "verified" || data.status === "already-verified") {
         setStatus(data.status);
         setMessage(data.status === "already-verified" ? "Your email is already verified." : "Email Verified Successfully! Your email has been verified. You can now log in.");
       } else if (data.status === "expired") {
@@ -156,12 +159,14 @@ export default function VerifyEmailForm({ initialEmail = "", sendFailed = false,
   };
 
   const verified = status === "verified" || status === "already-verified";
+  const accountExpired = status === "account-expired";
   const otpExpired = hasOtpExpiry && otpSeconds === 0;
   return <main className="flex min-h-screen items-center justify-center bg-[#F7F3EC] px-4 py-10 text-[#211F1D]"><section className="w-full max-w-md rounded-xl border border-[#E4DED2] bg-white p-6 shadow-sm sm:p-7">
     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B65C38]">FIELDHOUSE</p>
-    <h1 className="mt-3 text-3xl font-semibold">{verified ? "Email Verified Successfully!" : "Verify Your Email"}</h1>
+    <h1 className="mt-3 text-3xl font-semibold">{verified ? "Email Verified Successfully!" : accountExpired ? "Verification period expired" : "Verify Your Email"}</h1>
     <p className="mt-2 text-sm text-[#6F685E]">{verified ? "Your email has been verified. You can now log in to your account." : sendFailed ? "We couldn’t send your code yet. Try requesting a new OTP below." : email ? <>We’ve sent a 6-digit verification code to <span className="font-medium text-[#211F1D]">{maskEmail(email)}</span>.</> : "Enter your email address to verify your account."}</p>
-    {!verified && <>
+    {accountExpired && <p className="mt-5 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{message}</p>}
+    {!verified && !accountExpired && <>
       <form onSubmit={verify} className="mt-6 space-y-4">
         {editingEmail ? <label className="block text-sm font-medium" htmlFor="verification-email">Email address<input id="verification-email" className="mt-1 w-full rounded-md border border-[#D9D2C7] px-3 py-2.5 outline-none focus:border-[#1F3A2E]" type="email" value={email} onChange={(event) => updateEmail(event.target.value)} autoComplete="email" required /></label> : <p className="text-center text-xs text-[#6F685E]"><button type="button" onClick={() => setEditingEmail(true)} className="underline">Change email address</button></p>}
         <fieldset className="border-0 p-0">
@@ -181,7 +186,8 @@ export default function VerifyEmailForm({ initialEmail = "", sendFailed = false,
       </div>
     </>}
     {verified && <p className="mt-5 rounded-md bg-[#edf5ef] px-3 py-2 text-sm text-[#1F3A2E]" role="status">{message}<Link href="/login" className="mt-4 block font-semibold underline">Continue to Login</Link></p>}
-    {!verified && <Link href="/login" className="mt-5 block text-center text-sm font-semibold text-[#1F3A2E]">Back to login</Link>}
+    {accountExpired && <Link href="/signup" className="mt-5 block rounded-md bg-[#1F3A2E] px-4 py-3 text-center font-semibold text-white">Create New Account</Link>}
+    {!verified && !accountExpired && <Link href="/login" className="mt-5 block text-center text-sm font-semibold text-[#1F3A2E]">Back to login</Link>}
   </section></main>;
 }
 
