@@ -7,6 +7,11 @@ const emptyForm = {
   title: "",
   subtitle: "",
   badge: "",
+  supportingText: "",
+  product: "",
+  price: "",
+  previousPrice: "",
+  discountText: "",
   buttonText: "Shop now",
   buttonUrl: "/product",
   sortOrder: 0,
@@ -15,6 +20,7 @@ const emptyForm = {
 
 export default function HomepageSlidersPage() {
   const [items, setItems] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -42,6 +48,10 @@ export default function HomepageSlidersPage() {
 
   useEffect(() => {
     loadItems();
+    fetch("/api/product?public=1&page=1&limit=48")
+      .then((response) => response.json())
+      .then((data) => setProducts(data.products || []))
+      .catch(() => setProducts([]));
   }, []);
 
   const resetForm = () => {
@@ -72,6 +82,11 @@ export default function HomepageSlidersPage() {
       payload.append("title", form.title);
       payload.append("subtitle", form.subtitle || "");
       payload.append("badge", form.badge || "");
+      payload.append("supportingText", form.supportingText || "");
+      payload.append("product", form.product || "");
+      payload.append("price", String(form.price ?? ""));
+      payload.append("previousPrice", String(form.previousPrice ?? ""));
+      payload.append("discountText", form.discountText || "");
       payload.append("buttonText", form.buttonText || "Shop now");
       payload.append("buttonUrl", form.buttonUrl || "/product");
       payload.append("sortOrder", String(form.sortOrder ?? 0));
@@ -105,6 +120,11 @@ export default function HomepageSlidersPage() {
       title: slider.title,
       subtitle: slider.subtitle || "",
       badge: slider.badge || "",
+      supportingText: slider.supportingText || "",
+      product: slider.product || "",
+      price: slider.price ?? "",
+      previousPrice: slider.previousPrice ?? "",
+      discountText: slider.discountText || "",
       buttonText: slider.buttonText || "Shop now",
       buttonUrl: slider.buttonUrl || "/product",
       sortOrder: slider.sortOrder ?? 0,
@@ -234,6 +254,32 @@ export default function HomepageSlidersPage() {
                 rows={3}
                 className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
               />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Featured product</label>
+                <select name="product" value={form.product} onChange={handleChange} className="w-full rounded-md border border-[#E4DED2] px-3 py-2">
+                  <option value="">No linked product</option>
+                  {products.map((product) => <option key={product.id} value={product.id}>{product.name} · ${product.price}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Price override</label>
+                <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} placeholder="Use product price" className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Previous price</label>
+                <input name="previousPrice" type="number" min="0" step="0.01" value={form.previousPrice} onChange={handleChange} className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Discount label</label>
+                <input name="discountText" value={form.discountText} onChange={handleChange} placeholder="e.g. Save 20%" className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Supporting text</label>
+                <input name="supportingText" value={form.supportingText} onChange={handleChange} placeholder="Short supporting line" className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

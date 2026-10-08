@@ -29,9 +29,15 @@ const serializeSlider = (slider) => ({
   title: slider.title,
   subtitle: slider.subtitle || "",
   badge: slider.badge || "",
+  supportingText: slider.supportingText || "",
+  product: slider.product?._id?.toString?.() || slider.product?.toString?.() || "",
+  productName: slider.product?.productName || "",
+  price: slider.price ?? slider.product?.price ?? null,
+  previousPrice: slider.previousPrice ?? null,
+  discountText: slider.discountText || "",
   buttonText: slider.buttonText || "Shop now",
   buttonUrl: slider.buttonUrl || "/product",
-  image: slider.image?.url || "",
+  image: slider.image?.url || slider.product?.image?.url || "",
   mobileImage: slider.mobileImage?.url || slider.image?.url || "",
   sortOrder: slider.sortOrder ?? 0,
   isActive: slider.isActive,
@@ -70,7 +76,7 @@ export async function GET(request) {
       publicRead || searchParams.get("active") === "1"
         ? { isActive: true }
         : {};
-    const sliders = await HomepageSlider.find(filter)
+    const sliders = await HomepageSlider.find(filter).populate("product", "productName price image isActive")
       .sort({ sortOrder: 1, createdAt: -1 })
       .lean();
 
@@ -102,6 +108,7 @@ export async function POST(request) {
     const badge = String(payload.badge || "").trim();
     const buttonText = String(payload.buttonText || "Shop now").trim();
     const buttonUrl = String(payload.buttonUrl || "/product").trim();
+    const productId = String(payload.product || "").trim();
 
     if (!title) {
       return NextResponse.json(
@@ -111,6 +118,14 @@ export async function POST(request) {
     }
 
     await connectMongoDB();
+    if (productId && !/^[a-f\d]{24}$/i.test(productId)) {
+      return NextResponse.json({ success: false, message: "Invalid product" }, { status: 400 });
+    }
+    if (productId) {
+      const Product = (await import("@/lib/models/Product")).default;
+      const product = await Product.findOne({ _id: productId, isActive: true }).select("_id").lean();
+      if (!product) return NextResponse.json({ success: false, message: "Product not found or inactive" }, { status: 400 });
+    }
     const image = await mapImageUpload(payload.image || payload.imageFile);
     const mobileImage = await mapImageUpload(
       payload.mobileImage || payload.mobileImageFile,
@@ -120,6 +135,11 @@ export async function POST(request) {
       title,
       subtitle,
       badge,
+      supportingText: String(payload.supportingText || "").trim(),
+      product: productId || null,
+      price: payload.price === "" || payload.price == null ? null : Number(payload.price),
+      previousPrice: payload.previousPrice === "" || payload.previousPrice == null ? null : Number(payload.previousPrice),
+      discountText: String(payload.discountText || "").trim(),
       buttonText,
       buttonUrl,
       image: image || undefined,
@@ -182,6 +202,20 @@ export async function PUT(request) {
       slider.subtitle = String(payload.subtitle).trim();
     if (payload.badge !== undefined)
       slider.badge = String(payload.badge).trim();
+    if (payload.supportingText !== undefined) slider.supportingText = String(payload.supportingText).trim();
+    if (payload.discountText !== undefined) slider.discountText = String(payload.discountText).trim();
+    if (payload.price !== undefined) slider.price = payload.price === "" || payload.price == null ? null : Number(payload.price);
+    if (payload.previousPrice !== undefined) slider.previousPrice = payload.previousPrice === "" || payload.previousPrice == null ? null : Number(payload.previousPrice);
+    if (payload.product !== undefined) {
+      const productId = String(payload.product || "").trim();
+      if (productId && !/^[a-f\d]{24}$/i.test(productId)) return NextResponse.json({ success: false, message: "Invalid product" }, { status: 400 });
+      if (productId) {
+        const Product = (await import("@/lib/models/Product")).default;
+        const product = await Product.findOne({ _id: productId, isActive: true }).select("_id").lean();
+        if (!product) return NextResponse.json({ success: false, message: "Product not found or inactive" }, { status: 400 });
+      }
+      slider.product = productId || null;
+    }
     if (payload.buttonText !== undefined)
       slider.buttonText = String(payload.buttonText).trim();
     if (payload.buttonUrl !== undefined)

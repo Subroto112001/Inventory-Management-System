@@ -219,7 +219,6 @@ export default function EcommerceHomePage() {
     .slice(0, 4);
   const heroSlides = slides.filter((slide) => slide.isActive);
   const offerSlides = heroSlides.length ? heroSlides : [];
-  const sideBanners = heroSlides.slice(1, 3);
   const newArrivals = products.slice(0, 4);
 
   /* Hero autoplay */
@@ -280,58 +279,46 @@ export default function EcommerceHomePage() {
             HERO
         =================================================== */}
 
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
-            {/* Main Slider */}
-            <div className="relative rounded-md overflow-hidden h-[340px] sm:h-[420px] lg:h-[480px]">
+        <section className="mx-auto max-w-[1400px] px-3 pt-4 sm:px-6 sm:pt-8">
+            <div className="group relative isolate min-h-[560px] overflow-hidden rounded-[26px] bg-[#d9dedf] text-[#182126] sm:min-h-[600px] lg:min-h-[620px]">
               {slidesLoading ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#EFE9DC] text-sm text-[#5B564C]">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[#5B564C]">
                   Loading homepage slides...
                 </div>
               ) : heroSlides.length === 0 ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#EFE9DC] text-sm text-[#5B564C]">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[#5B564C]">
                   No active homepage slides available.
                 </div>
               ) : (
                 heroSlides.map((slide, i) => (
                   <div
                     key={slide.id}
-                    className={`absolute inset-0 transition-opacity duration-700 ${
+                    className={`absolute inset-0 transition-all duration-700 ${
                       i === heroActive
-                        ? "opacity-100"
-                        : "opacity-0 pointer-events-none"
+                        ? "translate-x-0 opacity-100"
+                        : "pointer-events-none translate-x-3 opacity-0"
                     }`}
                   >
-                    <img
-                      src={slide.image || "/placeholder-product.svg"}
-                      alt={slide.title}
-                      className="h-full w-full object-cover"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#211F1D]/60 via-[#211F1D]/20 to-transparent" />
-
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="max-w-md px-6 sm:px-10">
-                        <p className="mb-2 text-sm text-[#C9A659]">
-                          {slide.badge || "New season"}
-                        </p>
-
-                        <h1 className="mb-3 font-serif text-2xl leading-tight text-[#F7F3EC] sm:text-4xl">
-                          {slide.title}
-                        </h1>
-
-                        <p className="mb-5 text-sm text-[#F7F3EC]/85 sm:text-base">
-                          {slide.subtitle}
-                        </p>
-
-                        <Link
-                          href={slide.buttonUrl || "/product"}
-                          className="inline-flex bg-[#C9A659] px-5 py-2.5 text-sm text-[#211F1D] transition-colors hover:bg-[#B08D3E]"
-                        >
-                          {slide.buttonText || "Shop now"}
-                        </Link>
-                      </div>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_65%_45%,#f6f7f6_0%,#dce2e3_44%,#aeb9bc_100%)]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-black/10" />
+                    <div className="absolute left-6 top-6 z-10 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#425158] sm:left-10 sm:top-9">
+                      <span className="h-2 w-2 rounded-sm bg-[#425158]" /> {slide.badge || "Curated essentials"}
                     </div>
+                    <div className="absolute left-[52px] right-[52px] top-[18%] z-10 sm:left-[76px] sm:right-[76px] sm:top-[27%] sm:max-w-[380px] lg:left-[84px] lg:right-auto lg:top-[30%]">
+                      <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#56666c]">New season / {slide.productName || "Featured collection"}</p>
+                      <h1 className="font-serif text-4xl leading-[0.98] tracking-[-0.04em] text-[#172127] sm:text-5xl lg:text-[64px]">{slide.title}</h1>
+                      <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#4d5b61]">{slide.subtitle}</p>
+                      <Link href={slide.buttonUrl || "/product"} className="mt-6 inline-flex items-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-semibold text-[#1d272b] shadow-sm transition-transform hover:-translate-y-0.5">{slide.buttonText || "Get the look"}<span aria-hidden="true">↗</span></Link>
+                    </div>
+                    <div className="absolute inset-y-[37%] left-[18%] right-[18%] flex items-center justify-center sm:inset-y-[12%] sm:left-[34%] sm:right-[20%]">
+                      <img src={slide.image || "/placeholder-product.svg"} alt={slide.productName || slide.title} onError={(event) => { event.currentTarget.src = "/placeholder-product.svg"; }} className="h-full w-full object-contain drop-shadow-[0_28px_28px_rgba(31,42,46,0.22)] transition-transform duration-700 group-hover:scale-[1.025]" />
+                    </div>
+                    <div className="absolute right-[52px] top-[20%] z-10 text-right sm:right-[76px] sm:top-[22%] lg:right-[84px]">
+                      {slide.discountText ? <span className="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-[#57656a]">{slide.discountText}</span> : null}
+                      <span className="block text-2xl font-light tracking-tight text-[#202b30]">{slide.price != null ? `$${Number(slide.price).toFixed(2)}` : ""}</span>
+                      {slide.previousPrice != null ? <span className="text-sm text-[#68767b] line-through">${Number(slide.previousPrice).toFixed(2)}</span> : null}
+                    </div>
+                    {slide.supportingText ? <p className="absolute bottom-12 left-1/2 z-10 w-40 -translate-x-1/2 text-center text-xs leading-tight text-[#46565c] sm:bottom-14">{slide.supportingText}</p> : null}
                   </div>
                 ))
               )}
@@ -347,7 +334,8 @@ export default function EcommerceHomePage() {
                       Math.max(heroSlides.length, 1),
                   )
                 }
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
+                className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 text-[#211F1D] transition-colors hover:bg-white sm:left-4 sm:h-9 sm:w-9"
+                disabled={heroSlides.length < 2}
               >
                 <LuChevronLeft size={18} />
               </button>
@@ -359,13 +347,14 @@ export default function EcommerceHomePage() {
                 onClick={() =>
                   setHeroActive((a) => (a + 1) % Math.max(heroSlides.length, 1))
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
+                className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 text-[#211F1D] transition-colors hover:bg-white sm:right-4 sm:h-9 sm:w-9"
+                disabled={heroSlides.length < 2}
               >
                 <LuChevronRight size={18} />
               </button>
 
               {/* Dots */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              <div className="absolute bottom-6 left-6 z-20 flex gap-2 sm:left-10">
                 {heroSlides.map((slide, i) => (
                   <button
                     key={slide.id}
@@ -374,49 +363,13 @@ export default function EcommerceHomePage() {
                     onClick={() => setHeroActive(i)}
                     className={`h-1.5 rounded-full transition-all ${
                       i === heroActive
-                        ? "w-6 bg-[#F7F3EC]"
-                        : "w-1.5 bg-[#F7F3EC]/50"
+                        ? "w-6 bg-[#233137]"
+                        : "w-1.5 bg-[#233137]/40"
                     }`}
                   />
                 ))}
               </div>
             </div>
-
-            {/* Side Banners */}
-            <div className="grid grid-rows-2 gap-4 h-[220px] sm:h-[420px] lg:h-[480px]">
-              {sideBanners.length ? (
-                sideBanners.map((banner) => (
-                  <Link
-                    key={banner.id}
-                    href={banner.buttonUrl || "/product"}
-                    className="group relative block overflow-hidden rounded-md"
-                  >
-                    <img
-                      src={banner.image || "/placeholder-product.svg"}
-                      alt={banner.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                    />
-
-                    <div className="absolute inset-0 bg-[#211F1D]/35" />
-
-                    <div className="absolute inset-0 flex flex-col justify-end p-4">
-                      <h3 className="mb-0.5 text-base text-[#F7F3EC]">
-                        {banner.title}
-                      </h3>
-
-                      <p className="text-xs text-[#F7F3EC]/85">
-                        {banner.subtitle || banner.buttonText}
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="flex items-center justify-center rounded-md border border-dashed border-[#E4DED2] bg-[#EFE9DC] text-sm text-[#5B564C]">
-                  No side banners available.
-                </div>
-              )}
-            </div>
-          </div>
         </section>
 
         {/* ===================================================

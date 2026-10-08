@@ -22,6 +22,11 @@ const homepageSliderSchema = new Schema(
       maxlength: [60, "Badge cannot exceed 60 characters"],
       default: "",
     },
+    supportingText: { type: String, trim: true, maxlength: 100, default: "" },
+    product: { type: Schema.Types.ObjectId, ref: "Product", default: null },
+    price: { type: Number, min: 0, default: null },
+    previousPrice: { type: Number, min: 0, default: null },
+    discountText: { type: String, trim: true, maxlength: 40, default: "" },
     buttonText: {
       type: String,
       trim: true,
@@ -58,5 +63,26 @@ const homepageSliderSchema = new Schema(
 
 homepageSliderSchema.index({ isActive: 1, sortOrder: 1, createdAt: -1 });
 
-export default mongoose.models.HomepageSlider ||
+const cachedHomepageSlider = mongoose.models.HomepageSlider;
+const addedPaths = [
+  "supportingText",
+  "product",
+  "price",
+  "previousPrice",
+  "discountText",
+];
+
+// Next.js dev hot reload can retain the model compiled before these fields
+// were added. Recompile it so Mongoose recognizes populate("product").
+if (
+  cachedHomepageSlider &&
+  addedPaths.some((path) => !cachedHomepageSlider.schema.path(path))
+) {
+  delete mongoose.models.HomepageSlider;
+}
+
+const HomepageSlider =
+  mongoose.models.HomepageSlider ||
   mongoose.model("HomepageSlider", homepageSliderSchema);
+
+export default HomepageSlider;
