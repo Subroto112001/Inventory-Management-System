@@ -35,7 +35,7 @@ const INITIAL_FORM = {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#611F69] focus:bg-white focus:ring-4 focus:ring-[#611F69]/10 disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[var(--theme-primary)] focus:bg-white focus:ring-4 focus:ring-[var(--theme-primary)]/10 disabled:cursor-not-allowed disabled:opacity-60";
 
 const labelClass = "mb-2 block text-sm font-semibold text-gray-700";
 
@@ -267,13 +267,13 @@ export default function AddProductPage() {
   // UI
 
   return (
-    <main className="min-h-screen bg-[#f7f7f8] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[var(--theme-background)] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* HEADER */}
         <div className="mb-6 flex items-center gap-3">
           <Link
             href={PRODUCT_LIST_PAGE}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition hover:border-[#611F69] hover:bg-[#611F69] hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition hover:border-[var(--theme-primary)] hover:bg-[var(--theme-primary)] hover:text-white"
           >
             <MdArrowBack size={21} />
           </Link>
@@ -314,7 +314,7 @@ export default function AddProductPage() {
               <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <div className="border-b border-gray-100 px-6 py-5">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#611F69]/10 text-[#611F69]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]">
                       <MdInventory2 size={22} />
                     </div>
                     <div>
@@ -641,7 +641,7 @@ export default function AddProductPage() {
                     </div>
 
                     <div className="mt-4 flex items-center gap-2">
-                      <MdImage size={20} className="shrink-0 text-[#611F69]" />
+                      <MdImage size={20} className="shrink-0 text-[var(--theme-primary)]" />
                       <span className="truncate text-sm font-medium text-gray-700">
                         {image?.name}
                       </span>
@@ -661,9 +661,9 @@ export default function AddProductPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={loading}
-                    className="flex aspect-square w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 text-center transition hover:border-[#611F69]/50 hover:bg-[#611F69]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex aspect-square w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 text-center transition hover:border-[var(--theme-primary)]/50 hover:bg-[var(--theme-primary)]/5 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#611F69]/10 text-[#611F69]">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]">
                       <MdCloudUpload size={30} />
                     </div>
                     <p className="text-sm font-semibold text-gray-700">
@@ -706,7 +706,7 @@ export default function AddProductPage() {
             <button
               type="submit"
               disabled={loading || categoriesLoading}
-              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#611F69] px-7 text-sm font-semibold text-white shadow-sm transition hover:bg-[#501657] focus:outline-none focus:ring-4 focus:ring-[#611F69]/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--theme-primary)] px-7 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--theme-primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--theme-primary)]/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>

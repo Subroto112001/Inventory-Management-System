@@ -89,7 +89,7 @@ const AddWarehousePage = () => {
             <div className="flex flex-col items-start gap-2">
               <button
                 onClick={() => router.back()}
-                className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors bg-transparent border-none cursor-pointer"
+                className="text-sm font-medium text-[var(--theme-primary)] hover:text-[var(--theme-primary-hover)] flex items-center gap-1 transition-colors bg-transparent border-none cursor-pointer"
                 aria-label="Go back to warehouse list"
               >
                 <MdArrowBack size={16} aria-hidden="true" />
@@ -182,7 +182,7 @@ const AddWarehousePage = () => {
                     onChange={handleChange}
                     required
                     aria-required="true"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base text-gray-900 transition-shadow"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-base text-gray-900 transition-shadow"
                     placeholder="e.g., Central Hub Dhaka"
                   />
                 </div>
@@ -210,7 +210,7 @@ const AddWarehousePage = () => {
                     required
                     aria-required="true"
                     aria-describedby="code-hint"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base text-gray-900 uppercase transition-shadow"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-base text-gray-900 uppercase transition-shadow"
                     placeholder="e.g., WH-DHK-01"
                   />
                   <span
@@ -235,7 +235,7 @@ const AddWarehousePage = () => {
                     value={formData.capacity}
                     onChange={handleChange}
                     min="0"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base text-gray-900 transition-shadow"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-base text-gray-900 transition-shadow"
                     placeholder="e.g., 5000"
                   />
                 </div>
@@ -255,7 +255,7 @@ const AddWarehousePage = () => {
                     onChange={handleChange}
                     aria-describedby="phone-hint"
                     pattern="^(?:\+88|88)?(01[3-9]\d{8})$"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base text-gray-900 transition-shadow"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-base text-gray-900 transition-shadow"
                     placeholder="e.g., 017XXXXXXXX"
                   />
                   <span
@@ -297,7 +297,7 @@ const AddWarehousePage = () => {
                     required
                     aria-required="true"
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base text-gray-900 resize-y transition-shadow"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-base text-gray-900 resize-y transition-shadow"
                     placeholder="Enter full street address"
                   />
                 </div>
@@ -324,7 +324,7 @@ const AddWarehousePage = () => {
                     onChange={handleChange}
                     required
                     aria-required="true"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base text-gray-900 transition-shadow"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-base text-gray-900 transition-shadow"
                     placeholder="e.g., Dhaka"
                   />
                 </div>
@@ -354,7 +354,7 @@ const AddWarehousePage = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center justify-center gap-2 px-8 py-3 rounded-md w-full md:w-auto shadow-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                className="bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] text-[var(--theme-primary-text)] font-medium flex items-center justify-center gap-2 px-8 py-3 rounded-md w-full md:w-auto shadow-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:ring-offset-2"
                 aria-disabled={isSubmitting}
               >
                 <MdSave size={20} aria-hidden="true" />

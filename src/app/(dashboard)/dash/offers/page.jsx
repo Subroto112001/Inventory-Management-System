@@ -153,7 +153,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
             className="text-lg font-bold text-gray-900 flex items-center gap-2"
           >
             <MdLocalOffer
-              className="text-[#611F69] text-xl"
+              className="text-[var(--theme-primary)] text-xl"
               aria-hidden="true"
             />
             {initialOffer ? "Edit Offer" : "Create New Offer"}
@@ -187,7 +187,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                 setForm((f) => ({ ...f, offerName: e.target.value }))
               }
               placeholder="e.g. Eid Special 20% Off"
-              className="w-full p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent text-sm"
+              className="w-full p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-sm"
             />
           </div>
 
@@ -205,7 +205,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                   }
                   className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg border-2 transition-all text-sm font-semibold ${
                     form.discountType === "Percentage"
-                      ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]"
+                      ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]"
                       : "border-gray-200 text-gray-500 hover:bg-gray-50"
                   }`}
                 >
@@ -218,7 +218,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                   }
                   className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg border-2 transition-all text-sm font-semibold ${
                     form.discountType === "Flat"
-                      ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]"
+                      ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]"
                       : "border-gray-200 text-gray-500 hover:bg-gray-50"
                   }`}
                 >
@@ -234,7 +234,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
               >
                 Discount Value
               </label>
-              <div className="flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+              <div className="flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
                 <input
                   id="discountValue"
                   type="number"
@@ -274,7 +274,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                   setForm((f) => ({ ...f, minPurchase: e.target.value }))
                 }
                 placeholder="e.g. 500"
-                className="w-full p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent text-sm"
+                className="w-full p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-sm"
               />
             </div>
             <div className="flex-1">
@@ -293,7 +293,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                   setForm((f) => ({ ...f, usageLimit: e.target.value }))
                 }
                 placeholder="e.g. 100 redemptions"
-                className="w-full p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent text-sm"
+                className="w-full p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-sm"
               />
             </div>
           </div>
@@ -307,7 +307,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
               >
                 Start Date
               </label>
-              <div className="flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+              <div className="flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
                 <MdCalendarToday className="text-gray-500" aria-hidden="true" />
                 <input
                   id="startDate"
@@ -327,7 +327,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
               >
                 End Date
               </label>
-              <div className="flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+              <div className="flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
                 <MdCalendarToday className="text-gray-500" aria-hidden="true" />
                 <input
                   id="endDate"
@@ -355,7 +355,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                 }
                 className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg border-2 transition-all text-sm font-semibold ${
                   form.applyTo === "All Products"
-                    ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]"
+                    ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]"
                     : "border-gray-200 text-gray-500 hover:bg-gray-50"
                 }`}
               >
@@ -368,7 +368,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                 }
                 className={`flex items-center justify-center gap-1.5 p-2.5 rounded-lg border-2 transition-all text-sm font-semibold ${
                   form.applyTo === "Specific Products"
-                    ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]"
+                    ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]"
                     : "border-gray-200 text-gray-500 hover:bg-gray-50"
                 }`}
               >
@@ -378,7 +378,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
 
             {form.applyTo === "Specific Products" && (
               <div className="border border-gray-100 rounded-lg bg-gray-50 p-2">
-                <div className="flex items-center gap-2 p-2 mb-2 border border-gray-300 bg-white rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] transition-all">
+                <div className="flex items-center gap-2 p-2 mb-2 border border-gray-300 bg-white rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] transition-all">
                   <MdSearch className="text-gray-500" aria-hidden="true" />
                   <input
                     type="search"
@@ -401,7 +401,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                           <label
                             className={`flex items-center justify-between gap-3 p-2.5 rounded-md border cursor-pointer transition-colors ${
                               checked
-                                ? "border-[#611F69]/40 bg-[#611F69]/5"
+                                ? "border-[var(--theme-primary)]/40 bg-[var(--theme-primary)]/5"
                                 : "border-gray-200 bg-white hover:border-gray-300"
                             }`}
                           >
@@ -417,7 +417,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
                               type="checkbox"
                               checked={checked}
                               onChange={() => toggleProduct(product.id)}
-                              className="w-4 h-4 accent-[#611F69]"
+                              className="w-4 h-4 accent-[var(--theme-primary)]"
                               aria-label={`Include ${product.productName}`}
                             />
                           </label>
@@ -446,7 +446,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
               onClick={() => setForm((f) => ({ ...f, isActive: !f.isActive }))}
               aria-pressed={form.isActive}
               aria-label="Toggle offer active state"
-              className="text-3xl text-[#611F69]"
+              className="text-3xl text-[var(--theme-primary)]"
             >
               {form.isActive ? (
                 <MdToggleOn />
@@ -466,7 +466,7 @@ const OfferModal = ({ isOpen, onClose, onSave, products, initialOffer }) => {
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 bg-[#611F69] text-white font-bold rounded-lg shadow-lg hover:bg-[#4a1752] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#611F69]/50 transition-all"
+              className="flex-1 py-3 bg-[var(--theme-primary)] text-white font-bold rounded-lg shadow-lg hover:bg-[var(--theme-primary-hover)] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[var(--theme-primary)]/50 transition-all"
             >
               {initialOffer ? "Save Changes" : "Create Offer"}
             </button>
@@ -639,10 +639,10 @@ export default function OffersPage() {
       <header className="mb-6">
         <Link
           href="/dash/products"
-          className="inline-flex gap-2 items-center text-gray-800 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
+          className="inline-flex gap-2 items-center text-gray-800 hover:text-[var(--theme-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] rounded-md transition-colors"
           aria-label="Go back to products page"
         >
-          <span className="text-2xl text-[#611F69]" aria-hidden="true">
+          <span className="text-2xl text-[var(--theme-primary)]" aria-hidden="true">
             {IconProvider?.leftIcon || "←"}
           </span>
           <span className="text-[16px] font-semibold">Back To Products</span>
@@ -654,7 +654,7 @@ export default function OffersPage() {
           </h1>
           <button
             onClick={openCreateModal}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#611F69] text-white font-bold rounded-lg shadow-lg hover:bg-[#4a1752] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#611F69]/50 transition-all"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--theme-primary)] text-white font-bold rounded-lg shadow-lg hover:bg-[var(--theme-primary-hover)] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[var(--theme-primary)]/50 transition-all"
           >
             <MdAdd className="text-xl" aria-hidden="true" />
             Create Offer
@@ -690,7 +690,7 @@ export default function OffersPage() {
       {/* Offers List Section */}
       <section className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
         <div className="flex flex-col sm:flex-row gap-3 mb-5">
-          <div className="flex-1 flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+          <div className="flex-1 flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
             <MdSearch
               className="text-gray-500 text-xl ml-1"
               aria-hidden="true"
@@ -715,7 +715,7 @@ export default function OffersPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`whitespace-nowrap px-4 py-2 rounded-lg border text-sm font-semibold transition-all ${
                   statusFilter === status
-                    ? "border-[#611F69] bg-[#611F69]/10 text-[#611F69]"
+                    ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]"
                     : "border-gray-200 text-gray-500 hover:bg-gray-50"
                 }`}
               >
@@ -745,7 +745,7 @@ export default function OffersPage() {
               return (
                 <li
                   key={offer.id}
-                  className="p-4 border border-gray-200 rounded-lg flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:border-[#611F69]/50 transition-colors"
+                  className="p-4 border border-gray-200 rounded-lg flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:border-[var(--theme-primary)]/50 transition-colors"
                 >
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -770,7 +770,7 @@ export default function OffersPage() {
                   </div>
 
                   <div className="flex items-center gap-4 justify-between lg:justify-end">
-                    <span className="text-lg font-extrabold text-[#611F69]">
+                    <span className="text-lg font-extrabold text-[var(--theme-primary)]">
                       {offer.discountType === "Percentage"
                         ? `${offer.discountValue}% OFF`
                         : `৳${offer.discountValue} OFF`}
@@ -779,7 +779,7 @@ export default function OffersPage() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleToggleOffer(offer)}
-                        className="p-2 text-2xl text-[#611F69] hover:bg-[#611F69]/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                        className="p-2 text-2xl text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                         aria-label={
                           offer.isActive ? "Disable offer" : "Enable offer"
                         }
@@ -795,7 +795,7 @@ export default function OffersPage() {
                       </button>
                       <button
                         onClick={() => openEditModal(offer)}
-                        className="p-2 text-gray-500 hover:text-[#611F69] hover:bg-[#611F69]/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                        className="p-2 text-gray-500 hover:text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                         aria-label={`Edit ${offer.offerName}`}
                         title="Edit offer"
                       >

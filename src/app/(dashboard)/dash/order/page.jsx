@@ -149,13 +149,13 @@ const RegularMemoModal = ({ isOpen, onClose, order }) => {
             id="memo-title"
             className="text-lg font-bold text-gray-900 flex items-center gap-2"
           >
-            <MdVisibility className="text-[#611F69] text-xl" />
+            <MdVisibility className="text-[var(--theme-primary)] text-xl" />
             Standard Order Memo
           </h2>
           <div className="flex gap-2">
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2 bg-[#611F69] text-white text-sm font-semibold rounded hover:bg-[#4a1752] transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-primary)] text-white text-sm font-semibold rounded hover:bg-[var(--theme-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
             >
               <MdDownload size={18} />
               Print Memo
@@ -179,7 +179,7 @@ const RegularMemoModal = ({ isOpen, onClose, order }) => {
             <p className="text-sm text-gray-600 font-medium">
               Head Office, Dhaka, Bangladesh
             </p>
-            <div className="inline-block mt-4 px-4 py-1.5 border-2 border-[#611F69] text-[#611F69] font-bold text-lg uppercase rounded-full print:border-black print:text-black">
+            <div className="inline-block mt-4 px-4 py-1.5 border-2 border-[var(--theme-primary)] text-[var(--theme-primary)] font-bold text-lg uppercase rounded-full print:border-black print:text-black">
               Order Invoice
             </div>
           </div>
@@ -316,13 +316,13 @@ const MushakModal = ({ isOpen, onClose, order }) => {
             id="mushak-title"
             className="text-lg font-bold text-gray-900 flex items-center gap-2"
           >
-            <MdReceipt className="text-[#611F69] text-xl" />
+            <MdReceipt className="text-[var(--theme-primary)] text-xl" />
             Mushak Challan 6.3 (মূসক ৬.৩)
           </h2>
           <div className="flex gap-2">
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2 bg-[#611F69] text-white text-sm font-semibold rounded hover:bg-[#4a1752] transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-primary)] text-white text-sm font-semibold rounded hover:bg-[var(--theme-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
             >
               <MdDownload size={18} />
               Download / Print
@@ -681,7 +681,7 @@ export default function OrdersDashboard() {
           className="flex flex-col md:flex-row gap-4 mb-8 print:hidden"
           aria-label="Key Performance Indicators"
         >
-          <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
+          <div className="bg-[var(--theme-primary)] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
             <div className="flex justify-between items-start mb-4">
               <h3 className="font-label-sm text-label-sm uppercase text-gray-200">
                 Total Orders
@@ -703,7 +703,7 @@ export default function OrdersDashboard() {
             </div>
           </div>
 
-          <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
+          <div className="bg-[var(--theme-primary)] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
             <div className="flex justify-between items-start mb-4">
               <h3 className="font-label-sm text-label-sm uppercase text-gray-200">
                 Revenue This Month
@@ -721,7 +721,7 @@ export default function OrdersDashboard() {
             </div>
           </div>
 
-          <div className="bg-[#611F69] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
+          <div className="bg-[var(--theme-primary)] p-5 rounded-lg border text-white border-gray-100 w-full hover:scale-102 transition-all duration-200">
             <div className="flex justify-between items-start mb-4">
               <h3 className="font-label-sm text-label-sm uppercase text-gray-200">
                 Pending Shipments
@@ -756,7 +756,7 @@ export default function OrdersDashboard() {
                 id="search-orders"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-lg pl-10 pr-4 py-2 outline-none focus:ring-2 focus:ring-[#611F69] transition-all font-body text-body"
+                className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-lg pl-10 pr-4 py-2 outline-none focus:ring-2 focus:ring-[var(--theme-primary)] transition-all font-body text-body"
                 placeholder="Search orders..."
                 type="search"
               />
@@ -772,9 +772,9 @@ export default function OrdersDashboard() {
                   }}
                   aria-haspopup="listbox"
                   aria-expanded={isFilterOpen}
-                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-label-sm text-label-sm text-gray-700 hover:bg-gray-50 transition-colors w-full justify-center focus:outline-none focus:ring-2 focus:ring-[#611F69] ${
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-label-sm text-label-sm text-gray-700 hover:bg-gray-50 transition-colors w-full justify-center focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] ${
                     selectedMonth !== "All Months"
-                      ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69] font-medium"
+                      ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)] font-medium"
                       : "border-gray-200"
                   }`}
                 >
@@ -798,7 +798,7 @@ export default function OrdersDashboard() {
                         }}
                         className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer ${
                           selectedMonth === month
-                            ? "font-semibold text-[#611F69] bg-[#611F69]/5"
+                            ? "font-semibold text-[var(--theme-primary)] bg-[var(--theme-primary)]/5"
                             : ""
                         }`}
                       >
@@ -821,9 +821,9 @@ export default function OrdersDashboard() {
                   }}
                   aria-haspopup="listbox"
                   aria-expanded={isSortOpen}
-                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-label-sm text-label-sm text-gray-700 hover:bg-gray-50 transition-colors w-full justify-center focus:outline-none focus:ring-2 focus:ring-[#611F69] ${
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-label-sm text-label-sm text-gray-700 hover:bg-gray-50 transition-colors w-full justify-center focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] ${
                     sortBy !== "default"
-                      ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69] font-medium"
+                      ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)] font-medium"
                       : "border-gray-200"
                   }`}
                 >
@@ -849,7 +849,7 @@ export default function OrdersDashboard() {
                         }}
                         className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer ${
                           sortBy === option.value
-                            ? "font-semibold text-[#611F69] bg-[#611F69]/5"
+                            ? "font-semibold text-[var(--theme-primary)] bg-[var(--theme-primary)]/5"
                             : ""
                         }`}
                       >
@@ -865,7 +865,7 @@ export default function OrdersDashboard() {
 
               <button
                 onClick={generateReport}
-                className="flex items-center gap-2 px-4 py-2 border border-[#611F69] bg-[#611F69] text-white rounded-lg font-label-sm text-label-sm hover:bg-[#4a1752] transition-colors w-full sm:w-auto justify-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                className="flex items-center gap-2 px-4 py-2 border border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white rounded-lg font-label-sm text-label-sm hover:bg-[var(--theme-primary-hover)] transition-colors w-full sm:w-auto justify-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)]"
                 aria-label="Export report to PDF"
               >
                 <MdDownload className="text-[18px]" aria-hidden="true" />
@@ -942,7 +942,7 @@ export default function OrdersDashboard() {
                       key={order.orderNumber}
                       className="hover:bg-gray-50 transition-colors group"
                     >
-                      <td className="px-6 py-4 font-medium text-[#611F69] print:text-gray-900 print:py-2">
+                      <td className="px-6 py-4 font-medium text-[var(--theme-primary)] print:text-gray-900 print:py-2">
                         {order.orderNumber}
                       </td>
                       <td className="px-6 py-4 text-gray-600 print:text-gray-900 print:py-2">
@@ -1004,7 +1004,7 @@ export default function OrdersDashboard() {
                         {/* 1. Standard Memo Button */}
                         <button
                           onClick={() => openMemo(order)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#611F69]/30 rounded-md text-[#611F69] hover:bg-[#611F69]/10 transition-colors font-medium text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[var(--theme-primary)]/30 rounded-md text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/10 transition-colors font-medium text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)]"
                           aria-label={`View Standard Memo for order ${order.id}`}
                         >
                           <MdVisibility
@@ -1017,7 +1017,7 @@ export default function OrdersDashboard() {
                         {/* 2. Mushak 6.3 Button */}
                         <button
                           onClick={() => openMushak(order)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#611F69] bg-[#611F69] text-white rounded-md hover:bg-[#4a1752] transition-colors font-medium text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white rounded-md hover:bg-[var(--theme-primary-hover)] transition-colors font-medium text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)]"
                           aria-label={`View Mushak 6.3 for order ${order.id}`}
                         >
                           <MdReceipt
@@ -1058,27 +1058,27 @@ export default function OrdersDashboard() {
             </span>
             <div className="flex items-center gap-2">
               <button
-                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                 disabled
                 aria-label="Previous page"
               >
                 <MdChevronLeft className="text-[18px]" aria-hidden="true" />
               </button>
               <button
-                className="w-8 h-8 flex items-center justify-center border border-[#611F69] bg-[#611F69] text-white rounded font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                className="w-8 h-8 flex items-center justify-center border border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white rounded font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)]"
                 aria-current="page"
                 aria-label="Page 1"
               >
                 1
               </button>
               <button
-                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                 aria-label="Page 2"
               >
                 2
               </button>
               <button
-                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                 aria-label="Next page"
               >
                 <MdChevronRight className="text-[18px]" aria-hidden="true" />

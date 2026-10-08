@@ -87,7 +87,7 @@ export default function UserProfile() {
             {/* Profile Card Skeleton */}
             <article className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               {/* Cover */}
-              <div className="h-32 bg-[#6C1B7B]/10"></div>
+              <div className="h-32 bg-[var(--theme-primary)]/10"></div>
 
               <div className="px-6 pb-6">
                 {/* Avatar + Status */}
@@ -130,7 +130,7 @@ export default function UserProfile() {
                   {/* Warehouse */}
                   <div className="pt-4 border-t border-gray-100">
                     <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded bg-[#6C1B7B]/20"></div>
+                      <div className="w-5 h-5 rounded bg-[var(--theme-primary)]/20"></div>
 
                       <div className="flex-1">
                         <div className="h-3 w-32 bg-gray-100 rounded"></div>
@@ -145,7 +145,7 @@ export default function UserProfile() {
             {/* Security Card Skeleton */}
             <article className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-5 h-5 bg-[#6C1B7B]/20 rounded"></div>
+                <div className="w-5 h-5 bg-[var(--theme-primary)]/20 rounded"></div>
                 <div className="h-4 w-20 bg-gray-200 rounded"></div>
               </div>
 
@@ -166,11 +166,11 @@ export default function UserProfile() {
               {/* Header */}
               <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-[#6C1B7B]/20 rounded"></div>
+                  <div className="w-5 h-5 bg-[var(--theme-primary)]/20 rounded"></div>
                   <div className="h-5 w-44 bg-gray-200 rounded"></div>
                 </div>
 
-                <div className="h-9 w-28 bg-[#6C1B7B]/10 rounded-lg"></div>
+                <div className="h-9 w-28 bg-[var(--theme-primary)]/10 rounded-lg"></div>
               </div>
 
               {/* Fields */}
@@ -226,7 +226,7 @@ export default function UserProfile() {
               {/* Header */}
               <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-[#6C1B7B]/20 rounded"></div>
+                  <div className="w-5 h-5 bg-[var(--theme-primary)]/20 rounded"></div>
                   <div className="h-5 w-36 bg-gray-200 rounded"></div>
                 </div>
               </div>
@@ -345,21 +345,21 @@ export default function UserProfile() {
           ================================================== */}
           <article className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             {/* Cover */}
-            <div className="h-32 bg-[#6C1B7B]/10 relative"></div>
+            <div className="h-32 bg-[var(--theme-primary)]/10 relative"></div>
 
             <div className="px-6 pb-6 relative">
               {/* Profile Image */}
               <div className="flex justify-between items-end -mt-12 mb-4">
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-full bg-white p-1 border-2 border-white shadow-md">
-                    <div className="w-full h-full rounded-full bg-[#6C1B7B] text-white flex items-center justify-center text-3xl font-bold">
+                    <div className="w-full h-full rounded-full bg-[var(--theme-primary)] text-white flex items-center justify-center text-3xl font-bold">
                       {firstName}
                     </div>
                   </div>
 
                   <button
                     type="button"
-                    className="absolute bottom-0 right-0 p-1.5 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6C1B7B]"
+                    className="absolute bottom-0 right-0 p-1.5 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-primary)]"
                     aria-label="Update profile picture"
                   >
                     <MdCameraAlt className="text-[16px]" aria-hidden="true" />
@@ -384,7 +384,7 @@ export default function UserProfile() {
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900">{fullName}</h2>
 
-                <div className="flex items-center gap-1.5 text-[#6C1B7B] font-medium text-sm mt-1">
+                <div className="flex items-center gap-1.5 text-[var(--theme-primary)] font-medium text-sm mt-1">
                   <MdBadge className="text-lg" aria-hidden="true" />
 
                   <span>{role}</span>
@@ -426,7 +426,7 @@ export default function UserProfile() {
                 {/* Assigned Warehouse */}
                 <li className="flex items-start gap-3 pt-4 border-t border-gray-100">
                   <MdStorefront
-                    className="text-lg text-[#6C1B7B] mt-0.5 flex-shrink-0"
+                    className="text-lg text-[var(--theme-primary)] mt-0.5 flex-shrink-0"
                     aria-hidden="true"
                   />
 
@@ -450,7 +450,7 @@ export default function UserProfile() {
           <article className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <MdSecurity
-                className="text-lg text-[#6C1B7B]"
+                className="text-lg text-[var(--theme-primary)]"
                 aria-hidden="true"
               />
               Security
@@ -460,7 +460,7 @@ export default function UserProfile() {
               {/* Change Password */}
               <button
                 type="button"
-                className="flex items-center justify-center gap-2 w-full py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] transition-colors"
               >
                 <MdVpnKey className="text-lg" aria-hidden="true" />
                 Change Password
@@ -469,7 +469,7 @@ export default function UserProfile() {
               {/* 2FA */}
               <button
                 type="button"
-                className="flex items-center justify-center gap-2 w-full py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] transition-colors"
               >
                 Enable 2FA Authentication
               </button>
@@ -489,7 +489,7 @@ export default function UserProfile() {
             <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <MdPerson
-                  className="text-xl text-[#6C1B7B]"
+                  className="text-xl text-[var(--theme-primary)]"
                   aria-hidden="true"
                 />
                 Personal Information
@@ -499,7 +499,7 @@ export default function UserProfile() {
                 <button
                   type="button"
                   onClick={handleEdit}
-                  className="px-4 py-2 text-sm font-medium text-[#6C1B7B] bg-[#6C1B7B]/10 rounded-lg hover:bg-[#6C1B7B]/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#6C1B7B]"
+                  className="px-4 py-2 text-sm font-medium text-[var(--theme-primary)] bg-[var(--theme-primary)]/10 rounded-lg hover:bg-[var(--theme-primary)]/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                 >
                   Edit Profile
                 </button>
@@ -528,7 +528,7 @@ export default function UserProfile() {
                       disabled={!isEditing}
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
 
@@ -550,7 +550,7 @@ export default function UserProfile() {
                       disabled={!isEditing}
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
 
@@ -571,7 +571,7 @@ export default function UserProfile() {
                       type="email"
                       disabled
                       value={formData.email}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
 
@@ -593,7 +593,7 @@ export default function UserProfile() {
                       disabled={!isEditing}
                       value={formData.location}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
 
@@ -614,7 +614,7 @@ export default function UserProfile() {
                       type="text"
                       disabled
                       value={formData.department}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
 
@@ -635,7 +635,7 @@ export default function UserProfile() {
                       type="text"
                       disabled
                       value={formData.role}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
 
@@ -656,7 +656,7 @@ export default function UserProfile() {
                       type="text"
                       disabled
                       value={formData.assignedStore}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                     />
                   </div>
                 </div>
@@ -685,7 +685,7 @@ export default function UserProfile() {
                         type="text"
                         disabled
                         value={formData.status}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:bg-white disabled:opacity-70 disabled:cursor-not-allowed text-gray-900 transition-colors"
                       />
                     </div>
 
@@ -727,7 +727,7 @@ export default function UserProfile() {
                     {/* Save */}
                     <button
                       type="submit"
-                      className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6C1B7B] transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[var(--theme-primary)] rounded-lg hover:bg-[var(--theme-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-primary)] transition-colors"
                     >
                       <MdSave className="text-lg" aria-hidden="true" />
                       Save Changes
@@ -745,7 +745,7 @@ export default function UserProfile() {
             <div className="p-6 border-b border-gray-100 bg-gray-50/50">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <MdSecurity
-                  className="text-xl text-[#6C1B7B]"
+                  className="text-xl text-[var(--theme-primary)]"
                   aria-hidden="true"
                 />
                 Account Details

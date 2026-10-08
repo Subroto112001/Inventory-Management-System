@@ -82,9 +82,9 @@ const CampaignManager = () => {
                       onClick={() => setChannel("sms")}
                       className={`flex-1 flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium rounded-l-lg border ${
                         channel === "sms"
-                          ? "bg-[#611F69]/10 text-[#611F69] border-[#611F69] z-10"
+                          ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] border-[var(--theme-primary)] z-10"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                      } focus:z-10 focus:ring-2 focus:ring-[#611F69] focus:outline-none transition-colors`}
+                      } focus:z-10 focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-none transition-colors`}
                     >
                       <MdSmartphone size={20} />
                       SMS / WhatsApp
@@ -94,9 +94,9 @@ const CampaignManager = () => {
                       onClick={() => setChannel("email")}
                       className={`flex-1 flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium rounded-r-lg border-t border-b border-r ${
                         channel === "email"
-                          ? "bg-[#611F69]/10 text-[#611F69] border-[#611F69] z-10"
+                          ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] border-[var(--theme-primary)] z-10"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                      } focus:z-10 focus:ring-2 focus:ring-[#611F69] focus:outline-none transition-colors`}
+                      } focus:z-10 focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-none transition-colors`}
                     >
                       <MdEmail size={20} />
                       Email
@@ -120,7 +120,7 @@ const CampaignManager = () => {
                       id="audience"
                       value={audience}
                       onChange={(e) => setAudience(e.target.value)}
-                      className="pl-10 w-full border border-gray-300 rounded-md py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-[#611F69] shadow-sm text-sm"
+                      className="pl-10 w-full border border-gray-300 rounded-md py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] shadow-sm text-sm"
                     >
                       <option value="all">All Customers (12,450)</option>
                       <option value="vip">VIP Members (1,240)</option>
@@ -137,16 +137,16 @@ const CampaignManager = () => {
             </section>
 
             {/* AI Generator Box */}
-            <section className="bg-gradient-to-r from-[#611F69]/5 to-[#611F69]/10 rounded-xl shadow-sm border border-[#611F69]/20 p-6">
+            <section className="bg-gradient-to-r from-[var(--theme-primary)]/5 to-[var(--theme-primary)]/10 rounded-xl shadow-sm border border-[var(--theme-primary)]/20 p-6">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#611F69] text-white rounded-lg shadow-sm">
+                <div className="p-3 bg-[var(--theme-primary)] text-white rounded-lg shadow-sm">
                   <MdAutoFixHigh size={24} />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-base font-bold text-[#611F69]">
+                  <h2 className="text-base font-bold text-[var(--theme-primary)]">
                     AI Message Assistant
                   </h2>
-                  <p className="text-sm text-[#611F69]/80 mb-3">
+                  <p className="text-sm text-[var(--theme-primary)]/80 mb-3">
                     Describe your offer, and our AI will write a high-converting
                     message for you.
                   </p>
@@ -156,12 +156,12 @@ const CampaignManager = () => {
                       placeholder="e.g. 50% discount on winter clothes this weekend"
                       value={aiPrompt}
                       onChange={(e) => setAiPrompt(e.target.value)}
-                      className="flex-1 border border-[#611F69]/30 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-[#611F69] shadow-sm"
+                      className="flex-1 border border-[var(--theme-primary)]/30 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] shadow-sm"
                     />
                     <button
                       onClick={handleAIGenerate}
                       disabled={isGenerating || !aiPrompt.trim()}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#611F69] hover:bg-[#4A154B] disabled:bg-[#611F69]/50 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:ring-offset-2"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] disabled:bg-[var(--theme-primary)]/50 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:ring-offset-2"
                     >
                       {isGenerating ? "Generating..." : "Generate Text"}
                     </button>
@@ -196,7 +196,7 @@ const CampaignManager = () => {
                         placeholder="Exciting news inside!"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="pl-10 w-full border border-gray-300 rounded-md py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-[#611F69] shadow-sm text-sm"
+                        className="pl-10 w-full border border-gray-300 rounded-md py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] shadow-sm text-sm"
                       />
                     </div>
                   </div>
@@ -217,7 +217,7 @@ const CampaignManager = () => {
                     placeholder="Type your message here..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-[#611F69] shadow-sm text-sm resize-y"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] shadow-sm text-sm resize-y"
                   ></textarea>
                   <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
                     <span>Supports emojis and links.</span>
@@ -243,7 +243,7 @@ const CampaignManager = () => {
                     className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 text-white text-sm font-medium rounded-md shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                       isSent
                         ? "bg-green-600 hover:bg-green-700 focus:ring-green-600"
-                        : "bg-[#611F69] hover:bg-[#4A154B] focus:ring-[#611F69] disabled:bg-[#611F69]/50"
+                        : "bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] focus:ring-[var(--theme-primary)] disabled:bg-[var(--theme-primary)]/50"
                     }`}
                   >
                     {isSent ? (
@@ -280,7 +280,7 @@ const CampaignManager = () => {
 
                   {/* Screen Header */}
                   <div className="bg-gray-100 pt-8 pb-3 px-4 border-b border-gray-200 text-center">
-                    <div className="w-12 h-12 bg-[#611F69]/10 text-[#611F69] rounded-full mx-auto flex items-center justify-center mb-1">
+                    <div className="w-12 h-12 bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] rounded-full mx-auto flex items-center justify-center mb-1">
                       <MdMessage size={24} />
                     </div>
                     <p className="text-xs font-semibold text-gray-900">

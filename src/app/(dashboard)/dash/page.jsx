@@ -808,20 +808,20 @@ const Page = () => {
                       bottom: 0,
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--theme-border)" />
 
                     <XAxis
                       dataKey="name"
                       tick={{
                         fontSize: 12,
-                        fill: "#4b5563",
+                        fill: "var(--theme-muted)",
                       }}
                     />
 
                     <YAxis
                       tick={{
                         fontSize: 12,
-                        fill: "#4b5563",
+                        fill: "var(--theme-muted)",
                       }}
                     />
 
@@ -908,26 +908,26 @@ const Page = () => {
                         bottom: 0,
                       }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--theme-border)" />
 
                       <XAxis
                         dataKey="name"
                         tick={{
                           fontSize: 12,
-                          fill: "#4b5563",
+                          fill: "var(--theme-muted)",
                         }}
                       />
 
                       <YAxis
                         tick={{
                           fontSize: 12,
-                          fill: "#4b5563",
+                          fill: "var(--theme-muted)",
                         }}
                       />
 
                       <Tooltip
                         cursor={{
-                          fill: "#f3f4f6",
+                          fill: "var(--theme-background)",
                         }}
                         contentStyle={{
                           borderRadius: "8px",
@@ -938,7 +938,7 @@ const Page = () => {
 
                       <Bar
                         dataKey="units"
-                        fill="#047857"
+                        fill="var(--theme-success)"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>

@@ -76,7 +76,7 @@ const WarehousePage = () => {
           </p>
           <button
             onClick={fetchData}
-            className="mt-2 flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            className="mt-2 flex items-center gap-1 px-4 py-2 bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] text-[var(--theme-primary-text)] text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:ring-offset-2 transition-colors"
             aria-label="Retry loading warehouse data"
           >
             <MdRefresh size={16} aria-hidden="true" />
@@ -111,7 +111,7 @@ const WarehousePage = () => {
             <div>
               <Link
                 href="./addnew_warehouse"
-                className="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+                className="flex items-center gap-1 px-4 py-2 bg-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] text-[var(--theme-primary-text)] text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:ring-offset-2 transition-colors shadow-sm"
                 aria-label="Add a new warehouse facility"
               >
                 <MdAdd size={20} aria-hidden="true" />
@@ -214,7 +214,7 @@ const WarehousePage = () => {
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              className="p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:text-gray-400 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                              className="p-2 rounded-full text-gray-500 hover:text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/10 dark:hover:bg-[var(--theme-primary)]/20 dark:text-gray-400 dark:hover:text-[var(--theme-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] transition-colors"
                               aria-label={`Edit details for ${warehouse.name}`}
                               title="Edit"
                             >

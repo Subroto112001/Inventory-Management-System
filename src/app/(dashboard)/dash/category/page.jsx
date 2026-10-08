@@ -405,7 +405,7 @@ const Page = () => {
 
           <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#611F69]/10 text-[#611F69]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]">
                 <MdCategory size={24} />
               </div>
 
@@ -422,7 +422,7 @@ const Page = () => {
 
             <Link
               href="/dash/category/create"
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#611F69] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#501854] active:scale-[0.98] sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[var(--theme-primary)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[var(--theme-primary-hover)] active:scale-[0.98] sm:w-auto"
             >
               <MdAdd size={20} />
               Add Category
@@ -470,7 +470,7 @@ const Page = () => {
                   </p>
                 </div>
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#611F69]/10 text-[#611F69]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]">
                   <MdCategory size={23} />
                 </div>
               </div>
@@ -526,7 +526,7 @@ const Page = () => {
                   </p>
                 </div>
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#611F69]/10 text-[#611F69]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]">
                   <MdInventory2 size={23} />
                 </div>
               </div>
@@ -593,7 +593,7 @@ const Page = () => {
 
                 <Link
                   href="/dash/category/create"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#611F69] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#501854]"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--theme-primary)] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[var(--theme-primary-hover)]"
                 >
                   <MdAdd size={17} />
                   Add Category
@@ -618,7 +618,7 @@ const Page = () => {
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     placeholder="Search category, code or description..."
-                    className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#611F69] focus:ring-2 focus:ring-[#611F69]/10"
+                    className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[var(--theme-primary)] focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                   />
                 </div>
 
@@ -633,7 +633,7 @@ const Page = () => {
                   <select
                     value={statusFilter}
                     onChange={(event) => setStatusFilter(event.target.value)}
-                    className="h-10 w-full min-w-[150px] appearance-none rounded-lg border border-gray-200 bg-white pl-10 pr-9 text-sm text-gray-700 outline-none focus:border-[#611F69] focus:ring-2 focus:ring-[#611F69]/10"
+                    className="h-10 w-full min-w-[150px] appearance-none rounded-lg border border-gray-200 bg-white pl-10 pr-9 text-sm text-gray-700 outline-none focus:border-[var(--theme-primary)] focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                   >
                     <option value="All">All Status</option>
 
@@ -649,7 +649,7 @@ const Page = () => {
                   type="button"
                   onClick={() => fetchCategories(true)}
                   disabled={isRefreshing}
-                  className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-gray-600 transition hover:bg-gray-50 hover:text-[#611F69] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-gray-600 transition hover:bg-gray-50 hover:text-[var(--theme-primary)] disabled:cursor-not-allowed disabled:opacity-50"
                   title="Refresh categories"
                 >
                   <MdRefresh
@@ -716,7 +716,7 @@ const Page = () => {
                                     className="h-full w-full object-cover"
                                   />
                                 ) : (
-                                  <div className="flex h-full w-full items-center justify-center text-[#611F69]">
+                                  <div className="flex h-full w-full items-center justify-center text-[var(--theme-primary)]">
                                     <MdCategory size={20} />
                                   </div>
                                 )}
@@ -813,7 +813,7 @@ const Page = () => {
                                   <Link
                                     href={`/category/${categoryId}/edit`}
                                     onClick={() => setOpenMenu(null)}
-                                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-[#611F69]"
+                                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-[var(--theme-primary)]"
                                   >
                                     <MdEdit size={18} />
                                     Edit Category
@@ -855,7 +855,7 @@ const Page = () => {
                           {!searchTerm && statusFilter === "All" && (
                             <Link
                               href="/dash/category/create"
-                              className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#611F69] hover:underline"
+                              className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[var(--theme-primary)] hover:underline"
                             >
                               Create your first category
                               <MdArrowForward size={16} />

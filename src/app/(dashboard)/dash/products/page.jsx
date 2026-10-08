@@ -84,7 +84,7 @@ const Page = () => {
             </div>
             <Link
               href="/dash/addnewproduct"
-              className="bg-[#611F69] text-white py-2 px-4 border  border-[#611f69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611f69]  transition-all"
+              className="bg-[var(--theme-primary)] text-white py-2 px-4 border  border-[var(--theme-primary)] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[var(--theme-primary)]  transition-all"
             >
               <span>
                 <GoPlusCircle />

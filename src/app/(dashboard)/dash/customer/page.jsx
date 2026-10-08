@@ -202,7 +202,7 @@ export default function CustomerManagement() {
           className="border border-gray-200 bg-white rounded-lg p-4 flex items-center gap-4 shadow-sm"
           aria-label="Customer statistics"
         >
-          <div className="w-12 h-12 rounded-full bg-[#F3EBF4] text-[#6C1B7B] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-[var(--theme-background)] text-[var(--theme-primary)] flex items-center justify-center">
             <span className="font-semibold text-lg">
               {customers.length > 999 ? "1K+" : customers.length}
             </span>
@@ -220,7 +220,7 @@ export default function CustomerManagement() {
 
       {/* Action Bar */}
       <div className="mt-5 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-        <div className="flex gap-3 px-3 py-2 items-center w-full sm:max-w-md relative border border-gray-200 rounded-lg bg-gray-50 focus-within:ring-2 focus-within:ring-[#6C1B7B] transition-all">
+        <div className="flex gap-3 px-3 py-2 items-center w-full sm:max-w-md relative border border-gray-200 rounded-lg bg-gray-50 focus-within:ring-2 focus-within:ring-[var(--theme-primary)] transition-all">
           <label htmlFor="search-customers" className="sr-only">
             Search customers
           </label>
@@ -239,7 +239,7 @@ export default function CustomerManagement() {
             setAddError("");
             setIsAddModalOpen(true);
           }}
-          className="flex items-center justify-center w-full sm:w-auto gap-2 bg-[#6C1B7B] text-white px-5 py-2.5 rounded-lg cursor-pointer hover:bg-[#52135d] transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6C1B7B]"
+          className="flex items-center justify-center w-full sm:w-auto gap-2 bg-[var(--theme-primary)] text-white px-5 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--theme-primary-hover)] transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-primary)]"
           aria-label="Add a new customer"
         >
           <MdAdd className="text-[20px]" aria-hidden="true" />
@@ -300,7 +300,7 @@ export default function CustomerManagement() {
                       <p className="text-sm text-gray-500">{loadError}</p>
                       <button
                         onClick={fetchCustomers}
-                        className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#6C1B7B] bg-[#F3EBF4] rounded-lg hover:bg-[#e4d1e8] transition-colors"
+                        className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[var(--theme-primary)] bg-[var(--theme-background)] rounded-lg hover:bg-[var(--theme-background)] transition-colors"
                       >
                         <MdRefresh className="text-lg" aria-hidden="true" />
                         Try again
@@ -317,7 +317,7 @@ export default function CustomerManagement() {
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-10 h-10 rounded-full bg-[#F3EBF4] flex items-center justify-center text-[#6C1B7B] font-bold border border-[#e4d1e8]"
+                          className="w-10 h-10 rounded-full bg-[var(--theme-background)] flex items-center justify-center text-[var(--theme-primary)] font-bold border border-[var(--theme-background)]"
                           aria-hidden="true"
                         >
                           {getInitials(customer.fullName)}
@@ -343,7 +343,7 @@ export default function CustomerManagement() {
                               data: { ...customer },
                             });
                           }}
-                          className="p-2 text-gray-500 hover:text-[#6C1B7B] hover:bg-[#F3EBF4] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#6C1B7B]"
+                          className="p-2 text-gray-500 hover:text-[var(--theme-primary)] hover:bg-[var(--theme-background)] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                           title={`Edit ${customer.fullName}`}
                           aria-label={`Edit ${customer.fullName}`}
                         >
@@ -407,7 +407,7 @@ export default function CustomerManagement() {
               <MdChevronLeft className="text-xl" aria-hidden="true" />
             </button>
             <button
-              className="w-8 h-8 rounded-md bg-[#6C1B7B] text-white font-medium flex items-center justify-center transition-all duration-300"
+              className="w-8 h-8 rounded-md bg-[var(--theme-primary)] text-white font-medium flex items-center justify-center transition-all duration-300"
               aria-current="page"
               aria-label="Page 1"
             >
@@ -481,7 +481,7 @@ export default function CustomerManagement() {
                     placeholder="e.g. Robert Fox"
                     value={newCustomerData.fullName}
                     onChange={handleAddChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -499,7 +499,7 @@ export default function CustomerManagement() {
                     placeholder="e.g. 01712345678"
                     value={newCustomerData.phoneNumber}
                     onChange={handleAddChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900 placeholder-gray-400"
                   />
                   <p className="text-xs text-gray-400 mt-1">
                     Bangladeshi format, e.g. 01712345678 or +8801712345678
@@ -522,7 +522,7 @@ export default function CustomerManagement() {
                     placeholder="e.g. robert@example.com"
                     value={newCustomerData.email}
                     onChange={handleAddChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -542,7 +542,7 @@ export default function CustomerManagement() {
                     placeholder="e.g. House 12, Road 5, Dhanmondi, Dhaka"
                     value={newCustomerData.address}
                     onChange={handleAddChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -562,7 +562,7 @@ export default function CustomerManagement() {
                     placeholder="Any extra details about this customer"
                     value={newCustomerData.notes}
                     onChange={handleAddChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900 placeholder-gray-400 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900 placeholder-gray-400 resize-none"
                   />
                 </div>
               </div>
@@ -581,7 +581,7 @@ export default function CustomerManagement() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6C1B7B] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[var(--theme-primary)] rounded-lg hover:bg-[var(--theme-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Saving..." : "Add Customer"}
                 </button>
@@ -682,7 +682,7 @@ export default function CustomerManagement() {
                     required
                     value={editModal.data.fullName || ""}
                     onChange={handleEditChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900"
                   />
                 </div>
                 <div>
@@ -699,7 +699,7 @@ export default function CustomerManagement() {
                     required
                     value={editModal.data.phoneNumber || ""}
                     onChange={handleEditChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900"
                   />
                 </div>
                 <div>
@@ -715,7 +715,7 @@ export default function CustomerManagement() {
                     type="email"
                     value={editModal.data.email || ""}
                     onChange={handleEditChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900"
                   />
                 </div>
                 <div>
@@ -731,7 +731,7 @@ export default function CustomerManagement() {
                     type="text"
                     value={editModal.data.address || ""}
                     onChange={handleEditChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C1B7B] focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900"
                   />
                 </div>
               </div>
@@ -746,7 +746,7 @@ export default function CustomerManagement() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#6C1B7B] rounded-lg hover:bg-[#52135d] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6C1B7B] transition-colors disabled:opacity-60"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[var(--theme-primary)] rounded-lg hover:bg-[var(--theme-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)] transition-colors disabled:opacity-60"
                 >
                   {isSaving ? "Saving..." : "Save Changes"}
                 </button>

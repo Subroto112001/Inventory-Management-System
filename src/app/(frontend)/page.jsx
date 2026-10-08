@@ -279,7 +279,7 @@ export default function EcommerceHomePage() {
             HERO
         =================================================== */}
 
-        <section className="mx-auto max-w-[1400px] px-3 pt-4 sm:px-6 sm:pt-8">
+        <section className="mx-auto max-w-[1280px] px-4 pt-4 sm:px-6 sm:pt-8">
             <div className="group relative isolate min-h-[560px] overflow-hidden rounded-[26px] bg-[#d9dedf] text-[#182126] sm:min-h-[600px] lg:min-h-[620px]">
               {slidesLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[#5B564C]">

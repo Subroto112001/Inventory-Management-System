@@ -166,7 +166,7 @@ export default function StockManagement() {
       case "Low Stock":
         return { badge: "bg-yellow-100 text-yellow-800", row: "" };
       case "In Stock":
-        return { badge: "bg-[#611F69]/10 text-[#611F69]", row: "" };
+        return { badge: "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]", row: "" };
       case "Out of Stock":
         return {
           badge: "bg-red-100 text-red-700 border border-red-200",
@@ -215,7 +215,7 @@ export default function StockManagement() {
         <div className="flex items-center gap-3">
           <button
             onClick={generatePDF}
-            className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#611F69]/30"
+            className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]/30"
           >
             <MdDownload className="text-[18px]" aria-hidden="true" />
             Export to PDF
@@ -235,7 +235,7 @@ export default function StockManagement() {
               <span className="text-2xl font-bold text-gray-900">
                 $1,245,890
               </span>
-              <span className="flex items-center text-[#611F69] bg-[#611F69]/10 px-2 py-0.5 rounded text-xs font-semibold mb-1">
+              <span className="flex items-center text-[var(--theme-primary)] bg-[var(--theme-primary)]/10 px-2 py-0.5 rounded text-xs font-semibold mb-1">
                 <MdTrendingUp className="text-[14px] mr-1" aria-hidden="true" />{" "}
                 4.2%
               </span>
@@ -300,7 +300,7 @@ export default function StockManagement() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#611F69] transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] transition-all"
               placeholder="Search product, SKU..."
               type="search"
             />
@@ -461,7 +461,7 @@ export default function StockManagement() {
                             <>
                               <button
                                 onClick={() => openUpdateModal(item)}
-                                className="p-1.5 text-[#611F69] hover:bg-[#611F69]/10 rounded focus:outline-none transition-colors"
+                                className="p-1.5 text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/10 rounded focus:outline-none transition-colors"
                                 title="Update Stock"
                                 aria-label={`Update stock for ${item.name}`}
                               >
@@ -525,7 +525,7 @@ export default function StockManagement() {
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className="p-1 border border-gray-300 bg-white rounded hover:bg-gray-100 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                className="p-1 border border-gray-300 bg-white rounded hover:bg-gray-100 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                 aria-label="Previous page"
               >
                 <MdChevronLeft
@@ -548,9 +548,9 @@ export default function StockManagement() {
                     <button
                       key={pageNumber}
                       onClick={() => handlePageClick(pageNumber)}
-                      className={`px-3 py-1 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69] ${
+                      className={`px-3 py-1 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] ${
                         currentPage === pageNumber
-                          ? "bg-[#611F69] text-white"
+                          ? "bg-[var(--theme-primary)] text-white"
                           : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
                       }`}
                       aria-current={
@@ -580,7 +580,7 @@ export default function StockManagement() {
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className="p-1 border border-gray-300 bg-white rounded hover:bg-gray-100 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                className="p-1 border border-gray-300 bg-white rounded hover:bg-gray-100 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                 aria-label="Next page"
               >
                 <MdChevronRight
@@ -630,7 +630,7 @@ export default function StockManagement() {
                   min="0"
                   value={updateAmount}
                   onChange={(e) => setUpdateAmount(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-2">
@@ -650,7 +650,7 @@ export default function StockManagement() {
                   id="stockReason"
                   value={updateReason}
                   onChange={(e) => setUpdateReason(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent text-gray-900"
                   rows="3"
                   maxLength="500"
                   required
@@ -674,7 +674,7 @@ export default function StockManagement() {
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-4 py-2 bg-[#611F69] text-white rounded-md hover:bg-[#4a1752] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#611F69]"
+                  className="px-4 py-2 bg-[var(--theme-primary)] text-white rounded-md hover:bg-[var(--theme-primary-hover)] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-primary)]"
                 >
                   {isUpdating ? "Saving..." : "Save Changes"}
                 </button>

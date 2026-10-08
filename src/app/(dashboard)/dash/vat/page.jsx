@@ -105,13 +105,13 @@ const MushakModal = ({ isOpen, onClose, order }) => {
         {/* Modal Header (Hidden on Print) */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50 rounded-t-xl print:hidden sticky top-0 z-10">
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <MdReceipt className="text-[#611F69] text-xl" />
+            <MdReceipt className="text-[var(--theme-primary)] text-xl" />
             Mushak Challan 6.3 (মূসক ৬.৩)
           </h2>
           <div className="flex gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-2 px-4 py-2 bg-[#611F69] text-white text-sm font-semibold rounded hover:bg-[#4a1752] transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-primary)] text-white text-sm font-semibold rounded hover:bg-[var(--theme-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
             >
               <MdDownload size={18} />
               Download / Print
@@ -414,7 +414,7 @@ export default function OrderHistoryPage() {
       {/* Page Header (Hidden when printing) */}
       <header className="mb-8 print:hidden">
         <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
-          <MdListAlt className="text-[#611F69]" aria-hidden="true" />
+          <MdListAlt className="text-[var(--theme-primary)]" aria-hidden="true" />
           Order History & Invoices
         </h1>
         <p className="text-gray-600 mt-2">
@@ -442,7 +442,7 @@ export default function OrderHistoryPage() {
             <h2 className="text-sm font-semibold text-gray-500 uppercase">
               Total Revenue (Incl. {taxSettings.name})
             </h2>
-            <p className="text-3xl font-bold text-[#611F69] mt-2">
+            <p className="text-3xl font-bold text-[var(--theme-primary)] mt-2">
               ৳
               {totalRevenue.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -581,7 +581,7 @@ export default function OrderHistoryPage() {
                         <td className="py-4 px-6 text-center">
                           <button
                             onClick={() => openMushak(order)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#611F69]/10 text-[#611F69] text-sm font-semibold rounded hover:bg-[#611F69] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] text-sm font-semibold rounded hover:bg-[var(--theme-primary)] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)]"
                             aria-label={`View Mushak 6.3 for order ${order.id}`}
                           >
                             <MdRemoveRedEye size={18} />

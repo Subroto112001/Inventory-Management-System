@@ -73,7 +73,7 @@ const ProductDetailsPage = () => {
 
           <Link
             href="/dash/products"
-            className="bg-[#611F69] text-white py-2 px-4 rounded-md border border-[#611F69] hover:bg-transparent hover:text-[#611F69] transition-all"
+            className="bg-[var(--theme-primary)] text-white py-2 px-4 rounded-md border border-[var(--theme-primary)] hover:bg-transparent hover:text-[var(--theme-primary)] transition-all"
           >
             Back to Products
           </Link>
@@ -122,7 +122,7 @@ const ProductDetailsPage = () => {
 
           <Link
             href={`/editproduct/${product.id}`}
-            className="bg-[#611F69] text-white py-2 px-4 border border-[#611F69] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[#611F69] transition-all"
+            className="bg-[var(--theme-primary)] text-white py-2 px-4 border border-[var(--theme-primary)] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[var(--theme-primary)] transition-all"
           >
             <MdEdit className="text-[20px]" />
             <span>Edit Product</span>
@@ -170,7 +170,7 @@ const ProductDetailsPage = () => {
               <div>
                 <p className="text-sm text-gray-400 mb-1">Product Name</p>
 
-                <h2 className="text-[28px] font-bold text-[#611F69]">
+                <h2 className="text-[28px] font-bold text-[var(--theme-primary)]">
                   {product.productName}
                 </h2>
               </div>
@@ -228,7 +228,7 @@ const ProductDetailsPage = () => {
         {/* ================= INVENTORY ================= */}
         <div className="border border-gray-200 rounded-md p-5">
           <div className="flex items-center gap-2 mb-5">
-            <MdInventory2 className="text-[22px] text-[#611F69]" />
+            <MdInventory2 className="text-[22px] text-[var(--theme-primary)]" />
 
             <h2 className="text-[20px] font-bold">Inventory Information</h2>
           </div>
@@ -268,7 +268,7 @@ const ProductDetailsPage = () => {
         {offers.length > 0 && (
           <div className="border border-gray-200 rounded-md p-5">
             <div className="flex items-center gap-2 mb-5">
-              <MdLocalOffer className="text-[22px] text-[#611F69]" />
+              <MdLocalOffer className="text-[22px] text-[var(--theme-primary)]" />
 
               <h2 className="text-[20px] font-bold">Active Offers</h2>
             </div>

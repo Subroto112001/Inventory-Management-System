@@ -150,9 +150,9 @@ const Header = ({ settings }) => {
                       key={option.href}
                       href={option.href}
                       onClick={() => setIsMoreOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[#611F69]/5 hover:text-[#611F69] transition-all group"
+                      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)] transition-all group"
                     >
-                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[#611F69]/10 group-hover:text-[#611F69] transition-all">
+                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-[var(--theme-primary)]/10 group-hover:text-[var(--theme-primary)] transition-all">
                         <span className="text-[20px]">{option.icon}</span>
                       </span>
 
@@ -170,7 +170,7 @@ const Header = ({ settings }) => {
           <Link
             href="/dash/profile"
             aria-label="User Profile"
-            className="text-[24px] text-white cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#611F69]"
+            className="text-[24px] text-white cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[var(--theme-primary)]"
           >
             <FaUserCircle aria-hidden="true" />
           </Link>
@@ -181,7 +181,7 @@ const Header = ({ settings }) => {
             onClick={handleLogout}
             aria-label="Log out"
             title="Log out"
-            className="text-[22px] text-white cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#611F69]"
+            className="text-[22px] text-white cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[var(--theme-primary)]"
           >
             <FiLogOut aria-hidden="true" />
           </button>

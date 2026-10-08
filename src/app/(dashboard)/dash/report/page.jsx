@@ -174,7 +174,7 @@ export default function ReportsDashboard() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "Delivered":
-        return "bg-[#611F69]/10 text-[#611F69]";
+        return "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]";
       case "Confirmed":
         return "bg-blue-100 text-blue-700";
       case "Shipped":
@@ -219,7 +219,7 @@ export default function ReportsDashboard() {
           <p className="text-sm text-gray-500">Something Getting Error, Please try again later.</p>
           <button
             onClick={fetchData}
-            className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#611F69] bg-[#611F69]/10 rounded-lg hover:bg-[#611F69]/20 transition-colors"
+            className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[var(--theme-primary)] bg-[var(--theme-primary)]/10 rounded-lg hover:bg-[var(--theme-primary)]/20 transition-colors"
           >
             <MdRefresh className="text-lg" aria-hidden="true" />
             Try again
@@ -253,7 +253,7 @@ export default function ReportsDashboard() {
         </div>
         <button
           onClick={generatePDF}
-          className="bg-[#611F69] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#4a1752] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#611F69]"
+          className="bg-[var(--theme-primary)] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[var(--theme-primary-hover)] transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[var(--theme-primary)]"
         >
           <MdDownload className="text-[18px]" aria-hidden="true" />
           Generate PDF Report
@@ -325,7 +325,7 @@ export default function ReportsDashboard() {
         </div>
 
         {/* Total Revenue */}
-        <div className="bg-[#611F69] rounded-lg border border-[#611F69] p-6 shadow-sm print:bg-white print:border-gray-300">
+        <div className="bg-[var(--theme-primary)] rounded-lg border border-[var(--theme-primary)] p-6 shadow-sm print:bg-white print:border-gray-300">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-xs text-gray-200 uppercase tracking-wider font-semibold print:text-gray-500">
               Total Revenue
@@ -426,7 +426,7 @@ export default function ReportsDashboard() {
                   <div className="flex items-end gap-1 w-full justify-center h-full">
                     {/* Profit Bar */}
                     <div
-                      className="w-3 sm:w-6 lg:w-8 bg-[#611F69] rounded-t-sm transition-all duration-500 hover:opacity-80"
+                      className="w-3 sm:w-6 lg:w-8 bg-[var(--theme-primary)] rounded-t-sm transition-all duration-500 hover:opacity-80"
                       style={{ height: `${profitHeight}%` }}
                     ></div>
                     {/* Lost Bar */}
@@ -448,7 +448,7 @@ export default function ReportsDashboard() {
         {/* Chart Legends */}
         <div className="flex justify-center items-center gap-6 mt-4">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#611F69]"></span>
+            <span className="w-3 h-3 rounded-full bg-[var(--theme-primary)]"></span>
             <span className="text-sm text-gray-600 font-medium">Revenue</span>
           </div>
           <div className="flex items-center gap-2">
@@ -496,7 +496,7 @@ export default function ReportsDashboard() {
                     key={order._id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 font-medium text-[#611F69] print:text-gray-900">
+                    <td className="px-6 py-4 font-medium text-[var(--theme-primary)] print:text-gray-900">
                       {order.orderNumber}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
@@ -516,7 +516,7 @@ export default function ReportsDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right print:hidden">
-                      <button className="text-[#611F69] hover:bg-[#611F69]/10 p-2 rounded transition-colors focus:outline-none">
+                      <button className="text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/10 p-2 rounded transition-colors focus:outline-none">
                         <MdVisibility className="text-[18px]" />
                       </button>
                     </td>

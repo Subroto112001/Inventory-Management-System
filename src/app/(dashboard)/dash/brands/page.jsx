@@ -92,7 +92,7 @@ const SortableHeader = ({
         type="button"
         onClick={() => onSort(sortKey)}
         className={`inline-flex items-center gap-1 rounded transition hover:text-gray-800 ${
-          isActive ? "text-blue-600" : ""
+          isActive ? "text-[var(--theme-primary)]" : ""
         }`}
       >
         {label}
@@ -356,7 +356,7 @@ const BrandDetailRow = ({ brand, columnCount }) => (
             {brand.email ? (
               <a
                 href={`mailto:${brand.email}`}
-                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600"
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[var(--theme-primary)]"
               >
                 <MdEmail size={15} />
                 {brand.email}
@@ -366,7 +366,7 @@ const BrandDetailRow = ({ brand, columnCount }) => (
             {brand.phoneNumber ? (
               <a
                 href={`tel:${brand.phoneNumber}`}
-                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600"
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[var(--theme-primary)]"
               >
                 <MdPhone size={15} />
                 {brand.phoneNumber}
@@ -406,7 +406,7 @@ const BrandDetailRow = ({ brand, columnCount }) => (
                 href={brand.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+                className="flex items-center gap-1.5 text-sm font-medium text-[var(--theme-primary)] hover:text-[var(--theme-primary-hover)]"
               >
                 <MdLanguage size={15} />
                 Visit website
@@ -718,12 +718,12 @@ const Page = () => {
                     {loading ? "—" : brandStats.totalBrands.toLocaleString()}
                   </h2>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]">
                   <MdBusiness size={24} />
                 </div>
               </div>
               <div className="mt-4 flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+                <span className="inline-flex items-center rounded-full bg-[var(--theme-primary)]/5 px-2 py-1 text-xs font-semibold text-[var(--theme-primary)]">
                   All Brands
                 </span>
                 <span className="text-xs text-gray-500">registered</span>
@@ -944,7 +944,7 @@ const Page = () => {
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
                           <div
-                            className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                            className="h-full rounded-full bg-[var(--theme-primary)] transition-all duration-500"
                             style={{
                               width: `${Math.max(Math.min(percentage, 100), 3)}%`,
                             }}
@@ -1017,7 +1017,7 @@ const Page = () => {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Search brands..."
-                  className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-10 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-10 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[var(--theme-primary)]/50 focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                 />
                 {searchTerm && (
                   <button
@@ -1039,7 +1039,7 @@ const Page = () => {
                   id="brand-status-filter"
                   value={statusFilter}
                   onChange={(event) => handleStatusChange(event.target.value)}
-                  className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-[var(--theme-primary)]/50 focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                 >
                   <option value="All">All</option>
                   <option value="Active">Active</option>
@@ -1053,12 +1053,12 @@ const Page = () => {
                 <span className="text-xs text-gray-500">Active filters:</span>
 
                 {searchTerm && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--theme-primary)]/5 px-2.5 py-1 text-xs font-medium text-[var(--theme-primary)]">
                     Search: {searchTerm}
                     <button
                       type="button"
                       onClick={() => setSearchTerm("")}
-                      className="hover:text-blue-800"
+                      className="hover:text-[var(--theme-primary-hover)]"
                     >
                       <MdClose size={14} />
                     </button>
@@ -1085,7 +1085,7 @@ const Page = () => {
                     setStatusFilter("All");
                     setPagination((previous) => ({ ...previous, page: 1 }));
                   }}
-                  className="ml-auto text-xs font-semibold text-blue-600 hover:text-blue-700"
+                  className="ml-auto text-xs font-semibold text-[var(--theme-primary)] hover:text-[var(--theme-primary-hover)]"
                 >
                   Clear all
                 </button>
@@ -1147,7 +1147,7 @@ const Page = () => {
                           <React.Fragment key={brandId}>
                             <tr
                               className={`cursor-pointer transition hover:bg-gray-50/70 ${
-                                isExpanded ? "bg-blue-50/40" : ""
+                                isExpanded ? "bg-[var(--theme-primary)]/5" : ""
                               }`}
                               onClick={() => toggleExpandedRow(brandId)}
                               aria-expanded={isExpanded}
@@ -1156,7 +1156,7 @@ const Page = () => {
                                 <MdExpandMore
                                   size={20}
                                   className={`transition-transform ${
-                                    isExpanded ? "rotate-180 text-blue-600" : ""
+                                    isExpanded ? "rotate-180 text-[var(--theme-primary)]" : ""
                                   }`}
                                 />
                               </td>
@@ -1178,7 +1178,7 @@ const Page = () => {
                                     <p className="truncate text-sm font-semibold text-gray-900">
                                       {brand.brandName || "Unnamed Brand"}
                                     </p>
-                                    <p className="mt-0.5 flex items-center gap-1 text-xs text-blue-600">
+                                    <p className="mt-0.5 flex items-center gap-1 text-xs text-[var(--theme-primary)]">
                                       <MdInfoOutline size={13} />
                                       {isExpanded
                                         ? "Hide details"
@@ -1271,7 +1271,7 @@ const Page = () => {
                             {!searchTerm && statusFilter === "All" && (
                               <Link
                                 href="/dash/brands/createbrand"
-                                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+                                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--theme-primary)] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[var(--theme-primary-hover)]"
                               >
                                 <MdAdd size={17} />
                                 Add First Brand
@@ -1329,7 +1329,7 @@ const Page = () => {
                           onClick={() => goToPage(pageNumber)}
                           className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${
                             pagination.page === pageNumber
-                              ? "bg-blue-600 text-white"
+                              ? "bg-[var(--theme-primary)] text-white"
                               : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                           }`}
                         >

@@ -249,7 +249,7 @@ const UsersPage = () => {
               </div>
               <button
                 onClick={handleOpenAddModal}
-                className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-[#611F69] border border-[#611F69] hover:bg-transparent hover:text-[#611F69] cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-[var(--theme-primary)] border border-[var(--theme-primary)] hover:bg-transparent hover:text-[var(--theme-primary)] cursor-pointer text-white text-sm font-medium rounded-md shadow-sm transition-all"
                 aria-label="Open form to add a new user"
                 aria-haspopup="dialog"
               >
@@ -275,7 +275,7 @@ const UsersPage = () => {
                   </p>
                 </div>
                 <div
-                  className="p-3 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center"
+                  className="p-3 bg-[var(--theme-primary)]/10 text-[var(--theme-primary-hover)] rounded-lg flex items-center justify-center"
                   aria-hidden="true"
                 >
                   <MdPeople size={24} />
@@ -470,7 +470,7 @@ const UsersPage = () => {
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => resendInvitation(user)}
-                              className="p-1.5 text-gray-600 hover:text-[#611F69] hover:bg-purple-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                              className="p-1.5 text-gray-600 hover:text-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                               aria-label={`Resend invitation to ${user.name}`}
                               title="Resend invitation"
                             >
@@ -478,7 +478,7 @@ const UsersPage = () => {
                             </button>
                             <button
                               onClick={() => handleOpenEditModal(user)}
-                              className="p-1.5 text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              className="p-1.5 text-gray-600 hover:text-[var(--theme-primary-hover)] hover:bg-[var(--theme-primary)]/5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                               aria-label={`Edit details for ${user.name}`}
                             >
                               <MdEdit size={20} aria-hidden="true" />
@@ -520,15 +520,15 @@ const UsersPage = () => {
           >
             <div className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
               {/* Top Accent */}
-              <div className="h-1.5 bg-[#611F69]" />
+              <div className="h-1.5 bg-[var(--theme-primary)]" />
 
               {/* ================= HEADER ================= */}
-              <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 bg-gradient-to-r from-[#611F69]/5 via-white to-white">
+              <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 bg-gradient-to-r from-[var(--theme-primary)]/5 via-white to-white">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#611F69]/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--theme-primary)]/10 flex items-center justify-center">
                     {editingUserId ? (
                       <svg
-                        className="w-6 h-6 text-[#611F69]"
+                        className="w-6 h-6 text-[var(--theme-primary)]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -542,7 +542,7 @@ const UsersPage = () => {
                       </svg>
                     ) : (
                       <svg
-                        className="w-6 h-6 text-[#611F69]"
+                        className="w-6 h-6 text-[var(--theme-primary)]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -616,9 +616,9 @@ const UsersPage = () => {
                   {/* ================= PERSONAL INFORMATION ================= */}
                   <div className="mb-8">
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="w-9 h-9 rounded-lg bg-[#611F69]/10 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-lg bg-[var(--theme-primary)]/10 flex items-center justify-center">
                         <svg
-                          className="w-4 h-4 text-[#611F69]"
+                          className="w-4 h-4 text-[var(--theme-primary)]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -661,7 +661,7 @@ const UsersPage = () => {
                           required
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white"
                           placeholder="e.g. John Doe"
                         />
                       </div>
@@ -683,7 +683,7 @@ const UsersPage = () => {
                           required
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white"
                           placeholder="e.g. john@example.com"
                         />
                       </div>
@@ -703,7 +703,7 @@ const UsersPage = () => {
                           name="phoneNumber"
                           value={formData.phoneNumber}
                           onChange={handleInputChange}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white"
                           placeholder="e.g. 01712345678"
                         />
                       </div>
@@ -723,7 +723,7 @@ const UsersPage = () => {
                           name="jobTitle"
                           value={formData.jobTitle}
                           onChange={handleInputChange}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white"
                           placeholder="e.g. Inventory Manager"
                         />
                       </div>
@@ -736,9 +736,9 @@ const UsersPage = () => {
                   {/* ================= WORK INFORMATION ================= */}
                   <div className="mb-8">
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="w-9 h-9 rounded-lg bg-[#611F69]/10 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-lg bg-[var(--theme-primary)]/10 flex items-center justify-center">
                         <svg
-                          className="w-4 h-4 text-[#611F69]"
+                          className="w-4 h-4 text-[var(--theme-primary)]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -779,7 +779,7 @@ const UsersPage = () => {
                             setWarehouseOpen(false);
                             setStatusOpen(false);
                           }}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <span>{formData.role || "Select Role"}</span>
 
@@ -820,8 +820,8 @@ const UsersPage = () => {
                               }}
                               className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
                                 formData.role === role
-                                  ? "bg-[#611F69]/10 text-[#611F69] font-medium"
-                                  : "text-gray-700 hover:bg-[#611F69]/5 hover:text-[#611F69]"
+                                  ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-medium"
+                                  : "text-gray-700 hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)]"
                               }`}
                             >
                               {role}
@@ -845,7 +845,7 @@ const UsersPage = () => {
                             setWarehouseOpen(false);
                             setStatusOpen(false);
                           }}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <span>
                             {formData.department || "Select Department"}
@@ -888,8 +888,8 @@ const UsersPage = () => {
                               }}
                               className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
                                 formData.department === dep
-                                  ? "bg-[#611F69]/10 text-[#611F69] font-medium"
-                                  : "text-gray-700 hover:bg-[#611F69]/5 hover:text-[#611F69]"
+                                  ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-medium"
+                                  : "text-gray-700 hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)]"
                               }`}
                             >
                               {dep}
@@ -912,7 +912,7 @@ const UsersPage = () => {
                             setDepartmentOpen(false);
                             setStatusOpen(false);
                           }}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white"
                         >
                           <span className="truncate">
                             {formData.assignedWarehouse
@@ -957,8 +957,8 @@ const UsersPage = () => {
                             }}
                             className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
                               !formData.assignedWarehouse
-                                ? "bg-[#611F69]/10 text-[#611F69] font-medium"
-                                : "text-gray-700 hover:bg-[#611F69]/5 hover:text-[#611F69]"
+                                ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-medium"
+                                : "text-gray-700 hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)]"
                             }`}
                           >
                             -- Select Warehouse --
@@ -977,8 +977,8 @@ const UsersPage = () => {
                               }}
                               className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
                                 formData.assignedWarehouse === w._id
-                                  ? "bg-[#611F69]/10 text-[#611F69] font-medium"
-                                  : "text-gray-700 hover:bg-[#611F69]/5 hover:text-[#611F69]"
+                                  ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-medium"
+                                  : "text-gray-700 hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)]"
                               }`}
                             >
                               {w.name}
@@ -1002,7 +1002,7 @@ const UsersPage = () => {
                             setDepartmentOpen(false);
                             setWarehouseOpen(false);
                           }}
-                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[#611F69] focus:ring-4 focus:ring-[#611F69]/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="w-full h-11 border border-gray-200 bg-gray-50/50 outline-none rounded-xl px-4 text-sm text-gray-900 flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-gray-300 focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <span>{formData.status || "Select Status"}</span>
 
@@ -1043,8 +1043,8 @@ const UsersPage = () => {
                               }}
                               className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
                                 formData.status === s
-                                  ? "bg-[#611F69]/10 text-[#611F69] font-medium"
-                                  : "text-gray-700 hover:bg-[#611F69]/5 hover:text-[#611F69]"
+                                  ? "bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-medium"
+                                  : "text-gray-700 hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)]"
                               }`}
                             >
                               {s}
@@ -1094,7 +1094,7 @@ const UsersPage = () => {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="group inline-flex items-center justify-center gap-2 px-6 h-11 bg-[#611F69] border border-[#611F69] hover:bg-[#501657] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="group inline-flex items-center justify-center gap-2 px-6 h-11 bg-[var(--theme-primary)] border border-[var(--theme-primary)] hover:bg-[var(--theme-primary-hover)] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitting ? (
                         <>

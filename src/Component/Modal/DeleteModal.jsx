@@ -12,7 +12,7 @@ const DeleteModal = ({ isOpen, onClose, onDelete, productName, loading }) => {
 
         <p className="mt-3 text-gray-600">
           Are you sure you want to delete
-          <span className="font-semibold text-[#611F69]"> {productName}</span>?
+          <span className="font-semibold text-[var(--theme-primary)]"> {productName}</span>?
           This action cannot be undone.
         </p>
 

@@ -320,7 +320,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f8f9fb] text-gray-900">
+    <div className="min-h-screen w-full bg-[var(--theme-background)] text-gray-900">
       <main className="w-full px-4 py-5 sm:px-6 lg:px-8">
         {/* ===================================================== */}
         {/* HEADER */}
@@ -361,7 +361,7 @@ export default function AttendancePage() {
             <button
               type="button"
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 rounded-xl bg-[#611F69] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#501957]"
+              className="flex items-center gap-2 rounded-xl bg-[var(--theme-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--theme-primary-hover)]"
             >
               <MdAdd size={20} />
               Mark Attendance
@@ -376,7 +376,7 @@ export default function AttendancePage() {
         <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-[#611F69]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]">
                 <MdCalendarToday size={21} />
               </div>
 
@@ -396,7 +396,7 @@ export default function AttendancePage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-[#611F69] focus:ring-2 focus:ring-purple-100"
+                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-[var(--theme-primary)] focus:ring-2 focus:ring-[var(--theme-primary)]/10"
               />
             </div>
           </div>
@@ -421,13 +421,13 @@ export default function AttendancePage() {
                 </p>
               </div>
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-[#611F69]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]">
                 <MdPeople size={24} />
               </div>
             </div>
 
             <div className="mt-4 flex items-center gap-2 text-xs">
-              <span className="flex items-center gap-1 font-semibold text-[#611F69]">
+              <span className="flex items-center gap-1 font-semibold text-[var(--theme-primary)]">
                 <MdTrendingUp size={15} />
                 Active
               </span>
@@ -530,7 +530,7 @@ export default function AttendancePage() {
 
         <section className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
-            <MdFilterList className="text-[#611F69]" size={20} />
+            <MdFilterList className="text-[var(--theme-primary)]" size={20} />
 
             <h2 className="text-sm font-semibold text-gray-800">
               Attendance Records
@@ -555,7 +555,7 @@ export default function AttendancePage() {
                 placeholder="Search employee..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
               />
             </div>
 
@@ -564,7 +564,7 @@ export default function AttendancePage() {
             <select
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+              className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
             >
               {departments.map((item) => (
                 <option key={item} value={item}>
@@ -578,7 +578,7 @@ export default function AttendancePage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+              className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
             >
               {statusOptions.map((item) => (
                 <option key={item} value={item}>
@@ -589,7 +589,7 @@ export default function AttendancePage() {
 
             {/* Result */}
 
-            <div className="flex items-center justify-center rounded-xl bg-purple-50 px-4 py-2.5 text-sm font-medium text-[#611F69]">
+            <div className="flex items-center justify-center rounded-xl bg-[var(--theme-primary)]/5 px-4 py-2.5 text-sm font-medium text-[var(--theme-primary)]">
               Showing {filteredAttendance.length} of {attendance.length}{" "}
               employees
             </div>
@@ -646,7 +646,7 @@ export default function AttendancePage() {
 
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#611F69]/10 text-sm font-bold text-[#611F69]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--theme-primary)]/10 text-sm font-bold text-[var(--theme-primary)]">
                             {getInitials(employee.name)}
                           </div>
 
@@ -904,7 +904,7 @@ export default function AttendancePage() {
                     })
                   }
                   required
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                 >
                   <option value="">Select employee</option>
 
@@ -934,7 +934,7 @@ export default function AttendancePage() {
                         checkIn: e.target.value,
                       })
                     }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                   />
                 </div>
 
@@ -952,7 +952,7 @@ export default function AttendancePage() {
                         checkOut: e.target.value,
                       })
                     }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                   />
                 </div>
               </div>
@@ -972,7 +972,7 @@ export default function AttendancePage() {
                       status: e.target.value,
                     })
                   }
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#611F69] focus:bg-white focus:ring-2 focus:ring-purple-100"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-primary)]/10"
                 >
                   <option value="Present">Present</option>
 
@@ -995,7 +995,7 @@ export default function AttendancePage() {
 
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#611F69] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#501957]"
+                  className="rounded-xl bg-[var(--theme-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--theme-primary-hover)]"
                 >
                   Save Attendance
                 </button>

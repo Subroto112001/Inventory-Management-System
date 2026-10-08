@@ -100,7 +100,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
             className="text-lg font-bold text-gray-900 flex items-center gap-2"
           >
             <MdCameraAlt
-              className="text-[#611F69] text-xl"
+              className="text-[var(--theme-primary)] text-xl"
               aria-hidden="true"
             />
             Scan Barcode / QR
@@ -130,14 +130,14 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
           ) : (
             <div
               id="camera-reader"
-              className="w-full rounded-lg overflow-hidden border-2 border-[#611F69]/50"
+              className="w-full rounded-lg overflow-hidden border-2 border-[var(--theme-primary)]/50"
             ></div>
           )}
         </div>
 
         <div className="p-4 bg-gray-50 border-t border-gray-100 text-sm text-gray-700 text-center font-medium">
           Hold the barcode steady{" "}
-          <span className="text-[#611F69] font-bold">4-6 inches</span> away from
+          <span className="text-[var(--theme-primary)] font-bold">4-6 inches</span> away from
           the camera.
         </div>
       </div>
@@ -316,7 +316,7 @@ const EditProductPage = () => {
         </div>
         <Link
           href="/dash/products"
-          className="inline-block mt-4 text-[#611F69] font-medium"
+          className="inline-block mt-4 text-[var(--theme-primary)] font-medium"
         >
           ← Back To Products
         </Link>
@@ -335,10 +335,10 @@ const EditProductPage = () => {
       <div>
         <Link
           href="/dash/products"
-          className="inline-flex gap-2 items-center text-gray-700 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
+          className="inline-flex gap-2 items-center text-gray-700 hover:text-[var(--theme-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] rounded-md transition-colors"
           aria-label="Go back to products page"
         >
-          <span className="text-2xl text-[#611F69]" aria-hidden="true">
+          <span className="text-2xl text-[var(--theme-primary)]" aria-hidden="true">
             {IconProvider?.leftIcon || "←"}
           </span>
           <span className="text-[16px] font-medium">Back To Products</span>
@@ -416,7 +416,7 @@ const EditProductPage = () => {
                         type="text"
                         value={formData[item.name]}
                         onChange={handleChange}
-                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all bg-gray-50"
+                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all bg-gray-50"
                         placeholder="Type, scan or generate..."
                       />
                     </div>
@@ -424,7 +424,7 @@ const EditProductPage = () => {
                     <button
                       type="button"
                       onClick={() => setIsScannerOpen(true)}
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                       aria-label="Open camera to scan barcode"
                       title="Use Camera to Scan"
                     >
@@ -435,7 +435,7 @@ const EditProductPage = () => {
                     <button
                       type="button"
                       onClick={handleGenerateSKU}
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-[#611F69]/10 text-[#611F69] border border-[#611F69]/20 rounded-md hover:bg-[#611F69]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] border border-[var(--theme-primary)]/20 rounded-md hover:bg-[var(--theme-primary)]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                       aria-label="Auto Generate SKU"
                       title="Auto Generate SKU"
                     >
@@ -464,7 +464,7 @@ const EditProductPage = () => {
                   type={item.type}
                   value={formData[item.name]}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all"
+                  className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all"
                   placeholder={`Enter ${item.label.toLowerCase()}`}
                 />
               </div>
@@ -485,7 +485,7 @@ const EditProductPage = () => {
               value={formData.description}
               onChange={handleChange}
               rows="4"
-              className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#611F69] focus:border-transparent transition-all resize-y"
+              className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all resize-y"
               placeholder="Enter comprehensive product description..."
             />
           </div>

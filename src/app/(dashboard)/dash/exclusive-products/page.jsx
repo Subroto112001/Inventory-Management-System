@@ -147,10 +147,10 @@ export default function ExclusiveProductsPage() {
       style={{ fontFamily: "'Noto Serif', serif" }}
     >
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8378]">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--theme-muted)]">
           storefront
         </p>
-        <h1 className="mt-1 text-3xl font-bold text-[#211F1D]">
+        <h1 className="mt-1 text-3xl font-bold text-[var(--theme-text)]">
           Exclusive products
         </h1>
       </div>
@@ -165,22 +165,22 @@ export default function ExclusiveProductsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Column: Current Exclusive Assignments (বড় করা হয়েছে: col-span-7) */}
         <div className="lg:col-span-7">
-          <div className="flex flex-col rounded-xl border border-[#E4DED2] bg-white p-5 shadow-sm h-full">
+          <div className="flex flex-col rounded-xl border border-[var(--theme-border)] bg-white p-5 shadow-sm h-full">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#211F1D]">
+              <h2 className="text-lg font-semibold text-[var(--theme-text)]">
                 Current assignments
               </h2>
-              <span className="text-sm text-[#8A8378]">
+              <span className="text-sm text-[var(--theme-muted)]">
                 {items.length} active
               </span>
             </div>
 
             {loading ? (
-              <div className="text-sm text-[#8A8378]">
+              <div className="text-sm text-[var(--theme-muted)]">
                 Loading assignments...
               </div>
             ) : items.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center rounded-lg border border-dashed border-[#E4DED2] px-4 py-10 text-center text-sm text-[#8A8378]">
+              <div className="flex-1 flex items-center justify-center rounded-lg border border-dashed border-[var(--theme-border)] px-4 py-10 text-center text-sm text-[var(--theme-muted)]">
                 No exclusive products assigned yet.
               </div>
             ) : (
@@ -188,7 +188,7 @@ export default function ExclusiveProductsPage() {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex flex-col gap-3 rounded-lg border border-[#E4DED2] p-3 sm:flex-row sm:items-center justify-between"
+                    className="flex flex-col gap-3 rounded-lg border border-[var(--theme-border)] p-3 sm:flex-row sm:items-center justify-between"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <img
@@ -197,10 +197,10 @@ export default function ExclusiveProductsPage() {
                         className="h-14 w-14 shrink-0 rounded-md object-cover"
                       />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#211F1D]">
+                        <p className="truncate text-sm font-semibold text-[var(--theme-text)]">
                           {item.product?.name || item.productId}
                         </p>
-                        <p className="text-xs text-[#8A8378]">
+                        <p className="text-xs text-[var(--theme-muted)]">
                           {item.product?.category || "Product"} • $
                           {Number(item.product?.price || 0).toFixed(2)}
                         </p>
@@ -221,7 +221,7 @@ export default function ExclusiveProductsPage() {
                       <button
                         type="button"
                         onClick={() => handleToggle(item.id, item.isActive)}
-                        className="rounded-md border border-[#E4DED2] px-2 py-1 text-xs font-medium text-[#211F1D] hover:bg-gray-50"
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50"
                       >
                         {item.isActive ? "Hide" : "Show"}
                       </button>
@@ -229,7 +229,7 @@ export default function ExclusiveProductsPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(item.id, -1)}
-                        className="rounded-md border border-[#E4DED2] px-2 py-1 text-xs font-medium text-[#211F1D] hover:bg-gray-50"
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50"
                       >
                         ↑
                       </button>
@@ -237,7 +237,7 @@ export default function ExclusiveProductsPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(item.id, 1)}
-                        className="rounded-md border border-[#E4DED2] px-2 py-1 text-xs font-medium text-[#211F1D] hover:bg-gray-50"
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50"
                       >
                         ↓
                       </button>
@@ -259,12 +259,12 @@ export default function ExclusiveProductsPage() {
 
         {/* Right Column: Product Catalog (ছোট করা হয়েছে: col-span-5) */}
         <div className="lg:col-span-5">
-          <div className="flex flex-col rounded-xl border border-[#E4DED2] bg-white p-5 shadow-sm h-full">
+          <div className="flex flex-col rounded-xl border border-[var(--theme-border)] bg-white p-5 shadow-sm h-full">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#211F1D]">
+              <h2 className="text-lg font-semibold text-[var(--theme-text)]">
                 Product Catalog
               </h2>
-              <p className="text-xs text-[#8A8378]">
+              <p className="text-xs text-[var(--theme-muted)]">
                 Search or select products to add as exclusive
               </p>
             </div>
@@ -276,10 +276,10 @@ export default function ExclusiveProductsPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search catalog..."
-                className="w-full rounded-md border border-[#E4DED2] px-3 py-2.5 text-sm outline-none focus:border-[#1F3A2E]"
+                className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2.5 text-sm outline-none focus:border-[var(--theme-primary)]"
               />
               {searchLoading && (
-                <div className="mt-1 text-xs text-[#8A8378]">
+                <div className="mt-1 text-xs text-[var(--theme-muted)]">
                   Searching products...
                 </div>
               )}
@@ -288,7 +288,7 @@ export default function ExclusiveProductsPage() {
             {/* Scrollable Product List */}
             <div className="flex-1 overflow-y-auto max-h-137.5 pr-1 space-y-2.5">
               {results.length === 0 && !searchLoading ? (
-                <div className="py-8 text-center text-sm text-[#8A8378]">
+                <div className="py-8 text-center text-sm text-[var(--theme-muted)]">
                   No products found.
                 </div>
               ) : (
@@ -297,7 +297,7 @@ export default function ExclusiveProductsPage() {
                   return (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-[#E4DED2] bg-[#F7F3EC]/40 p-2.5 transition hover:border-[#1F3A2E]"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-background)]/40 p-2.5 transition hover:border-[var(--theme-primary)]"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <img
@@ -306,10 +306,10 @@ export default function ExclusiveProductsPage() {
                           className="h-10 w-10 shrink-0 rounded-md object-cover"
                         />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[#211F1D]">
+                          <p className="truncate text-sm font-semibold text-[var(--theme-text)]">
                             {product.name}
                           </p>
-                          <p className="text-xs text-[#8A8378]">
+                          <p className="text-xs text-[var(--theme-muted)]">
                             {product.category || "General"} • $
                             {Number(product.price || 0).toFixed(2)}
                           </p>
@@ -323,7 +323,7 @@ export default function ExclusiveProductsPage() {
                         className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold transition ${
                           isAssigned
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                            : "bg-[#1F3A2E] text-white hover:bg-[#152820]"
+                            : "bg-[var(--theme-primary)] text-white hover:bg-[var(--theme-primary-hover)]"
                         }`}
                       >
                         {isAssigned ? "Assigned" : "Add"}

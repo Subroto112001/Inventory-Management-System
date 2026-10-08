@@ -106,7 +106,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
             className="text-lg font-bold text-gray-900 flex items-center gap-2"
           >
             <MdCameraAlt
-              className="text-[#611F69] text-xl"
+              className="text-[var(--theme-primary)] text-xl"
               aria-hidden="true"
             />
             Scan Product Barcode
@@ -136,7 +136,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
           ) : (
             <div
               id="camera-reader"
-              className="w-full rounded-lg overflow-hidden border-2 border-[#611F69]/50"
+              className="w-full rounded-lg overflow-hidden border-2 border-[var(--theme-primary)]/50"
             ></div>
           )}
         </div>
@@ -383,10 +383,10 @@ export default function CreateOrderPage() {
       <header className="mb-6 print:hidden">
         <Link
           href="/dash/products"
-          className="inline-flex gap-2 items-center text-gray-800 hover:text-[#611F69] focus:outline-none focus:ring-2 focus:ring-[#611F69] rounded-md transition-colors"
+          className="inline-flex gap-2 items-center text-gray-800 hover:text-[var(--theme-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] rounded-md transition-colors"
           aria-label="Go back to products page"
         >
-          <span className="text-2xl text-[#611F69]" aria-hidden="true">
+          <span className="text-2xl text-[var(--theme-primary)]" aria-hidden="true">
             {IconProvider?.leftIcon || "←"}
           </span>
           <span className="text-[16px] font-semibold">Back To Products</span>
@@ -396,7 +396,7 @@ export default function CreateOrderPage() {
           <h1 className="text-3xl font-extrabold text-gray-900">
             Create New Order
           </h1>
-          <span className="text-lg font-medium text-[#611F69] bg-[#611F69]/10 px-4 py-1.5 border border-[#611F69]/30 rounded-md shadow-sm">
+          <span className="text-lg font-medium text-[var(--theme-primary)] bg-[var(--theme-primary)]/10 px-4 py-1.5 border border-[var(--theme-primary)]/30 rounded-md shadow-sm">
             Order No: <strong>#001</strong>
           </span>
         </div>
@@ -408,14 +408,14 @@ export default function CreateOrderPage() {
           {/* Customer Information Section */}
           <section className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-[#611F69]/10 flex items-center justify-center text-[#611F69]">
+              <span className="w-8 h-8 rounded-full bg-[var(--theme-primary)]/10 flex items-center justify-center text-[var(--theme-primary)]">
                 1
               </span>
               Customer Information
             </h2>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+                <div className="flex-1 flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
                   <span className="text-gray-500 pl-2" aria-hidden="true">
                     {IconProvider?.user || "👤"}
                   </span>
@@ -432,7 +432,7 @@ export default function CreateOrderPage() {
                   />
                 </div>
 
-                <div className="flex-1 flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+                <div className="flex-1 flex items-center gap-2 p-2.5 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
                   <span className="text-gray-500 pl-2" aria-hidden="true">
                     {IconProvider?.phone || "📞"}
                   </span>
@@ -452,10 +452,10 @@ export default function CreateOrderPage() {
 
               {/* Conditionally style address to highlight if Home Delivery is selected */}
               <div
-                className={`flex items-start gap-2 p-2.5 border rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all ${orderType === "Home Delivery" ? "border-[#611F69]/40 bg-[#611F69]/5" : "border-gray-300 bg-gray-50"}`}
+                className={`flex items-start gap-2 p-2.5 border rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all ${orderType === "Home Delivery" ? "border-[var(--theme-primary)]/40 bg-[var(--theme-primary)]/5" : "border-gray-300 bg-gray-50"}`}
               >
                 <MdLocationOn
-                  className={`mt-1 pl-2 text-xl ${orderType === "Home Delivery" ? "text-[#611F69]" : "text-gray-500"}`}
+                  className={`mt-1 pl-2 text-xl ${orderType === "Home Delivery" ? "text-[var(--theme-primary)]" : "text-gray-500"}`}
                   aria-hidden="true"
                 />
                 <label htmlFor="customerAddress" className="sr-only">
@@ -480,14 +480,14 @@ export default function CreateOrderPage() {
           {/* Add Products Section */}
           <section className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm flex-1">
             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-[#611F69]/10 flex items-center justify-center text-[#611F69]">
+              <span className="w-8 h-8 rounded-full bg-[var(--theme-primary)]/10 flex items-center justify-center text-[var(--theme-primary)]">
                 2
               </span>
               Add Products
             </h2>
 
             <div className="mb-6 flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 flex items-center gap-2 p-3 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[#611F69] focus-within:border-transparent transition-all">
+              <div className="flex-1 flex items-center gap-2 p-3 border border-gray-300 bg-gray-50 rounded-lg focus-within:ring-2 focus-within:ring-[var(--theme-primary)] focus-within:border-transparent transition-all">
                 <MdQrCodeScanner
                   className="text-gray-500 text-xl ml-1"
                   aria-hidden="true"
@@ -534,7 +534,7 @@ export default function CreateOrderPage() {
                   {filteredProducts.map((product) => (
                     <li
                       key={product.id}
-                      className="p-4 bg-white border border-gray-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-[#611F69]/50 transition-colors shadow-sm"
+                      className="p-4 bg-white border border-gray-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-[var(--theme-primary)]/50 transition-colors shadow-sm"
                     >
                       <div className="flex flex-col">
                         <span className="text-base font-bold text-gray-900">
@@ -545,12 +545,12 @@ export default function CreateOrderPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                        <span className="text-lg font-bold text-[#611F69]">
+                        <span className="text-lg font-bold text-[var(--theme-primary)]">
                           ৳{product.price.toFixed(2)}
                         </span>
                         <button
                           onClick={() => addToOrder(product)}
-                          className="px-4 py-2 bg-[#611F69]/10 text-[#611F69] font-semibold rounded-md hover:bg-[#611F69] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#611F69] transition-all text-sm"
+                          className="px-4 py-2 bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-semibold rounded-md hover:bg-[var(--theme-primary)] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-primary)] transition-all text-sm"
                           aria-label={`Add ${product.productName} to order`}
                         >
                           Add
@@ -604,7 +604,7 @@ export default function CreateOrderPage() {
             </div>
 
             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2 print:hidden">
-              <span className="w-8 h-8 rounded-full bg-[#611F69]/10 flex items-center justify-center text-[#611F69]">
+              <span className="w-8 h-8 rounded-full bg-[var(--theme-primary)]/10 flex items-center justify-center text-[var(--theme-primary)]">
                 3
               </span>
               Order Details
@@ -649,7 +649,7 @@ export default function CreateOrderPage() {
                         <div className="flex items-center gap-2 print:hidden bg-gray-100 rounded-md p-1">
                           <button
                             onClick={() => removeFromOrder(item.id)}
-                            className="w-7 h-7 flex items-center justify-center bg-white text-gray-800 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                            className="w-7 h-7 flex items-center justify-center bg-white text-gray-800 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                             aria-label={`Decrease quantity of ${item.productName}`}
                           >
                             -
@@ -659,7 +659,7 @@ export default function CreateOrderPage() {
                           </span>
                           <button
                             onClick={() => addToOrder(item)}
-                            className="w-7 h-7 flex items-center justify-center bg-white text-gray-800 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#611F69]"
+                            className="w-7 h-7 flex items-center justify-center bg-white text-gray-800 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
                             aria-label={`Increase quantity of ${item.productName}`}
                           >
                             +
@@ -682,14 +682,14 @@ export default function CreateOrderPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setOrderType("Take Away")}
-                    className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border-2 transition-all ${orderType === "Take Away" ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border-2 transition-all ${orderType === "Take Away" ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                   >
                     <MdStorefront size={20} />
                     <span className="text-sm font-semibold">Take Away</span>
                   </button>
                   <button
                     onClick={() => setOrderType("Home Delivery")}
-                    className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border-2 transition-all ${orderType === "Home Delivery" ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border-2 transition-all ${orderType === "Home Delivery" ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                   >
                     <MdDirectionsBike size={20} />
                     <span className="text-sm font-semibold">Home Delivery</span>
@@ -706,13 +706,13 @@ export default function CreateOrderPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setDeliveryPaymentType("COD")}
-                      className={`py-1.5 rounded-md text-sm font-medium transition-all ${deliveryPaymentType === "COD" ? "bg-blue-600 text-white shadow-sm" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-100"}`}
+                      className={`py-1.5 rounded-md text-sm font-medium transition-all ${deliveryPaymentType === "COD" ? "bg-[var(--theme-primary)] text-[var(--theme-primary-text)] shadow-sm" : "bg-white text-[var(--theme-primary)] border border-[var(--theme-primary)]/20 hover:bg-[var(--theme-primary)]/5"}`}
                     >
                       Cash On Delivery
                     </button>
                     <button
                       onClick={() => setDeliveryPaymentType("Pre-paid")}
-                      className={`py-1.5 rounded-md text-sm font-medium transition-all ${deliveryPaymentType === "Pre-paid" ? "bg-blue-600 text-white shadow-sm" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-100"}`}
+                      className={`py-1.5 rounded-md text-sm font-medium transition-all ${deliveryPaymentType === "Pre-paid" ? "bg-[var(--theme-primary)] text-[var(--theme-primary-text)] shadow-sm" : "bg-white text-[var(--theme-primary)] border border-[var(--theme-primary)]/20 hover:bg-[var(--theme-primary)]/5"}`}
                     >
                       Pre-paid (Pay Now)
                     </button>
@@ -729,21 +729,21 @@ export default function CreateOrderPage() {
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => setPaymentMethod("Cash")}
-                      className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all ${paymentMethod === "Cash" ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                      className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all ${paymentMethod === "Cash" ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                     >
                       <MdMoney size={20} />
                       <span className="text-xs font-semibold">Cash</span>
                     </button>
                     <button
                       onClick={() => setPaymentMethod("Mobile Banking")}
-                      className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all ${paymentMethod === "Mobile Banking" ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                      className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all ${paymentMethod === "Mobile Banking" ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                     >
                       <MdPhoneIphone size={20} />
                       <span className="text-xs font-semibold">M-Banking</span>
                     </button>
                     <button
                       onClick={() => setPaymentMethod("Card")}
-                      className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all ${paymentMethod === "Card" ? "border-[#611F69] bg-[#611F69]/5 text-[#611F69]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                      className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all ${paymentMethod === "Card" ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/5 text-[var(--theme-primary)]" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                     >
                       <MdCreditCard size={20} />
                       <span className="text-xs font-semibold">Card</span>
@@ -770,7 +770,7 @@ export default function CreateOrderPage() {
                         value={amountReceived}
                         onChange={(e) => setAmountReceived(e.target.value)}
                         placeholder="e.g. 1500"
-                        className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-lg font-bold"
+                        className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-lg font-bold"
                       />
                     </div>
                   )}
@@ -790,7 +790,7 @@ export default function CreateOrderPage() {
                           onChange={(e) =>
                             setMobileBankingProvider(e.target.value)
                           }
-                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                         >
                           <option value="bKash">bKash</option>
                           <option value="Nagad">Nagad</option>
@@ -811,7 +811,7 @@ export default function CreateOrderPage() {
                           value={transactionId}
                           onChange={(e) => setTransactionId(e.target.value)}
                           placeholder="e.g. 9J2A8XN..."
-                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                         />
                       </div>
                     </div>
@@ -830,7 +830,7 @@ export default function CreateOrderPage() {
                           id="cardType"
                           value={cardType}
                           onChange={(e) => setCardType(e.target.value)}
-                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                         >
                           <option value="Visa">Visa</option>
                           <option value="Mastercard">Mastercard</option>
@@ -853,7 +853,7 @@ export default function CreateOrderPage() {
                             setCardLast4(e.target.value.replace(/\D/g, ""))
                           }
                           placeholder="e.g. 4242"
-                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm tracking-widest"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm tracking-widest"
                         />
                       </div>
                     </div>
@@ -889,16 +889,16 @@ export default function CreateOrderPage() {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-2xl font-extrabold text-[#611F69] py-2 border-t border-gray-100 mt-2">
+                <div className="flex justify-between text-2xl font-extrabold text-[var(--theme-primary)] py-2 border-t border-gray-100 mt-2">
                   <span>Total Due</span>
                   <span>৳{grandTotal.toFixed(2)}</span>
                 </div>
 
                 {/* Visual Feedback for Payment Details */}
-                <div className="bg-[#611F69]/5 p-3 rounded-lg border border-[#611F69]/20 print:border-none print:bg-white print:p-0 mt-4">
+                <div className="bg-[var(--theme-primary)]/5 p-3 rounded-lg border border-[var(--theme-primary)]/20 print:border-none print:bg-white print:p-0 mt-4">
                   <div className="flex justify-between text-gray-800 text-sm mb-1 font-semibold">
                     <span>Payment Status:</span>
-                    <span className="uppercase text-[#611F69]">
+                    <span className="uppercase text-[var(--theme-primary)]">
                       {orderType === "Home Delivery" &&
                       deliveryPaymentType === "COD"
                         ? "Cash On Delivery"
@@ -951,7 +951,7 @@ export default function CreateOrderPage() {
               <button
                 onClick={handleCreateOrder}
                 disabled={cart.length === 0 || isSubmitting}
-                className="w-full py-3.5 bg-[#611F69] text-white font-bold rounded-lg shadow-lg hover:bg-[#4a1752] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#611F69]/50 transition-all print:hidden flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[var(--theme-primary)] text-white font-bold rounded-lg shadow-lg hover:bg-[var(--theme-primary-hover)] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[var(--theme-primary)]/50 transition-all print:hidden flex items-center justify-center gap-2"
                 aria-label="Process Payment and Print Memo"
               >
                 {isSubmitting ? (

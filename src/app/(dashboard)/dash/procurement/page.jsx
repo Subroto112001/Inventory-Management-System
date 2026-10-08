@@ -191,7 +191,7 @@ export default function PurchaseOrderPage() {
       {/* Page Header (Hidden on Print) */}
       <header className="mb-8 print:hidden">
         <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
-          <MdFormatListBulleted className="text-[#611F69]" aria-hidden="true" />
+          <MdFormatListBulleted className="text-[var(--theme-primary)]" aria-hidden="true" />
           Restock / Purchase Order Request
         </h1>
         <p className="text-gray-600 mt-2">
@@ -238,7 +238,7 @@ export default function PurchaseOrderPage() {
                       setSupplierId(supplier?._id || "");
                     }}
                     placeholder="Select from list or type new..."
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                   />
                   <datalist id="supplier-options">
                     {suppliers.map((supplier) => (
@@ -261,7 +261,7 @@ export default function PurchaseOrderPage() {
                   value={supplierContact}
                   onChange={(e) => setSupplierContact(e.target.value)}
                   placeholder="Mobile number or Email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export default function PurchaseOrderPage() {
                     value={officerName}
                     onChange={(e) => setOfficerName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ export default function PurchaseOrderPage() {
                   value={currentProduct}
                   onChange={(e) => setCurrentProduct(e.target.value)}
                   placeholder="Select from list or type new product..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm bg-white"
                   required
                 />
                 <datalist id="product-options">
@@ -341,7 +341,7 @@ export default function PurchaseOrderPage() {
                     value={currentQty}
                     onChange={(e) => setCurrentQty(e.target.value)}
                     placeholder="e.g., 50"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm"
                     required
                   />
                 </div>
@@ -356,7 +356,7 @@ export default function PurchaseOrderPage() {
                     id="productUnit"
                     value={currentUnit}
                     onChange={(e) => setCurrentUnit(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#611F69] text-sm bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] text-sm bg-white"
                   >
                     <option value="Pcs">Pcs</option>
                     <option value="Box">Box</option>
@@ -369,7 +369,7 @@ export default function PurchaseOrderPage() {
 
               <button
                 type="submit"
-                className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 bg-[#611F69]/10 text-[#611F69] font-bold rounded-md hover:bg-[#611F69] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#611F69]"
+                className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] font-bold rounded-md hover:bg-[var(--theme-primary)] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-primary)]"
               >
                 <MdAddShoppingCart size={20} aria-hidden="true" />
                 Add to List
@@ -392,7 +392,7 @@ export default function PurchaseOrderPage() {
                 Head Office, Dhaka, Bangladesh
               </p>
 
-              <div className="inline-block mt-4 px-4 py-1.5 border-2 border-[#611F69] text-[#611F69] font-bold text-lg uppercase rounded-full">
+              <div className="inline-block mt-4 px-4 py-1.5 border-2 border-[var(--theme-primary)] text-[var(--theme-primary)] font-bold text-lg uppercase rounded-full">
                 Purchase Order Memo
               </div>
             </div>
@@ -527,7 +527,7 @@ export default function PurchaseOrderPage() {
                     Authorized Signature
                   </p>
                   {officerName ? (
-                    <p className="text-[#611F69] font-semibold mt-1 uppercase">
+                    <p className="text-[var(--theme-primary)] font-semibold mt-1 uppercase">
                       {officerName}
                     </p>
                   ) : (
@@ -548,14 +548,14 @@ export default function PurchaseOrderPage() {
             <button
               onClick={handleSavePurchaseOrder}
               disabled={products.length === 0}
-              className="w-full mb-3 flex items-center justify-center gap-2 py-3 border border-[#611F69] text-[#611F69] font-bold rounded-lg hover:bg-[#611F69]/10 disabled:opacity-50"
+              className="w-full mb-3 flex items-center justify-center gap-2 py-3 border border-[var(--theme-primary)] text-[var(--theme-primary)] font-bold rounded-lg hover:bg-[var(--theme-primary)]/10 disabled:opacity-50"
             >
               Save Purchase Order
             </button>
             <button
               onClick={handlePrint}
               disabled={products.length === 0}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#611F69] text-white font-bold rounded-lg shadow hover:bg-[#4a1752] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#611F69]/50 transition-all text-lg"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--theme-primary)] text-white font-bold rounded-lg shadow hover:bg-[var(--theme-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[var(--theme-primary)]/50 transition-all text-lg"
               aria-label="Print or Save Memo as PDF"
             >
               <MdPrint size={24} aria-hidden="true" />

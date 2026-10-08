@@ -3,20 +3,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 /* CSS Variables for Theme Colors & Spacing */
-:root {
-  --color-primary: #470151;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #611f69;
-  --color-tertiary-container: #00453e;
-  --color-tertiary-fixed: #82f6e4;
-  --color-primary-fixed: #ffd6fc;
-  --color-background: #f8f9fa;
-  --color-on-background: #191c1d;
-  --color-surface-lowest: #ffffff;
-  --color-on-surface: #191c1d;
-  --color-secondary: #5d5f5f;
-  --color-surface-variant: #e1e3e4;
-  --color-error: #ba1a1a;
+.dashboard-main {
+  --color-primary: var(--theme-primary);
+  --color-on-primary: var(--theme-primary-text);
+  --color-primary-container: var(--theme-primary-hover);
+  --color-tertiary-container: var(--theme-success);
+  --color-tertiary-fixed: var(--theme-success);
+  --color-primary-fixed: color-mix(in srgb, var(--theme-primary) 10%, var(--theme-surface));
+  --color-background: var(--theme-background);
+  --color-on-background: var(--theme-text);
+  --color-surface-lowest: var(--theme-surface);
+  --color-on-surface: var(--theme-text);
+  --color-secondary: var(--theme-muted);
+  --color-surface-variant: var(--theme-border);
+  --color-error: var(--theme-error);
   
   --color-warning-bg: #FFF3CD;
   --color-warning-text: #856404;
@@ -81,7 +81,7 @@
   transition: background-color 0.2s, box-shadow 0.2s;
 }
 .btn-primary:hover { background-color: var(--color-primary-container); }
-.btn-primary:focus { outline: none; box-shadow: 0 0 0 3px rgba(71, 1, 81, 0.3); }
+.btn-primary:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 30%, transparent); }
 
 /* Grids */
 .kpi-grid, .charts-grid {
@@ -128,8 +128,8 @@
   align-items: center;
   justify-content: center;
 }
-.icon-box-tertiary { background-color: rgba(0, 69, 62, 0.1); color: var(--color-tertiary-container); }
-.icon-box-primary { background-color: rgba(71, 1, 81, 0.1); color: var(--color-primary); }
+.icon-box-tertiary { background-color: color-mix(in srgb, var(--theme-success) 10%, transparent); color: var(--color-tertiary-container); }
+.icon-box-primary { background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent); color: var(--color-primary); }
 .icon-box-warning { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
 
 .trend-info {
@@ -146,7 +146,7 @@
   align-items: center;
   gap: 4px;
 }
-.trend-up { background-color: rgba(0, 69, 62, 0.1); color: var(--color-tertiary-container); }
+.trend-up { background-color: color-mix(in srgb, var(--theme-success) 10%, transparent); color: var(--color-tertiary-container); }
 .trend-warning { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
 
 /* Charts Area Placeholder */
@@ -194,7 +194,7 @@
   border-bottom: 1px solid var(--color-surface-variant);
   color: var(--color-on-surface);
 }
-.data-table tr:hover td { background-color: #F3EBF4; }
+.data-table tr:hover td { background-color: color-mix(in srgb, var(--theme-primary) 5%, var(--theme-surface)); }
 .data-table .text-right { text-align: right; }
 .data-table .text-center { text-align: center; }
 

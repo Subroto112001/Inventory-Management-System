@@ -195,10 +195,10 @@ export default function HomepageSlidersPage() {
     <section className="mx-auto max-w-6xl space-y-6 p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8378]">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--theme-muted)]">
             storefront
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#211F1D]">
+          <h1 className="mt-2 text-3xl font-bold text-[var(--theme-text)]">
             Homepage sliders
           </h1>
         </div>
@@ -206,7 +206,7 @@ export default function HomepageSlidersPage() {
         <button
           type="button"
           onClick={resetForm}
-          className="rounded-md bg-[#1F3A2E] px-4 py-2 text-sm font-medium text-white"
+          className="rounded-md bg-[var(--theme-primary)] px-4 py-2 text-sm font-medium text-white"
         >
           New slider
         </button>
@@ -221,30 +221,30 @@ export default function HomepageSlidersPage() {
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl border border-[#E4DED2] bg-white p-5 shadow-sm"
+          className="rounded-xl border border-[var(--theme-border)] bg-white p-5 shadow-sm"
         >
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-[#211F1D]">
+            <h2 className="text-lg font-semibold text-[var(--theme-text)]">
               {editingId ? "Edit slider" : "Add slider"}
             </h2>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+              <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                 Title
               </label>
               <input
                 name="title"
                 value={form.title}
                 onChange={handleChange}
-                className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
+                className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2 outline-none focus:border-[var(--theme-primary)]"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+              <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                 Subtitle
               </label>
               <textarea
@@ -252,51 +252,51 @@ export default function HomepageSlidersPage() {
                 value={form.subtitle}
                 onChange={handleChange}
                 rows={3}
-                className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
+                className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2 outline-none focus:border-[var(--theme-primary)]"
               />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Featured product</label>
-                <select name="product" value={form.product} onChange={handleChange} className="w-full rounded-md border border-[#E4DED2] px-3 py-2">
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">Featured product</label>
+                <select name="product" value={form.product} onChange={handleChange} className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2">
                   <option value="">No linked product</option>
                   {products.map((product) => <option key={product.id} value={product.id}>{product.name} · ${product.price}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Price override</label>
-                <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} placeholder="Use product price" className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">Price override</label>
+                <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} placeholder="Use product price" className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Previous price</label>
-                <input name="previousPrice" type="number" min="0" step="0.01" value={form.previousPrice} onChange={handleChange} className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">Previous price</label>
+                <input name="previousPrice" type="number" min="0" step="0.01" value={form.previousPrice} onChange={handleChange} className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Discount label</label>
-                <input name="discountText" value={form.discountText} onChange={handleChange} placeholder="e.g. Save 20%" className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">Discount label</label>
+                <input name="discountText" value={form.discountText} onChange={handleChange} placeholder="e.g. Save 20%" className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">Supporting text</label>
-                <input name="supportingText" value={form.supportingText} onChange={handleChange} placeholder="Short supporting line" className="w-full rounded-md border border-[#E4DED2] px-3 py-2" />
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">Supporting text</label>
+                <input name="supportingText" value={form.supportingText} onChange={handleChange} placeholder="Short supporting line" className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2" />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                   Badge
                 </label>
                 <input
                   name="badge"
                   value={form.badge}
                   onChange={handleChange}
-                  className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
+                  className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2 outline-none focus:border-[var(--theme-primary)]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                   Order
                 </label>
                 <input
@@ -304,39 +304,39 @@ export default function HomepageSlidersPage() {
                   type="number"
                   value={form.sortOrder}
                   onChange={handleChange}
-                  className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
+                  className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2 outline-none focus:border-[var(--theme-primary)]"
                 />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                   Button text
                 </label>
                 <input
                   name="buttonText"
                   value={form.buttonText}
                   onChange={handleChange}
-                  className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
+                  className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2 outline-none focus:border-[var(--theme-primary)]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+                <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                   Button URL
                 </label>
                 <input
                   name="buttonUrl"
                   value={form.buttonUrl}
                   onChange={handleChange}
-                  className="w-full rounded-md border border-[#E4DED2] px-3 py-2 outline-none focus:border-[#1F3A2E]"
+                  className="w-full rounded-md border border-[var(--theme-border)] px-3 py-2 outline-none focus:border-[var(--theme-primary)]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+              <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                 Main image
               </label>
               <input
@@ -346,12 +346,12 @@ export default function HomepageSlidersPage() {
                 onChange={(event) =>
                   setImageFile(event.target.files?.[0] || null)
                 }
-                className="w-full rounded-md border border-dashed border-[#E4DED2] bg-[#F7F3EC] px-3 py-2"
+                className="w-full rounded-md border border-dashed border-[var(--theme-border)] bg-[var(--theme-background)] px-3 py-2"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#211F1D]">
+              <label className="mb-1 block text-sm font-medium text-[var(--theme-text)]">
                 Mobile image (optional)
               </label>
               <input
@@ -361,11 +361,11 @@ export default function HomepageSlidersPage() {
                 onChange={(event) =>
                   setMobileImageFile(event.target.files?.[0] || null)
                 }
-                className="w-full rounded-md border border-dashed border-[#E4DED2] bg-[#F7F3EC] px-3 py-2"
+                className="w-full rounded-md border border-dashed border-[var(--theme-border)] bg-[var(--theme-background)] px-3 py-2"
               />
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-[#211F1D]">
+            <label className="flex items-center gap-2 text-sm text-[var(--theme-text)]">
               <input
                 type="checkbox"
                 name="isActive"
@@ -380,7 +380,7 @@ export default function HomepageSlidersPage() {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-md bg-[#1F3A2E] px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-md bg-[var(--theme-primary)] px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving
                 ? "Saving..."
@@ -393,7 +393,7 @@ export default function HomepageSlidersPage() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="text-sm text-[#1F3A2E]"
+                className="text-sm text-[var(--theme-primary)]"
               >
                 Cancel
               </button>
@@ -401,18 +401,18 @@ export default function HomepageSlidersPage() {
           </div>
         </form>
 
-        <div className="rounded-xl border border-[#E4DED2] bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-[var(--theme-border)] bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#211F1D]">
+            <h2 className="text-lg font-semibold text-[var(--theme-text)]">
               Current slides
             </h2>
-            <span className="text-sm text-[#8A8378]">{items.length} total</span>
+            <span className="text-sm text-[var(--theme-muted)]">{items.length} total</span>
           </div>
 
           {loading ? (
-            <div className="text-sm text-[#8A8378]">Loading slides...</div>
+            <div className="text-sm text-[var(--theme-muted)]">Loading slides...</div>
           ) : items.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-[#E4DED2] px-4 py-10 text-center text-sm text-[#8A8378]">
+            <div className="rounded-lg border border-dashed border-[var(--theme-border)] px-4 py-10 text-center text-sm text-[var(--theme-muted)]">
               No homepage sliders yet.
             </div>
           ) : (
@@ -420,7 +420,7 @@ export default function HomepageSlidersPage() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex gap-4 rounded-lg border border-[#E4DED2] p-3"
+                  className="flex gap-4 rounded-lg border border-[var(--theme-border)] p-3"
                 >
                   <img
                     src={item.image || "/placeholder-product.svg"}
@@ -431,10 +431,10 @@ export default function HomepageSlidersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-[#211F1D]">
+                        <p className="text-sm font-semibold text-[var(--theme-text)]">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-xs text-[#8A8378]">
+                        <p className="mt-1 text-xs text-[var(--theme-muted)]">
                           {item.badge || "Standard"}
                         </p>
                       </div>
@@ -450,11 +450,11 @@ export default function HomepageSlidersPage() {
                       </span>
                     </div>
 
-                    <p className="mt-2 line-clamp-2 text-xs text-[#5B564C]">
+                    <p className="mt-2 line-clamp-2 text-xs text-[var(--theme-muted)]">
                       {item.subtitle || "No subtitle"}
                     </p>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[#8A8378]">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--theme-muted)]">
                       <span>Order: {item.sortOrder ?? 0}</span>
                       <span>•</span>
                       <span>{item.buttonText || "Shop now"}</span>
@@ -464,7 +464,7 @@ export default function HomepageSlidersPage() {
                       <button
                         type="button"
                         onClick={() => startEditing(item)}
-                        className="rounded-md border border-[#E4DED2] px-3 py-1.5 text-xs font-medium text-[#211F1D]"
+                        className="rounded-md border border-[var(--theme-border)] px-3 py-1.5 text-xs font-medium text-[var(--theme-text)]"
                       >
                         Edit
                       </button>
@@ -472,7 +472,7 @@ export default function HomepageSlidersPage() {
                       <button
                         type="button"
                         onClick={() => handleToggle(item.id, item.isActive)}
-                        className="rounded-md border border-[#E4DED2] px-3 py-1.5 text-xs font-medium text-[#211F1D]"
+                        className="rounded-md border border-[var(--theme-border)] px-3 py-1.5 text-xs font-medium text-[var(--theme-text)]"
                       >
                         {item.isActive ? "Disable" : "Enable"}
                       </button>
@@ -480,7 +480,7 @@ export default function HomepageSlidersPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(item.id, -1)}
-                        className="rounded-md border border-[#E4DED2] px-2 py-1.5 text-xs font-medium text-[#211F1D]"
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1.5 text-xs font-medium text-[var(--theme-text)]"
                       >
                         ↑
                       </button>
@@ -488,7 +488,7 @@ export default function HomepageSlidersPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(item.id, 1)}
-                        className="rounded-md border border-[#E4DED2] px-2 py-1.5 text-xs font-medium text-[#211F1D]"
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1.5 text-xs font-medium text-[var(--theme-text)]"
                       >
                         ↓
                       </button>
