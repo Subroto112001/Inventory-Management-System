@@ -1463,12 +1463,20 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
 
 function SettingsView({ profile, onSaveProfile, onToast }) {
   const [details, setDetails] = useState(profile);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [profileFile, setProfileFile] = useState(null);
+  const [profilePreview, setProfilePreview] = useState("");
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState("");
   const [passwords, setPasswords] = useState({
     current: "",
     next: "",
     confirm: "",
   });
   const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [visiblePasswords, setVisiblePasswords] = useState({ current: false, next: false, confirm: false });
   const [prefs, setPrefs] = useState({
     orderUpdates: true,
     offers: false,
@@ -1477,17 +1485,57 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
   });
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      if (profilePreview) URL.revokeObjectURL(profilePreview);
+    };
+  }, [profilePreview]);
+
   const saveDetails = async (e) => {
     e.preventDefault();
+    setSavingDetails(true);
+    setDetailsError("");
     try {
-      await onSaveProfile(details);
+      const updated = await onSaveProfile(details, profileFile);
+      setDetails(updated);
+      setProfileFile(null);
+      setProfilePreview("");
+      setEditingDetails(false);
       onToast("Account details saved");
     } catch (error) {
-      onToast(error.message || "Unable to update account");
+      setDetailsError(error.message || "Unable to update account");
+    } finally {
+      setSavingDetails(false);
     }
   };
 
-  const savePassword = (e) => {
+  const cancelDetails = () => {
+    setDetails(profile);
+    setProfileFile(null);
+    setProfilePreview("");
+    setDetailsError("");
+    setEditingDetails(false);
+  };
+
+  const chooseProfileImage = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setDetailsError("Choose a JPG, PNG, or WebP image.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setDetailsError("Profile images must be 5 MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+    setDetailsError("");
+    setProfilePreview(URL.createObjectURL(file));
+    setProfileFile(file);
+  };
+
+  const savePassword = async (e) => {
     e.preventDefault();
 
     if (passwords.next.length < 8) {
@@ -1501,8 +1549,24 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
     }
 
     setPasswordError("");
-    setPasswords({ current: "", next: "", confirm: "" });
-    onToast("Password updated");
+    setPasswordSuccess("");
+    setSavingPassword(true);
+    try {
+      const response = await fetch("/api/account", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.next, confirmPassword: passwords.confirm }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Unable to update password.");
+      setPasswords({ current: "", next: "", confirm: "" });
+      setPasswordSuccess(result.message || "Password updated successfully.");
+      onToast("Password updated");
+    } catch (error) {
+      setPasswordError(error.message || "Unable to update password.");
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   return (
@@ -1513,11 +1577,23 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
           title="Personal details"
           text="This information is used for your orders and receipts."
         >
+          <div className="mb-6 flex flex-col gap-4 border-b border-[#E4DED2] pb-6 sm:flex-row sm:items-center">
+            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[#EFE9DC] text-[#1F3A2E]">
+              {profilePreview || details.image?.url ? <img src={profilePreview || details.image.url} alt="Profile preview" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl font-semibold">{details.firstName?.charAt(0)?.toUpperCase() || "?"}</div>}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-[#211F1D]">Profile picture</p>
+              <p className="mt-1 text-xs text-[#8A8378]">JPG, PNG, or WebP. Maximum 5 MB.</p>
+              {editingDetails && <label className="mt-3 inline-flex cursor-pointer rounded-sm border border-[#E4DED2] bg-white px-3 py-2 text-sm text-[#1F3A2E] hover:border-[#1F3A2E]">{profileFile ? "Choose a different picture" : "Choose picture"}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={chooseProfileImage} /></label>}
+            </div>
+            {!editingDetails && <button type="button" onClick={() => setEditingDetails(true)} className="rounded-sm border border-[#E4DED2] px-4 py-2 text-sm text-[#1F3A2E] hover:border-[#1F3A2E]">Edit details</button>}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field
               label="First name"
               required
               value={details.firstName}
+              disabled={!editingDetails || savingDetails}
               onChange={(e) =>
                 setDetails({ ...details, firstName: e.target.value })
               }
@@ -1525,8 +1601,8 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
 
             <Field
               label="Last name"
-              required
               value={details.lastName}
+              disabled={!editingDetails || savingDetails}
               onChange={(e) =>
                 setDetails({ ...details, lastName: e.target.value })
               }
@@ -1535,29 +1611,25 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
             <Field
               label="Email address"
               type="email"
-              required
               value={details.email}
-              onChange={(e) =>
-                setDetails({ ...details, email: e.target.value })
-              }
+              disabled
             />
+            <p className="-mt-3 text-xs text-[#8A8378]">{details.isEmailVerified ? "Verified sign-in email. Email changes require verification." : "Verify this email address before changing it."}</p>
 
             <Field
               label="Phone number"
               type="tel"
+              required
               value={details.phone}
+              disabled={!editingDetails || savingDetails}
               onChange={(e) =>
                 setDetails({ ...details, phone: e.target.value })
               }
             />
           </div>
 
-          <button
-            type="submit"
-            className="mt-6 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
-          >
-            Save changes
-          </button>
+          {detailsError && <p className="mt-4 text-sm text-[#B65C38]" role="alert">{detailsError}</p>}
+          {editingDetails && <div className="mt-6 flex flex-wrap gap-3"><button type="submit" disabled={savingDetails} className="rounded-sm bg-[#1F3A2E] px-5 py-2.5 text-sm text-[#F7F3EC] hover:bg-[#16281F] disabled:opacity-60">{savingDetails ? "Saving..." : "Save changes"}</button><button type="button" disabled={savingDetails} onClick={cancelDetails} className="rounded-sm border border-[#E4DED2] px-5 py-2.5 text-sm text-[#211F1D] hover:border-[#1F3A2E]">Cancel</button></div>}
         </Panel>
       </form>
 
@@ -1566,36 +1638,10 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
         <Panel title="Change password" text="Use at least 8 characters.">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <Field
-                label="Current password"
-                type="password"
-                required
-                value={passwords.current}
-                onChange={(e) =>
-                  setPasswords({ ...passwords, current: e.target.value })
-                }
-              />
+              <label className="block text-sm text-[#211F1D]">Current password<span className="relative mt-1 block"><input type={visiblePasswords.current ? "text" : "password"} autoComplete="current-password" required disabled={savingPassword} value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full rounded-sm border border-[#E4DED2] bg-white px-3.5 py-3 pr-16 text-sm outline-none focus:border-[#1F3A2E] disabled:bg-[#F7F3EC]" /><button type="button" disabled={savingPassword} onClick={() => setVisiblePasswords((state) => ({ ...state, current: !state.current }))} className="absolute inset-y-0 right-3 text-xs font-medium text-[#1F3A2E]">{visiblePasswords.current ? "Hide" : "Show"}</button></span></label>
             </div>
 
-            <Field
-              label="New password"
-              type="password"
-              required
-              value={passwords.next}
-              onChange={(e) =>
-                setPasswords({ ...passwords, next: e.target.value })
-              }
-            />
-
-            <Field
-              label="Confirm new password"
-              type="password"
-              required
-              value={passwords.confirm}
-              onChange={(e) =>
-                setPasswords({ ...passwords, confirm: e.target.value })
-              }
-            />
+            {[{ key: "next", label: "New password", autocomplete: "new-password" }, { key: "confirm", label: "Confirm new password", autocomplete: "new-password" }].map(({ key, label, autocomplete }) => <label key={key} className="block text-sm text-[#211F1D]">{label}<span className="relative mt-1 block"><input type={visiblePasswords[key] ? "text" : "password"} autoComplete={autocomplete} required disabled={savingPassword} value={passwords[key]} onChange={(e) => setPasswords({ ...passwords, [key]: e.target.value })} className="w-full rounded-sm border border-[#E4DED2] bg-white px-3.5 py-3 pr-16 text-sm outline-none focus:border-[#1F3A2E] disabled:bg-[#F7F3EC]" /><button type="button" disabled={savingPassword} onClick={() => setVisiblePasswords((state) => ({ ...state, [key]: !state[key] }))} className="absolute inset-y-0 right-3 text-xs font-medium text-[#1F3A2E]">{visiblePasswords[key] ? "Hide" : "Show"}</button></span></label>)}
           </div>
 
           {passwordError && (
@@ -1603,13 +1649,15 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
               {passwordError}
             </p>
           )}
+          {passwordSuccess && <p className="mt-4 text-sm text-[#1F3A2E]" role="status">{passwordSuccess}</p>}
 
           <button
             type="submit"
-            className="mt-6 flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
+            disabled={savingPassword}
+            className="mt-6 flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LuLock size={15} />
-            Update password
+            {savingPassword ? "Updating..." : "Update password"}
           </button>
         </Panel>
       </form>
@@ -1721,10 +1769,16 @@ function AccountPageContent() {
   const [loadingAccount, setLoadingAccount] = useState(true);
   const [accountError, setAccountError] = useState("");
   const [profile, setProfile] = useState({
+    id: "",
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
+    image: null,
+    isEmailVerified: false,
+    address: "",
+    district: "",
+    country: "Bangladesh",
   });
   const [toast, setToast] = useState("");
 
@@ -1766,10 +1820,16 @@ function AccountPageContent() {
       }
       const user = accountData.user;
       setProfile({
+        id: user.id || "",
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
         phone: user.phoneNumber || "",
+        image: user.image || null,
+        isEmailVerified: Boolean(user.isEmailVerified),
+        address: user.address || "",
+        district: user.district || "",
+        country: user.country || "Bangladesh",
       });
       setAddresses(
         (accountData.user.addresses || []).map((item) => ({
@@ -1778,9 +1838,9 @@ function AccountPageContent() {
           name: item.fullName,
           phone: item.phone,
           line1: item.address,
-          line2: item.area || "",
+          line2: item.line2 || item.area || "",
           city: item.city,
-          state: "",
+          state: item.state || "",
           postalCode: item.postalCode,
           country: item.country,
           isDefault: item.isDefault,
@@ -1825,8 +1885,9 @@ function AccountPageContent() {
       fullName: data.name,
       phone: data.phone,
       address: data.line1,
-      area: data.line2,
+      line2: data.line2,
       city: data.city,
+      state: data.state,
       postalCode: data.postalCode,
       country: data.country,
     };
@@ -1848,9 +1909,9 @@ function AccountPageContent() {
         name: item.fullName,
         phone: item.phone,
         line1: item.address,
-        line2: item.area || "",
+        line2: item.line2 || item.area || "",
         city: item.city,
-        state: "",
+        state: item.state || "",
         postalCode: item.postalCode,
         country: item.country,
         isDefault: item.isDefault,
@@ -1885,20 +1946,38 @@ function AccountPageContent() {
     showToast("Default address updated");
   };
 
-  const saveProfile = async (data) => {
+  const saveProfile = async (data, imageFile) => {
+    const formData = new FormData();
+    formData.append("firstName", data.firstName);
+    formData.append("lastName", data.lastName);
+    formData.append("phoneNumber", data.phone);
+    formData.append("address", profile.address || "");
+    formData.append("district", profile.district || "");
+    formData.append("country", profile.country || "Bangladesh");
+    if (imageFile) formData.append("image", imageFile);
     const response = await fetch("/api/account", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phoneNumber: data.phone,
-      }),
+      body: formData,
     });
     const result = await response.json();
     if (!response.ok)
       throw new Error(result.message || "Unable to update profile");
-    setProfile({ ...profile, ...data });
+    const user = result.user;
+    const updated = {
+      ...profile,
+      id: user.id || profile.id,
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || profile.email,
+      phone: user.phoneNumber || "",
+      image: user.image || null,
+      isEmailVerified: Boolean(user.isEmailVerified),
+      address: user.address || "",
+      district: user.district || "",
+      country: user.country || "Bangladesh",
+    };
+    setProfile(updated);
+    return updated;
   };
 
   const cancelOrder = async (order) => {
@@ -2007,8 +2086,8 @@ function AccountPageContent() {
             <aside className="lg:sticky lg:top-40 h-fit">
               <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden">
                 <div className="p-5 flex items-center gap-3 border-b border-[#E4DED2]">
-                  <span className="w-11 h-11 rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
-                    {profile.firstName.charAt(0).toUpperCase()}
+                  <span className="w-11 h-11 shrink-0 overflow-hidden rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
+                    {profile.image?.url ? <img src={profile.image.url} alt="" className="h-full w-full object-cover" /> : profile.firstName.charAt(0).toUpperCase()}
                   </span>
 
                   <div className="min-w-0">
@@ -2110,8 +2189,9 @@ function AccountPageContent() {
 
               {view === "settings" && (
                 <SettingsView
+                  key={profile.id || "account-pending"}
                   profile={profile}
-                  onSaveProfile={setProfile}
+                  onSaveProfile={saveProfile}
                   onToast={showToast}
                 />
               )}

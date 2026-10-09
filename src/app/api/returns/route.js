@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Order from "@/lib/models/Order";
 import Return from "@/lib/models/Return";
+import Product from "@/lib/models/Product";
 import { getAuthenticatedUser, isCustomer } from "@/lib/auth";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
@@ -106,18 +107,23 @@ export async function POST(request) {
         { success: false, message: "Only delivered orders can be returned" },
         { status: 400 },
       );
-    const items = body.items.map((requested) => {
-      const orderItem = order.items.find(
-        (item) => item.product.toString() === String(requested.productId),
-      );
+    const requestedQuantities = new Map();
+    for (const requested of body.items) {
+      if (!mongoose.isValidObjectId(requested.productId)) throw new Error("Invalid return product");
       const quantity = Number(requested.quantity);
-      if (
-        !orderItem ||
-        !Number.isInteger(quantity) ||
-        quantity < 1 ||
-        quantity > orderItem.quantity
-      )
-        throw new Error("Invalid return quantity");
+      if (!Number.isInteger(quantity) || quantity < 1) throw new Error("Invalid return quantity");
+      const key = String(requested.productId);
+      requestedQuantities.set(key, (requestedQuantities.get(key) || 0) + quantity);
+    }
+    const products = await Product.find({ _id: { $in: [...requestedQuantities.keys()] } }).select("returnPolicy").lean();
+    const policyById = new Map(products.map((product) => [product._id.toString(), product.returnPolicy || null]));
+    const deliveredAt = order.deliveredAt || order.updatedAt;
+    const items = [...requestedQuantities.entries()].map(([productId, quantity]) => {
+      const orderItem = order.items.find((item) => item.product.toString() === productId);
+      if (!orderItem || quantity > orderItem.quantity) throw new Error("Invalid return quantity");
+      const policy = policyById.get(productId);
+      if (policy?.eligible === false) throw new Error(`${orderItem.name} is not eligible for return`);
+      if (policy?.eligible === true && Number.isInteger(policy.windowDays) && policy.windowDays > 0 && Date.now() > new Date(deliveredAt).getTime() + policy.windowDays * 24 * 60 * 60 * 1000) throw new Error(`${orderItem.name} is outside its ${policy.windowDays}-day return window`);
       return { product: orderItem.product, name: orderItem.name, quantity };
     });
     const returned = await Return.create({
@@ -131,9 +137,18 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
+    const message = error.message || "";
+    const isValidationError =
+      message === "Invalid return product" ||
+      message === "Invalid return quantity" ||
+      message.includes("is not eligible for return") ||
+      message.includes("is outside its ");
     return NextResponse.json(
-      { success: false, message: error.message || "Unable to request return" },
-      { status: 400 },
+      {
+        success: false,
+        message: isValidationError ? message : "Unable to request return",
+      },
+      { status: isValidationError ? 400 : 500 },
     );
   }
 }

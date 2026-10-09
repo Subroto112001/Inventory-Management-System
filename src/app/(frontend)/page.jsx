@@ -4,6 +4,7 @@ import { PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useWishlist } from "@/Component/website/Cart/WishlistContext";
+import { useCompare } from "@/Component/website/Cart/CompareContext";
 import { useEffect, useRef, useState } from "react";
 import {
   LuSearch,
@@ -68,6 +69,9 @@ function ProductCard({ product }) {
     product;
   const { addItem } = useCart();
   const { has, toggle } = useWishlist();
+  const { add: addToCompare, has: isCompared } = useCompare();
+  const [wishlistNotice, setWishlistNotice] = useState("");
+  const [compareNotice, setCompareNotice] = useState("");
   const liked = has(product.id);
   const inStock = product.inStock ?? false;
 
@@ -91,11 +95,14 @@ function ProductCard({ product }) {
         <button
           type="button"
           aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
-          onClick={() => toggle(product).catch(() => {})}
+          onClick={async () => { try { const updated = await toggle(product); if (updated) setWishlistNotice(liked ? "Removed from wishlist" : "Added to wishlist"); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#B65C38]"
         >
           <LuHeart size={15} className={liked ? "fill-[#B65C38] text-[#B65C38]" : ""} />
         </button>
+        <button type="button" onClick={() => setCompareNotice(addToCompare(product.id))} aria-label={isCompared(product.id) ? "Already in comparison" : "Add to compare"} title="Add to compare" className="absolute top-14 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D]"><LuGitCompare size={15}/></button>
+        {wishlistNotice && <span role="status" className="absolute top-3 left-3 rounded bg-white px-2 py-1 text-[10px] shadow">{wishlistNotice}</span>}
+        {compareNotice && <span role="status" className="absolute top-24 right-3 rounded bg-white px-2 py-1 text-[10px] shadow">{compareNotice === "added" ? "Added to compare" : compareNotice === "exists" ? "Already compared" : compareNotice === "loading" ? "Loading comparisons…" : "Compare list is full"}</span>}
 
         <button
           type="button"
@@ -425,23 +432,25 @@ export default function EcommerceHomePage() {
               </p>
             ) : (
               categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/product?category=${cat.id}`}
-                  className="group text-center"
-                >
-                  <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[#F7F3EC]">
-                    <img
-                      src={cat.image || "/placeholder-product.svg"}
-                      alt={cat.name}
-                      className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-300"
-                    />
-                  </div>
 
-                  <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
-                    {cat.name}
-                  </p>
-                </Link>
+<Link
+  key={cat.id}
+  href={`/product?category=${cat.id}`}
+  className="group text-center rounded-md shadow-sm hover:shadow-md transition-shadow duration-300"
+>
+  <div className="aspect-square rounded-md overflow-hidden  p-3 bg-white">
+    <img
+      src={cat.image || "/placeholder-product.svg"}
+      alt={cat.name}
+      className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-300"
+    />
+  </div>
+
+  <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
+    {cat.name}
+  </p>
+</Link>
+
               ))
             )}
           </div>

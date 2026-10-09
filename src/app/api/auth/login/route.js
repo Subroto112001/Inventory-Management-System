@@ -13,7 +13,8 @@ export async function POST(request) {
   try {
     // 1. Parse request body
     const body = await request.json();
-    const { email, password, rememberMe = false } = body;
+    const { email, password } = body;
+    const rememberMe = body.rememberMe === true;
     const normalizedEmail = String(email || "")
       .trim()
       .toLowerCase();

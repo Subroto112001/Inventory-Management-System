@@ -96,6 +96,25 @@ const orderSchema = new Schema(
       },
       default: "Pending",
     },
+    deliveredAt: { type: Date, default: null },
+    shippingAddress: {
+      label: { type: String, trim: true, maxlength: 30 },
+      fullName: { type: String, trim: true, maxlength: 100 },
+      phone: { type: String, trim: true, maxlength: 30 },
+      address: { type: String, trim: true, maxlength: 250 },
+      line2: { type: String, trim: true, maxlength: 150 },
+      area: { type: String, trim: true, maxlength: 80 },
+      city: { type: String, trim: true, maxlength: 80 },
+      state: { type: String, trim: true, maxlength: 80 },
+      postalCode: { type: String, trim: true, maxlength: 20 },
+      country: { type: String, trim: true, maxlength: 80 },
+    },
+    termsAcceptance: {
+      accepted: { type: Boolean },
+      acceptedAt: { type: Date },
+      version: { type: String, trim: true, maxlength: 30 },
+    },
+    idempotencyKey: { type: String, trim: true, maxlength: 100 },
 
     // --- Payment & Financials ---
     financials: {
@@ -164,6 +183,8 @@ const orderSchema = new Schema(
   },
   { timestamps: true },
 );
+
+orderSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
 
 // ✅ FIX: Synchronous hook without 'next' parameter
 orderSchema.pre("validate", function () {

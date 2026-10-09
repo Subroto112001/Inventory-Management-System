@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useCompare } from "@/Component/website/Cart/CompareContext";
+import { useCart } from "@/Component/website/Cart/CartContext";
 import {
   LuSearch,
   LuUser,
@@ -78,18 +80,29 @@ function EmptyCompare({ onBrowse }) {
 
 export default function ComparePage() {
   const [catalog, setCatalog] = useState([]);
-  const [compareIds, setCompareIds] = useState([]);
   const [toast, setToast] = useState("");
+  const { ids: compareIds, loaded: compareLoaded, add, remove, clear } = useCompare();
+  const { addItem: addToCart } = useCart();
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState("");
 
   useEffect(() => {
+    const controller = new AbortController();
     const loadProducts = async () => {
-      const response = await fetch("/api/product?public=1&limit=100", {
-        cache: "no-store",
-      });
-      const data = await response.json();
-      if (response.ok) {
+      try {
+        const firstResponse = await fetch("/api/product?public=1&limit=48&page=1", { cache: "no-store", signal: controller.signal });
+        const firstData = await firstResponse.json();
+        if (!firstResponse.ok) throw new Error(firstData.message || "Unable to load products for comparison");
+        const allProducts = [...(firstData.products || [])];
+        const totalPages = firstData.pagination?.totalPages || 1;
+        for (let page = 2; page <= totalPages; page += 1) {
+          const response = await fetch(`/api/product?public=1&limit=48&page=${page}`, { cache: "no-store", signal: controller.signal });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.message || "Unable to load products for comparison");
+          allProducts.push(...(data.products || []));
+        }
         setCatalog(
-          (data.products || []).map((product) => ({
+          allProducts.map((product) => ({
             id: product.id,
             name: product.productName,
             category: product.category || "",
@@ -106,10 +119,12 @@ export default function ComparePage() {
             inStock: product.inStock,
           })),
         );
-      }
+      } catch (error) {
+        if (error.name !== "AbortError") setCatalogError(error.message || "Unable to load products for comparison");
+      } finally { setCatalogLoading(false); }
     };
     const timer = setTimeout(loadProducts, 0);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); controller.abort(); };
   }, []);
 
   const products = useMemo(
@@ -128,23 +143,23 @@ export default function ComparePage() {
   };
 
   const removeProduct = (id) => {
-    setCompareIds((ids) => ids.filter((x) => x !== id));
+    remove(id);
     showToast("Removed from comparison");
   };
 
   const clearAll = () => {
-    setCompareIds([]);
+    clear();
     showToast("Comparison cleared");
   };
 
   const addProduct = (id) => {
-    if (compareIds.length >= 4) {
-      showToast("You can compare up to 4 products");
-      return;
-    }
-    setCompareIds((ids) => [...ids, id]);
-    showToast("Added to comparison");
+    const result = add(id);
+    showToast(result === "added" ? "Added to comparison" : result === "exists" ? "Already in comparison" : "You can compare up to 4 products");
   };
+
+  useEffect(() => {
+    if (compareLoaded && !catalogLoading) compareIds.filter((id) => !catalog.some((product) => product.id === id)).forEach(remove);
+  }, [compareLoaded, catalogLoading, catalog, compareIds, remove]);
 
   const colCount = products.length;
 
@@ -214,7 +229,7 @@ export default function ComparePage() {
         </section>
 
         {/* Empty state */}
-        {products.length === 0 ? (
+        {catalogLoading || !compareLoaded ? <p className="py-16 text-center text-sm text-[#8A8378]" role="status">Loading comparison...</p> : catalogError ? <p className="py-16 text-center text-sm text-red-700" role="alert">{catalogError}</p> : products.length === 0 ? (
           <EmptyCompare onBrowse={() => {}} />
         ) : (
           <>
@@ -346,6 +361,7 @@ export default function ComparePage() {
                       <button
                         type="button"
                         disabled={!p.inStock}
+                        onClick={() => addToCart(p)}
                         className="w-full flex items-center justify-center gap-2 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <LuShoppingCart size={14} />

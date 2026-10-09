@@ -25,13 +25,12 @@ const productSchema = new Schema(
     description: {
       type: String,
       trim: true,
-      maxlength: [2000, "Description cannot exceed 2000 characters"],
+      maxlength: [20000, "Description cannot exceed 20000 characters"],
     },
     specifications: {
-      type: [{
-        name: { type: String, trim: true, required: true, maxlength: 80 },
-        value: { type: String, trim: true, required: true, maxlength: 500 },
-      }],
+      // New products store sanitized rich text here; legacy products may still
+      // contain the original array of { name, value } records.
+      type: Schema.Types.Mixed,
       default: [],
     },
     unit: {
@@ -88,6 +87,28 @@ const productSchema = new Schema(
     image: {
       public_id: { type: String },
       url: String,
+    },
+    images: {
+      type: [{ public_id: String, url: { type: String, trim: true } }],
+      default: [],
+      validate: [(items) => items.length <= 4, "A product can have at most four images"],
+    },
+    shipping: {
+      charge: { type: Number, min: 0 },
+      deliveryEstimate: { type: String, trim: true, maxlength: 100 },
+      freeShipping: { type: Boolean, default: false },
+      instructions: { type: String, trim: true, maxlength: 500 },
+    },
+    paymentOption: {
+      type: String,
+      enum: ["COD_ONLY", "ONLINE_ONLY", "BOTH"],
+      default: "COD_ONLY",
+    },
+    returnPolicy: {
+      eligible: { type: Boolean },
+      windowDays: { type: Number, min: 0, max: 365 },
+      conditions: { type: String, trim: true, maxlength: 500 },
+      instructions: { type: String, trim: true, maxlength: 1000 },
     },
 
     // --- Relations & Status ---

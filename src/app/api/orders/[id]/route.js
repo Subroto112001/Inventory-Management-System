@@ -70,7 +70,7 @@ export async function PATCH(request, { params }) {
     await session.withTransaction(async () => {
       const updated = await Order.findOneAndUpdate(
         { _id: id, status: access.order.status },
-        { $set: { status: requestedStatus } },
+        { $set: { status: requestedStatus, ...(requestedStatus === "Delivered" ? { deliveredAt: new Date() } : {}) } },
         { new: true, session },
       );
       if (!updated) throw new Error("Order changed before it could be updated");

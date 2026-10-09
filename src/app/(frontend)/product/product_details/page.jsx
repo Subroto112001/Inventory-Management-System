@@ -1,10 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import RichTextContent from "@/Component/RichTextContent";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useWishlist } from "@/Component/website/Cart/WishlistContext";
+import { useCompare } from "@/Component/website/Cart/CompareContext";
 import {
   LuHeart,
   LuShoppingCart,
@@ -42,8 +44,10 @@ function Stars({ rating }) {
 }
 
 function ProductCard({ product }) {
-  const { has, toggle } = useWishlist();
+  const { has, toggle, pendingIds } = useWishlist();
   const { addItem } = useCart();
+  const { add: addToCompare, has: isCompared } = useCompare();
+  const [wishlistNotice, setWishlistNotice] = useState("");
   const liked = has(product.id);
   const inStock = product.inStock ?? false;
 
@@ -60,13 +64,17 @@ function ProductCard({ product }) {
 
         <button
           type="button"
-          onClick={() => toggle(product).catch(() => {})}
+          disabled={pendingIds.includes(String(product.id))}
+          onClick={async () => { try { await toggle(product); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
           className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center ${
             liked ? "text-[#B65C38]" : "text-[#211F1D]"
           }`}
         >
           <LuHeart size={16} className={liked ? "fill-[#B65C38]" : ""} />
         </button>
+        {wishlistNotice && <span role="status" className="absolute top-24 right-3 rounded bg-white px-2 py-1 text-[10px] shadow">{wishlistNotice}</span>}
+
+        <button type="button" onClick={() => addToCompare(product.id)} aria-label="Add to compare" title="Add to compare" className={`absolute top-14 right-3 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center ${isCompared(product.id) ? "text-[#1F3A2E]" : "text-[#211F1D]"}`}><LuGitCompare size={16}/></button>
 
         <button
           type="button"
@@ -110,7 +118,8 @@ function ProductDetailsContent() {
   const searchParams = useSearchParams();
   const productId = searchParams.get("id");
   const { addItem } = useCart();
-  const { has, toggle } = useWishlist();
+  const { has, toggle, pendingIds } = useWishlist();
+  const { add: addToCompare, has: isCompared } = useCompare();
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
@@ -118,6 +127,8 @@ function ProductDetailsContent() {
   const [reviewsData, setReviewsData] = useState({ reviews: [], count: 0, averageRating: 0, canReview: false, hasReviewed: false });
   const [reviewDraft, setReviewDraft] = useState({ rating: 5, title: "", body: "" });
   const [reviewState, setReviewState] = useState({ loading: false, message: "", error: "" });
+  const [wishlistNotice, setWishlistNotice] = useState("");
+  const [compareNotice, setCompareNotice] = useState("");
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(Boolean(productId));
   const [error, setError] = useState(productId ? "" : "Product not found");
@@ -135,6 +146,7 @@ function ProductDetailsContent() {
         return data.product;
       })
       .then(async (loadedProduct) => {
+        setActiveImage(0);
         setProduct({
           ...loadedProduct,
           images: loadedProduct.images?.length
@@ -254,7 +266,7 @@ function ProductDetailsContent() {
             <div>
               <div className="relative bg-[#F0EBE1] rounded-md overflow-hidden aspect-square">
                 <img
-                  src={PRODUCT.images[activeImage]}
+                  src={PRODUCT.images[activeImage] || "/placeholder-product.svg"}
                   alt={PRODUCT.name}
                   className="w-full h-full object-cover"
                 />
@@ -265,19 +277,19 @@ function ProductDetailsContent() {
                   </span>
                 )}
 
-                <button
+                {PRODUCT.images.length > 1 && <button
                   onClick={previousImage}
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center hover:bg-white"
                 >
                   <LuChevronLeft size={18} />
-                </button>
+                </button>}
 
-                <button
+                {PRODUCT.images.length > 1 && <button
                   onClick={nextImage}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center hover:bg-white"
                 >
                   <LuChevronRight size={18} />
-                </button>
+                </button>}
               </div>
 
               {/* THUMBNAILS */}
@@ -399,7 +411,8 @@ function ProductDetailsContent() {
 
                 <button
                   type="button"
-                  onClick={() => toggle(PRODUCT).catch(() => {})}
+                  disabled={pendingIds.includes(String(PRODUCT.id))}
+                  onClick={async () => { try { const updated = await toggle(PRODUCT); if (updated) setWishlistNotice(liked ? "Removed from wishlist" : "Added to wishlist"); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
                   className={`w-12 h-12 border rounded-md flex items-center justify-center transition-colors ${
                     liked
                       ? "border-[#B65C38] text-[#B65C38]"
@@ -420,7 +433,9 @@ function ProductDetailsContent() {
                 >
                   <LuShare2 size={18} />
                 </button>
+                <button type="button" onClick={() => setCompareNotice(addToCompare(PRODUCT.id))} aria-label={isCompared(PRODUCT.id) ? "Already in comparison" : "Add to compare"} title={isCompared(PRODUCT.id) ? "Already in comparison" : "Add to compare"} className={`w-12 h-12 border rounded-md flex items-center justify-center ${isCompared(PRODUCT.id) ? "border-[#1F3A2E] text-[#1F3A2E]" : "border-[#E4DED2]"}`}><LuGitCompare size={18}/></button>
               </div>
+              {(wishlistNotice || compareNotice) && <p className="mb-3 text-xs text-[#1F3A2E]" role="status">{wishlistNotice || (compareNotice === "added" ? "Added to comparison" : compareNotice === "exists" ? "Already in comparison" : compareNotice === "loading" ? "Loading comparison list…" : "Comparison list is full")}</p>}
 
               {/* BUY NOW */}
               <button
@@ -436,10 +451,10 @@ function ProductDetailsContent() {
                   <LuTruck size={21} className="text-[#1F3A2E] shrink-0" />
 
                   <div>
-                    <p className="text-sm font-medium">Free shipping</p>
+                    <p className="text-sm font-medium">{PRODUCT.shipping?.freeShipping || PRODUCT.shipping?.charge === 0 ? "Free shipping" : PRODUCT.shipping?.charge != null ? `Shipping $${Number(PRODUCT.shipping.charge).toFixed(2)}` : "Shipping calculated at checkout"}</p>
 
                     <p className="text-xs text-[#8A8378] mt-1">
-                      Free delivery on orders over $75.
+                      {PRODUCT.shipping?.deliveryEstimate || PRODUCT.shipping?.instructions || "The shipping charge will be confirmed at checkout."}
                     </p>
                   </div>
                 </div>
@@ -448,10 +463,10 @@ function ProductDetailsContent() {
                   <LuRotateCcw size={21} className="text-[#1F3A2E] shrink-0" />
 
                   <div>
-                    <p className="text-sm font-medium">30-day returns</p>
+                    <p className="text-sm font-medium">{PRODUCT.returnPolicy?.eligible === true ? (PRODUCT.returnPolicy.windowDays ? `${PRODUCT.returnPolicy.windowDays}-day returns` : "Returns accepted") : PRODUCT.returnPolicy?.eligible === false ? "Returns not accepted" : "Return policy not specified"}</p>
 
                     <p className="text-xs text-[#8A8378] mt-1">
-                      Return your purchase within 30 days.
+                      {PRODUCT.returnPolicy?.conditions || PRODUCT.returnPolicy?.instructions || (PRODUCT.returnPolicy?.eligible === true ? "See the return conditions for this product." : "Check with customer support for return eligibility.")}
                     </p>
                   </div>
                 </div>
@@ -479,8 +494,8 @@ function ProductDetailsContent() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 sm:mt-20"><div className="border-y border-[#E4DED2]"><div className="flex overflow-x-auto" role="tablist" aria-label="Product information">
           {[ ["description", "Description"], ["details", "Product details"], ["reviews", "Reviews (" + reviewsData.count + ")"] ].map(([tab,label]) => <button key={tab} role="tab" aria-selected={activeTab===tab} onClick={()=>setActiveTab(tab)} className={`px-5 sm:px-8 py-4 text-sm whitespace-nowrap border-b-2 ${activeTab===tab ? "border-[#1F3A2E] text-[#1F3A2E]" : "border-transparent text-[#8A8378]"}`}>{label}</button>)}
         </div><div className="py-8 max-w-4xl" role="tabpanel">
-        {activeTab==="description" && <div><h2 className="font-serif text-2xl mb-4">Description</h2><p className="text-sm leading-7 text-[#5B564C] whitespace-pre-line">{PRODUCT.description?.trim() || "No description available"}</p></div>}
-        {activeTab==="details" && <div><h2 className="font-serif text-2xl mb-5">Product details</h2>{PRODUCT.specifications?.length ? <div className="grid sm:grid-cols-2 border-t border-l border-[#E4DED2]">{PRODUCT.specifications.map(({name,value})=><div key={name} className="grid grid-cols-2 border-r border-b border-[#E4DED2]"><div className="bg-[#EFE9DC] px-4 py-3 text-sm">{name}</div><div className="px-4 py-3 text-sm text-[#5B564C]">{value}</div></div>)}</div>:<p className="text-sm text-[#8A8378]">No specifications available</p>}</div>}
+        {activeTab==="description" && <div><h2 className="font-serif text-2xl mb-4">Description</h2>{PRODUCT.description?.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.description} className="text-sm leading-7 text-[#5B564C]" /> : <p className="text-sm text-[#8A8378]">No description available</p>}</div>}
+        {activeTab==="details" && <div><h2 className="font-serif text-2xl mb-5">Product details</h2>{typeof PRODUCT.specifications === "string" && PRODUCT.specifications.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.specifications} className="text-sm leading-7 text-[#5B564C]" /> : Array.isArray(PRODUCT.specifications) && PRODUCT.specifications.length ? <div className="grid sm:grid-cols-2 border-t border-l border-[#E4DED2]">{PRODUCT.specifications.map(({name,value}, index)=><div key={`${name}-${index}`} className="grid grid-cols-2 border-r border-b border-[#E4DED2]"><div className="bg-[#EFE9DC] px-4 py-3 text-sm">{name}</div><div className="px-4 py-3 text-sm text-[#5B564C]">{value}</div></div>)}</div>:<p className="text-sm text-[#8A8378]">No specifications available</p>}</div>}
         {activeTab==="reviews" && <div>{reviewsData.canReview && !reviewsData.hasReviewed && <form onSubmit={submitReview} className="mb-8 rounded-sm border border-[#E4DED2] bg-white p-5"><h2 className="font-serif text-2xl mb-4">Write a review</h2><label className="block text-sm mb-2" htmlFor="review-rating">Your rating</label><select id="review-rating" value={reviewDraft.rating} onChange={(event)=>setReviewDraft((draft)=>({...draft,rating:Number(event.target.value)}))} className="mb-4 border border-[#E4DED2] rounded-sm p-2"><option value={5}>5 stars</option><option value={4}>4 stars</option><option value={3}>3 stars</option><option value={2}>2 stars</option><option value={1}>1 star</option></select><label className="block text-sm mb-1" htmlFor="review-title">Title (optional)</label><input id="review-title" maxLength={120} value={reviewDraft.title} onChange={(event)=>setReviewDraft((draft)=>({...draft,title:event.target.value}))} className="w-full border border-[#E4DED2] rounded-sm p-3 mb-4"/><label className="block text-sm mb-1" htmlFor="review-body">Your review</label><textarea id="review-body" required maxLength={2000} rows={5} value={reviewDraft.body} onChange={(event)=>setReviewDraft((draft)=>({...draft,body:event.target.value}))} className="w-full border border-[#E4DED2] rounded-sm p-3"/><button disabled={reviewState.loading} className="mt-4 rounded-sm bg-[#1F3A2E] px-5 py-3 text-sm text-white disabled:opacity-60">{reviewState.loading?"Submitting...":"Submit review"}</button>{reviewState.error&&<p role="alert" className="mt-3 text-sm text-red-700">{reviewState.error}</p>}{reviewState.message&&<p role="status" className="mt-3 text-sm text-[#1F3A2E]">{reviewState.message}</p>}</form>}{reviewsData.hasReviewed && <p className="mb-6 text-sm text-[#1F3A2E]">Thanks, you have reviewed this product.</p>}{!reviewsData.canReview && !reviewsData.hasReviewed && <p className="mb-6 text-sm text-[#8A8378]">A delivered purchase is required before you can review this product.</p>}{reviewsData.count>0 && <div className="mb-8"><p className="font-serif text-5xl">{reviewsData.averageRating}</p><div className="mt-2"><Stars rating={reviewsData.averageRating}/></div><p className="text-xs text-[#8A8378] mt-2">Based on {reviewsData.count} reviews</p></div>}{reviewsData.reviews.length ? reviewsData.reviews.map(review=><article key={review.id} className="border-t border-[#E4DED2] py-5"><div className="flex items-center gap-3"><Stars rating={review.rating}/><span className="text-sm">{review.customerName}</span></div>{review.title && <h3 className="font-medium mt-2">{review.title}</h3>}<p className="text-sm leading-7 text-[#5B564C] mt-1">{review.body}</p></article>):<p className="text-sm text-[#8A8378]">No reviews yet</p>}</div>}
         </div></div></section>
 
@@ -506,9 +521,9 @@ function ProductDetailsContent() {
               <LuTruck size={22} className="text-[#1F3A2E]" />
 
               <div>
-                <p className="text-sm font-medium">Free shipping</p>
+                <p className="text-sm font-medium">{PRODUCT.shipping?.freeShipping || PRODUCT.shipping?.charge === 0 ? "Free shipping" : PRODUCT.shipping?.charge != null ? `Shipping $${Number(PRODUCT.shipping.charge).toFixed(2)}` : "Shipping calculated at checkout"}</p>
 
-                <p className="text-xs text-[#8A8378]">On orders over $75</p>
+                <p className="text-xs text-[#8A8378]">{PRODUCT.shipping?.deliveryEstimate || PRODUCT.shipping?.instructions || "The shipping charge will be confirmed at checkout."}</p>
               </div>
             </div>
 
@@ -516,9 +531,9 @@ function ProductDetailsContent() {
               <LuRotateCcw size={22} className="text-[#1F3A2E]" />
 
               <div>
-                <p className="text-sm font-medium">30-day returns</p>
+                <p className="text-sm font-medium">{PRODUCT.returnPolicy?.eligible === true ? (PRODUCT.returnPolicy.windowDays ? `${PRODUCT.returnPolicy.windowDays}-day returns` : "Returns accepted") : PRODUCT.returnPolicy?.eligible === false ? "Returns not accepted" : "Return policy not specified"}</p>
 
-                <p className="text-xs text-[#8A8378]">Simple and hassle-free</p>
+                <p className="text-xs text-[#8A8378]">{PRODUCT.returnPolicy?.conditions || PRODUCT.returnPolicy?.instructions || "Check with customer support for return details."}</p>
               </div>
             </div>
 

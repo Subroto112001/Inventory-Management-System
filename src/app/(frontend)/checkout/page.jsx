@@ -59,6 +59,7 @@ export default function CheckoutPage() {
   const [quoteLoading, setQuoteLoading] = useState(true);
   const [quoteError, setQuoteError] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [authStatus, setAuthStatus] = useState("checking");
 
 
   const [coupon, setCoupon] = useState("");
@@ -82,21 +83,24 @@ export default function CheckoutPage() {
   useEffect(() => {
     let active = true;
     fetch("/api/account", { cache: "no-store" }).then(async (response) => {
-      if (response.status === 401) { router.replace("/login?next=%2Fcheckout"); return null; }
+      if (response.status === 401 || response.status === 403) { if (active) setAuthStatus("redirecting"); router.replace(`/login?next=${encodeURIComponent("/checkout")}`); return null; }
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Unable to load your account");
+      if (data.user?.role !== "Customer") { if (active) setAuthStatus("redirecting"); router.replace("/"); return null; }
       return data.user;
     }).then((user) => {
       if (!active || !user) return;
+      setAuthStatus("authenticated");
       const savedAddresses = Array.isArray(user.addresses) ? user.addresses : [];
       setAddresses(savedAddresses);
       setAddressId(savedAddresses.find((address) => address.isDefault)?._id || savedAddresses[0]?._id || "");
       setForm((current) => ({ ...current, email: user.email || "", firstName: user.firstName || "", lastName: user.lastName || "", phone: user.phoneNumber || "" }));
-    }).catch((error) => { if (active) setOrderState((state) => ({ ...state, error: error.message })); });
+    }).catch((error) => { if (active) { setAuthStatus("error"); setOrderState((state) => ({ ...state, error: error.message })); } });
     return () => { active = false; };
   }, [router]);
 
   useEffect(() => {
+    if (authStatus !== "authenticated") return undefined;
     let active = true;
     Promise.resolve().then(() => { if (active) { setQuoteLoading(true); setQuoteError(""); } });
     const requestItems = JSON.parse(cartKey);
@@ -107,12 +111,13 @@ export default function CheckoutPage() {
       .catch((error) => { if (active) { setQuote(null); setQuoteError(error.message); } })
       .finally(() => { if (active) setQuoteLoading(false); });
     return () => { active = false; };
-  }, [cartKey, appliedCoupon]);
+  }, [cartKey, appliedCoupon, authStatus]);
 
   const applyCoupon = () => setAppliedCoupon(coupon.trim().toUpperCase());
 
   const placeOrder = async (e) => {
     e.preventDefault();
+    if (authStatus !== "authenticated") return;
     if (!checkoutProducts.length) {
       setOrderState({
         loading: false,
@@ -150,6 +155,12 @@ export default function CheckoutPage() {
       setOrderState({ loading: false, error: error.message, success: "" });
     }
   };
+
+  if (authStatus !== "authenticated") {
+    return <div className="min-h-[55vh] bg-[#F7F3EC] px-6 py-20 text-center" role={authStatus === "error" ? "alert" : "status"}>
+      {authStatus === "checking" ? <p className="text-sm text-[#8A8378]">Checking your account…</p> : authStatus === "redirecting" ? <p className="text-sm text-[#8A8378]">Sign in is required for checkout. Redirecting to login…</p> : <p className="text-sm text-red-700">{orderState.error || "Unable to verify your account."}</p>}
+    </div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F3EC] font-sans">

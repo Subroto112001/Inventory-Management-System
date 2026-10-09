@@ -672,7 +672,7 @@ const Page = () => {
                 Manage your product brands and monitor brand activity.
               </p>
             </div>
-            <TransparentButton value="Add Brand" path="/brands/createbrand" />
+            <TransparentButton value="Add Brand" path="/dash/brands/createbrand" />
           </header>
 
           {/* ERROR */}

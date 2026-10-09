@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import RichTextEditor from "@/Component/RichTextEditor";
 import {
   MdArrowBack,
   MdInventory2,
@@ -22,16 +23,25 @@ const INITIAL_FORM = {
   productName: "",
   productSKU: "",
   category: "",
-  brandName: "",
+  brand: "",
   unit: "",
   description: "",
-  specifications: "[]",
+  specifications: "",
   price: "",
   wholesalePrice: "",
   discount: "",
   quantity: "",
   initialStock: "",
   lowStockAlert: "",
+  shippingCharge: "",
+  deliveryEstimate: "",
+  freeShipping: false,
+  shippingInstructions: "",
+  paymentOption: "COD_ONLY",
+  returnEligible: "",
+  returnWindowDays: "",
+  returnConditions: "",
+  returnInstructions: "",
 };
 
 const inputClass =
@@ -47,12 +57,17 @@ export default function AddProductPage() {
 
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [brands, setBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [brandsError, setBrandsError] = useState("");
 
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [images, setImages] = useState([]);
+  const imagesRef = useRef([]);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [summaryErrors, setSummaryErrors] = useState([]);
 
   // =====================================================
   // LOAD CATEGORIES
@@ -83,15 +98,37 @@ export default function AddProductPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+    const loadBrands = async () => {
+      try {
+        const allBrands = [];
+        let page = 1;
+        let totalPages = 1;
+        do {
+          const res = await fetch(`/api/brand?page=${page}&limit=100`);
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.message || "Failed to load brands.");
+          allBrands.push(...(data.brands || []));
+          totalPages = data.pagination?.totalPages || 1;
+          page += 1;
+        } while (page <= totalPages);
+        if (!ignore) setBrands(allBrands);
+      } catch (error) {
+        if (!ignore) setBrandsError(error?.message || "Failed to load brands.");
+      } finally {
+        if (!ignore) setBrandsLoading(false);
+      }
+    };
+    loadBrands();
+    return () => { ignore = true; };
+  }, []);
+
   // =====================================================
   // CLEANUP IMAGE PREVIEW
   // =====================================================
 
-  useEffect(() => {
-    return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
-    };
-  }, [imagePreview]);
+  useEffect(() => () => imagesRef.current.forEach(({ preview }) => URL.revokeObjectURL(preview)), []);
 
   // =====================================================
   // HANDLE INPUT
@@ -102,8 +139,21 @@ export default function AddProductPage() {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    clearMessage();
+  };
+
+  const handleRichTextChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      for (const field of Object.keys(next)) {
+        if (field === name || field.startsWith(`${name}.`)) delete next[field];
+      }
+      return next;
+    });
+    setSummaryErrors((prev) => prev.filter((error) => error.field !== name && !error.field.startsWith(`${name}.`)));
     clearMessage();
   };
 
@@ -118,38 +168,40 @@ export default function AddProductPage() {
   // =====================================================
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setMessage({ type: "error", text: "Please select a valid image file." });
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    if (images.length + selected.length > 4) {
+      setMessage({ type: "error", text: "A product can have at most four images." });
+      e.target.value = "";
       return;
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: "error", text: "Image size must be less than 5MB." });
+    const invalid = selected.find((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024);
+    if (invalid) {
+      setMessage({ type: "error", text: invalid.size > 5 * 1024 * 1024 ? `${invalid.name} is larger than 5 MB.` : `${invalid.name} is not a valid image.` });
+      e.target.value = "";
       return;
     }
-
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-
-    setImage(file);
-    setImagePreview(URL.createObjectURL(file));
+    const next = [...images, ...selected.map((file) => ({ file, preview: URL.createObjectURL(file) }))];
+    imagesRef.current = next;
+    setImages(next);
+    e.target.value = "";
     clearMessage();
   };
 
-  const handleRemoveImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-
-    setImage(null);
-    setImagePreview("");
-
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const handleRemoveImage = (index) => {
+    const removed = images[index];
+    if (removed) URL.revokeObjectURL(removed.preview);
+    const next = images.filter((_, imageIndex) => imageIndex !== index);
+    imagesRef.current = next;
+    setImages(next);
   };
 
   const resetForm = () => {
     setFormData(INITIAL_FORM);
-    handleRemoveImage();
+    images.forEach(({ preview }) => URL.revokeObjectURL(preview));
+    imagesRef.current = [];
+    setImages([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // =====================================================
@@ -162,6 +214,8 @@ export default function AddProductPage() {
       return "Product name cannot exceed 150 characters.";
     if (!formData.productSKU.trim()) return "Product SKU is required.";
     if (!formData.category) return "Please select a category.";
+    if (!formData.brand || !brands.some((brand) => brand._id === formData.brand))
+      return "Please select a valid brand.";
 
     if (formData.price === "" || Number(formData.price) < 0)
       return "Enter a valid price.";
@@ -190,9 +244,6 @@ export default function AddProductPage() {
       }
     }
 
-    if (formData.description.trim().length > 2000)
-      return "Description cannot exceed 2000 characters.";
-
     return "";
   };
 
@@ -203,6 +254,8 @@ export default function AddProductPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
+    setSummaryErrors([]);
+    setFieldErrors({});
 
     const error = validate();
     if (error) {
@@ -218,7 +271,7 @@ export default function AddProductPage() {
       data.append("productName", formData.productName.trim());
       data.append("productSKU", formData.productSKU.trim().toUpperCase());
       data.append("category", formData.category);
-      data.append("brandName", formData.brandName.trim());
+      data.append("brand", formData.brand);
       data.append("unit", formData.unit.trim());
       data.append("description", formData.description.trim());
       data.append("specifications", formData.specifications);
@@ -229,17 +282,37 @@ export default function AddProductPage() {
       data.append("initialStock", formData.initialStock || "0");
       data.append("lowStockAlert", formData.lowStockAlert || "0");
 
-      if (image) data.append("image", image);
+      images.forEach(({ file }) => data.append("images", file));
+      for (const key of ["shippingCharge", "deliveryEstimate", "shippingInstructions", "returnWindowDays", "returnConditions", "returnInstructions"]) data.append(key, formData[key] || "");
+      data.append("freeShipping", String(formData.freeShipping));
+      data.append("paymentOption", formData.paymentOption);
+      data.append("returnEligible", formData.returnEligible);
 
       const response = await fetch(PRODUCT_API, {
         method: "POST",
         body: data,
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
 
       if (!response.ok) {
-        throw new Error(result?.message || "Failed to add product.");
+        if (Array.isArray(result?.errors) && result.errors.length) {
+          const errors = result.errors
+            .filter((item) => typeof item?.field === "string" && typeof item?.message === "string")
+            .map((item) => ({ field: item.field, message: item.message }));
+          if (errors.length) {
+            setFieldErrors(Object.fromEntries(errors.map((item) => [item.field, item.message])));
+            setSummaryErrors(errors);
+            return;
+          }
+        }
+        setMessage({ type: "error", text: result?.message || "Unable to add product. Please review the form and try again." });
+        return;
       }
 
       setMessage({
@@ -248,15 +321,19 @@ export default function AddProductPage() {
       });
 
       resetForm();
+      setFieldErrors({});
+      setSummaryErrors([]);
 
       setTimeout(() => {
         router.push(PRODUCT_LIST_PAGE);
       }, 1000);
     } catch (err) {
-      console.error("Add Product Error:", err);
+      console.error("Add Product request failed:", err);
       setMessage({
         type: "error",
-        text: err?.message || "Something went wrong. Please try again.",
+        text: err instanceof TypeError
+          ? "Unable to reach the server. Check your connection and try again."
+          : "Something went wrong while adding the product. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -289,6 +366,29 @@ export default function AddProductPage() {
         </div>
 
         {/* MESSAGE */}
+        {summaryErrors.length > 0 && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-700" role="alert" aria-live="polite">
+            <h2 className="text-sm font-semibold">Unable to add product</h2>
+            <p className="mt-1 text-sm">Please correct the following issues:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
+              {summaryErrors.map((error, index) => {
+                const row = error.field.match(/^specifications\.(\d+)/)?.[1];
+                const label = row !== undefined
+                  ? `Specification ${Number(row) + 1}: `
+                  : error.field === "specifications"
+                    ? "Specifications: "
+                    : `${error.field}: `;
+                return (
+                  <li key={`${error.field}-${index}`}>
+                    <button type="button" className="text-left underline decoration-red-300 underline-offset-2 hover:decoration-red-700" onClick={() => { const target = document.getElementById(error.field); target?.scrollIntoView({ behavior: "smooth", block: "center" }); target?.querySelector('[contenteditable="true"]')?.focus(); target?.focus(); }}>
+                      {label}{error.message}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
         {message.text && (
           <div
             className={`mb-6 flex items-start gap-3 rounded-xl border px-4 py-3 ${
@@ -414,19 +514,22 @@ export default function AddProductPage() {
 
                     {/* BRAND */}
                     <div>
-                      <label htmlFor="brandName" className={labelClass}>
-                        Brand
+                      <label htmlFor="brand" className={labelClass}>
+                        Brand<span className="ml-1 text-red-500">*</span>
                       </label>
-                      <input
-                        id="brandName"
-                        name="brandName"
-                        type="text"
-                        value={formData.brandName}
+                      <select
+                        id="brand"
+                        name="brand"
+                        value={formData.brand}
                         onChange={handleChange}
-                        placeholder="e.g. Logitech"
-                        disabled={loading}
+                        disabled={loading || brandsLoading || brands.length === 0 || Boolean(brandsError)}
                         className={inputClass}
-                      />
+                      >
+                        <option value="">{brandsLoading ? "Loading brands..." : brandsError ? "Brands unavailable" : "Select a brand"}</option>
+                        {brands.map((brand) => <option key={brand._id} value={brand._id}>{brand.brandName}</option>)}
+                      </select>
+                      {brandsError && <p className="mt-1.5 text-xs text-red-500">{brandsError}</p>}
+                      {!brandsLoading && !brandsError && brands.length === 0 && <p className="mt-1.5 text-xs text-red-500">No brands found. Create a brand before adding a product.</p>}
                     </div>
 
                     {/* UNIT */}
@@ -448,34 +551,21 @@ export default function AddProductPage() {
                   </div>
 
                   {/* DESCRIPTION */}
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label
-                        htmlFor="description"
-                        className="block text-sm font-semibold text-gray-700"
-                      >
-                        Description
-                      </label>
-                      <span className="text-xs text-gray-400">
-                        {formData.description.length}/2000
-                      </span>
-                    </div>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      placeholder="Write a short description about this product..."
-                      maxLength={2000}
-                      rows={5}
-                      disabled={loading}
-                      className={`${inputClass} resize-none`}
-                    />
+                  <div id="description">
+                    <label className="mb-2 block text-sm font-semibold text-gray-700" htmlFor="description-editor">Description</label>
+                    <RichTextEditor id="description-editor" value={formData.description} onChange={(value) => handleRichTextChange("description", value)} placeholder="Write a short description about this product..." disabled={loading} ariaLabel="Product description" />
+                    {fieldErrors.description && <p className="mt-1.5 text-xs text-red-600">{fieldErrors.description}</p>}
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6"><label htmlFor="specifications" className={labelClass}>Product specifications (JSON name/value pairs)</label><textarea id="specifications" name="specifications" value={formData.specifications} onChange={handleChange} rows={5} disabled={loading} className={inputClass} /></div>
+              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6">
+                <label className={labelClass} htmlFor="specifications-editor">Product Specifications</label>
+                <div id="specifications">
+                  <RichTextEditor id="specifications-editor" value={formData.specifications} onChange={(value) => handleRichTextChange("specifications", value)} placeholder="Add product specifications such as model, connectivity, and battery life..." disabled={loading} ariaLabel="Product specifications" />
+                </div>
+                {Object.entries(fieldErrors).filter(([field]) => field === "specifications" || field.startsWith("specifications.")).map(([field, error]) => <p key={field} className="mt-1.5 text-xs text-red-600">{error}</p>)}
+              </div>
 
               {/* PRICING */}
               <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -543,6 +633,25 @@ export default function AddProductPage() {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-100 px-6 py-5"><h2 className="font-semibold text-gray-900">Shipping & Returns</h2><p className="mt-1 text-xs text-gray-500">Optional product-specific delivery and return information.</p></div>
+                <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
+                  <label className="text-sm font-semibold text-gray-700">Shipping charge<input name="shippingCharge" type="number" min="0" step="0.01" value={formData.shippingCharge} onChange={handleChange} className={`${inputClass} mt-2`} placeholder="Use standard checkout rate" disabled={loading || formData.freeShipping}/></label>
+                  <label className="text-sm font-semibold text-gray-700">Estimated delivery<input name="deliveryEstimate" maxLength={100} value={formData.deliveryEstimate} onChange={handleChange} className={`${inputClass} mt-2`} placeholder="e.g. 3–5 business days" disabled={loading}/></label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700"><input name="freeShipping" type="checkbox" checked={formData.freeShipping} onChange={(event) => { handleChange(event); if (event.target.checked) setFormData((current) => ({ ...current, shippingCharge: "" })); }} disabled={loading}/>Free shipping for this product</label>
+                  <label className="text-sm font-semibold text-gray-700">Shipping instructions<textarea name="shippingInstructions" maxLength={500} value={formData.shippingInstructions} onChange={handleChange} className={`${inputClass} mt-2`} rows={2} disabled={loading}/></label>
+                  <label className="text-sm font-semibold text-gray-700">Return eligibility<select name="returnEligible" value={formData.returnEligible} onChange={handleChange} className={`${inputClass} mt-2`} disabled={loading}><option value="">Not specified</option><option value="true">Eligible</option><option value="false">Not eligible</option></select></label>
+                  <label className="text-sm font-semibold text-gray-700">Return window (days)<input name="returnWindowDays" type="number" min="0" max="365" step="1" value={formData.returnWindowDays} onChange={handleChange} className={`${inputClass} mt-2`} disabled={loading}/></label>
+                  <label className="text-sm font-semibold text-gray-700">Return conditions<textarea name="returnConditions" maxLength={500} value={formData.returnConditions} onChange={handleChange} className={`${inputClass} mt-2`} rows={2} disabled={loading}/></label>
+                  <label className="text-sm font-semibold text-gray-700">Return instructions<textarea name="returnInstructions" maxLength={1000} value={formData.returnInstructions} onChange={handleChange} className={`${inputClass} mt-2`} rows={2} disabled={loading}/></label>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-100 px-6 py-5"><h2 className="font-semibold text-gray-900">Payment Methods</h2><p className="mt-1 text-xs text-gray-500">Online payments are not enabled yet. Customers can only place COD orders where COD is allowed.</p></div>
+                <div className="p-6"><label className="text-sm font-semibold text-gray-700">Allowed payment method<select name="paymentOption" value={formData.paymentOption} onChange={handleChange} disabled={loading} className={`${inputClass} mt-2`}><option value="COD_ONLY">Cash on Delivery only</option><option value="ONLINE_ONLY">Online Payment only (unavailable)</option><option value="BOTH">Cash on Delivery and Online Payment</option></select></label></div>
               </div>
 
               {/* INVENTORY */}
@@ -614,49 +723,15 @@ export default function AddProductPage() {
             {/* RIGHT COLUMN: IMAGE */}
             <div className="h-fit rounded-2xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-100 px-6 py-5">
-                <h2 className="font-semibold text-gray-900">Product Image</h2>
+                <h2 className="font-semibold text-gray-900">Product Images</h2>
                 <p className="mt-1 text-xs text-gray-500">
-                  Upload an image for this product.
+                  Add up to four images. The first image is the primary image.
                 </p>
               </div>
 
               <div className="p-6">
-                {imagePreview ? (
-                  <div>
-                    <div className="relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
-                      <img
-                        src={imagePreview}
-                        alt="Product preview"
-                        className="h-full w-full object-cover"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        disabled={loading}
-                        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-gray-600 shadow-md transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed"
-                      >
-                        <MdClose size={20} />
-                      </button>
-                    </div>
-
-                    <div className="mt-4 flex items-center gap-2">
-                      <MdImage size={20} className="shrink-0 text-[var(--theme-primary)]" />
-                      <span className="truncate text-sm font-medium text-gray-700">
-                        {image?.name}
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleRemoveImage}
-                      disabled={loading}
-                      className="mt-3 text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-50"
-                    >
-                      Remove image
-                    </button>
-                  </div>
-                ) : (
+                {images.length ? <div className="grid grid-cols-2 gap-3 mb-4">{images.map((item, index) => <div key={`${item.file.name}-${index}`} className="relative overflow-hidden rounded-xl border border-gray-200"><img src={item.preview} alt={`Product image ${index + 1} preview`} className="aspect-square w-full object-cover"/><span className="absolute bottom-2 left-2 rounded bg-white/95 px-2 py-1 text-xs font-semibold text-gray-800">{index === 0 ? "Primary image" : `Image ${index + 1}`}</span><button type="button" onClick={() => handleRemoveImage(index)} disabled={loading} aria-label={`Remove image ${index + 1}`} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-600 shadow"><MdClose size={18}/></button></div>)}</div> : null}
+                {images.length < 4 && (
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
@@ -667,10 +742,10 @@ export default function AddProductPage() {
                       <MdCloudUpload size={30} />
                     </div>
                     <p className="text-sm font-semibold text-gray-700">
-                      Upload product image
+                      {images.length ? "Add more images" : "Upload product images"}
                     </p>
                     <p className="mt-1 text-xs text-gray-400">
-                      Click to select an image
+                      Select one or more images ({images.length}/4)
                     </p>
                     <p className="mt-3 text-xs text-gray-400">
                       JPG, JPEG, PNG or WEBP
@@ -685,6 +760,7 @@ export default function AddProductPage() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                  multiple
                   onChange={handleImageChange}
                   className="hidden"
                 />
@@ -705,7 +781,7 @@ export default function AddProductPage() {
 
             <button
               type="submit"
-              disabled={loading || categoriesLoading}
+              disabled={loading || categoriesLoading || brandsLoading || brands.length === 0 || Boolean(brandsError)}
               className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--theme-primary)] px-7 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--theme-primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--theme-primary)]/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (

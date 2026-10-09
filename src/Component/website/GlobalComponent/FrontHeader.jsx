@@ -16,27 +16,64 @@ import {
 } from "react-icons/lu";
 import { useCart } from "../Cart/CartContext";
 import { useWishlist } from "../Cart/WishlistContext";
+import { useCompare } from "../Cart/CompareContext";
 
-const NAV_LINKS = [
+const BASE_NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Shop All", href: "/product" },
-  { label: "Lighting", href: "/product?category=Lighting" },
-  {
-    label: "Kitchen & Dining",
-    href: "/product?category=Kitchen%20%26%20Dining",
-  },
-  { label: "Furniture", href: "/product?category=Furniture" },
-  {
-    label: "Textiles & Bedding",
-    href: "/product?category=Textiles%20%26%20Bedding",
-  },
-  {
-    label: "Outdoor & Garden",
-    href: "/product?category=Outdoor%20%26%20Garden",
-  },
-  { label: "Decor & Accents", href: "/product?category=Decor%20%26%20Accents" },
   { label: "Sale", href: "/product?sort=priceDesc" },
 ];
+
+function CustomerAccountMenu({ account, onLogout }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const closeOnOutsidePointer = (event) => {
+      if (!menuRef.current?.contains(event.target)) setOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer, true);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer, true);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label="Customer account"
+      >
+        <LuUser size={20} />
+        <span className="hidden text-[10px] sm:inline">{account.firstName || "Account"}</span>
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-[#E4DED2] bg-white p-2 shadow-lg"
+          role="menu"
+        >
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=dashboard">My account</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=orders">My orders</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=wishlist">Wishlist</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=addresses">Addresses</Link>
+          <button onClick={() => { setOpen(false); onLogout(); }} role="menuitem" className="block w-full rounded px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50">Log out</button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function FrontHeader({ settings }) {
   const pathname = usePathname();
@@ -48,15 +85,56 @@ export default function FrontHeader({ settings }) {
   const scrollerRef = useRef(null);
   const { openCart, itemCount } = useCart();
   const { count: wishlistCount, refresh: refreshWishlist } = useWishlist();
+  const { count: compareCount } = useCompare();
   const [account, setAccount] = useState(null);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const navigationLinks = [
+    BASE_NAV_LINKS[0],
+    BASE_NAV_LINKS[1],
+    ...categories.map((category) => ({
+      label: category.categoryName,
+      href: `/product?category=${encodeURIComponent(category.id)}`,
+    })),
+    BASE_NAV_LINKS[2],
+  ];
+
+  useEffect(() => {
+    let active = true;
+    const loadCategories = async () => {
+      try {
+        const response = await fetch("/api/category?list=1&public=1", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Unable to load categories");
+        const seen = new Set();
+        const uniqueCategories = (data.categories || []).filter((category) => {
+          const normalizedName = String(category.categoryName || "").trim().toLowerCase();
+          if (!category.id || !normalizedName || seen.has(normalizedName)) return false;
+          seen.add(normalizedName);
+          return true;
+        });
+        if (active) setCategories(uniqueCategories);
+        if (active) setCategoriesError(false);
+      } catch {
+        if (active) setCategories([]);
+        if (active) setCategoriesError(true);
+      } finally {
+        if (active) setCategoriesLoading(false);
+      }
+    };
+    loadCategories();
+    const onFocus = () => { if (active) loadCategories(); };
+    window.addEventListener("focus", onFocus);
+    return () => { active = false; window.removeEventListener("focus", onFocus); };
+  }, []);
   useEffect(() => { let active = true; fetch("/api/account", { cache: "no-store" }).then(async (r) => r.ok ? (await r.json()).user : null).then((u) => { if (active) setAccount(u); }).catch(() => {}); return () => { active = false; }; }, [pathname]);
   useEffect(() => {
     const timer = setTimeout(() => refreshWishlist(), 0);
     return () => clearTimeout(timer);
   }, [pathname, refreshWishlist]);
 
-  const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); setAccount(null); setAccountMenuOpen(false); await refreshWishlist(); router.push("/"); router.refresh(); };
+  const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); setAccount(null); await refreshWishlist(); router.push("/"); router.refresh(); };
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -240,7 +318,7 @@ export default function FrontHeader({ settings }) {
         </div>
 
         <div className="ml-auto flex items-center gap-4 text-[var(--store-text)] sm:gap-6">
-          {account ? <div className="relative"><button type="button" onClick={() => setAccountMenuOpen(v => !v)} className="flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-expanded={accountMenuOpen} aria-label="Customer account"><LuUser size={20}/><span className="hidden text-[10px] sm:inline">{account.firstName || "Account"}</span></button>{accountMenuOpen && <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-[#E4DED2] bg-white p-2 shadow-lg"><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=dashboard">My account</Link><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=orders">My orders</Link><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=wishlist">Wishlist</Link><Link className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=addresses">Addresses</Link><button onClick={logout} className="block w-full rounded px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50">Log out</button></div>}</div> : <Link href="/login" className="flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-label="Log in"><LuUser size={20}/><span className="hidden text-[10px] sm:inline">Account</span></Link>}
+          {account ? <CustomerAccountMenu key={`${pathname}:${mobileOpen}`} account={account} onLogout={logout} /> : <Link href="/login" className="flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-label="Log in"><LuUser size={20}/><span className="hidden text-[10px] sm:inline">Account</span></Link>}
           <Link href={account ? "/order?view=wishlist" : "/login?next=%2Forder%3Fview%3Dwishlist"} className="relative flex flex-col items-center gap-0.5 transition-colors hover:text-[var(--store-accent)]" aria-label="Wishlist"><LuHeart size={20}/><span className="hidden text-[10px] sm:inline">Wishlist</span>{wishlistCount > 0 && <span className="absolute -right-1.5 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--store-accent)] text-[9px] text-white">{wishlistCount}</span>}</Link>
 <Link
             href="/compare"
@@ -249,6 +327,7 @@ export default function FrontHeader({ settings }) {
           >
             <LuGitCompare size={20} />
             <span className="hidden text-[10px] sm:inline">Compare</span>
+            {compareCount > 0 && <span className="absolute -right-1.5 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--store-accent)] text-[9px] text-white">{compareCount}</span>}
           </Link>
 
           <button
@@ -340,7 +419,7 @@ export default function FrontHeader({ settings }) {
             ref={scrollerRef}
             className="flex items-center gap-7 overflow-x-auto scroll-smooth py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
-            {NAV_LINKS.map((link) => (
+            {navigationLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
@@ -353,6 +432,7 @@ export default function FrontHeader({ settings }) {
                 {link.label}
               </Link>
             ))}
+            {!categoriesLoading && categories.length === 0 && <span className="whitespace-nowrap text-xs text-[var(--theme-muted)]" role="status">{categoriesError ? "Categories unavailable" : "No categories available"}</span>}
           </div>
 
           <button
@@ -388,7 +468,7 @@ export default function FrontHeader({ settings }) {
             </div>
 
             <div className="flex flex-col gap-1">
-              {NAV_LINKS.map((link) => (
+              {navigationLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
@@ -402,6 +482,7 @@ export default function FrontHeader({ settings }) {
                   {link.label}
                 </Link>
               ))}
+              {!categoriesLoading && categories.length === 0 && <p className="py-2 text-xs text-[#8A8378]" role="status">{categoriesError ? "Categories unavailable" : "No categories available"}</p>}
             </div>
           </div>
         </div>

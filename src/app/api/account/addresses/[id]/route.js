@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { getAuthenticatedUser, isCustomer } from "@/lib/auth";
 import connectMongoDB from "@/lib/databse/mongodb";
+import { validateAddress } from "@/lib/accountValidation";
 
 function denied(user) {
   if (!user)
@@ -33,36 +34,25 @@ export async function PATCH(request, { params }) {
       { success: false, message: "Address not found" },
       { status: 404 },
     );
-  const body = await request.json();
-  const allowedFields = [
-    "label",
-    "fullName",
-    "phone",
-    "address",
-    "city",
-    "area",
-    "postalCode",
-    "country",
-  ];
-  Object.assign(
-    address,
-    Object.fromEntries(
-      allowedFields
-        .filter((field) => body[field] !== undefined)
-        .map((field) => [field, body[field]]),
-    ),
-  );
-  if (body.isDefault === true)
-    user.addresses.forEach((item) => {
-      item.isDefault = item._id.toString() === id;
-    });
-  await connectMongoDB();
-  await user.save();
-  return NextResponse.json({
-    success: true,
-    address,
-    addresses: user.addresses,
-  });
+  try {
+    const body = await request.json();
+    const allowedFields = ["label", "fullName", "phone", "address", "line2", "area", "city", "state", "postalCode", "country", "isDefault"];
+    if (Object.keys(body).some((field) => !allowedFields.includes(field))) {
+      return NextResponse.json({ success: false, message: "Unsupported address field" }, { status: 400 });
+    }
+    const parsed = validateAddress({ ...address.toObject(), ...body });
+    if (parsed.error) return NextResponse.json({ success: false, message: parsed.error }, { status: 400 });
+    if (body.isDefault !== undefined && typeof body.isDefault !== "boolean") {
+      return NextResponse.json({ success: false, message: "Default address setting is invalid" }, { status: 400 });
+    }
+    Object.assign(address, parsed.address);
+    if (body.isDefault === true) user.addresses.forEach((item) => { item.isDefault = item._id.toString() === id; });
+    await connectMongoDB();
+    await user.save();
+    return NextResponse.json({ success: true, address, addresses: user.addresses });
+  } catch {
+    return NextResponse.json({ success: false, message: "Unable to update address" }, { status: 500 });
+  }
 }
 
 export async function DELETE(request, { params }) {

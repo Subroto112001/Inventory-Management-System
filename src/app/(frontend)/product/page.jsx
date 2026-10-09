@@ -1,13 +1,12 @@
 "use client";
 
 import {
-  CATEGORIES,
   ProductCard,
   SORT_OPTIONS,
 } from "@/frontEndDataProvider/ProductpageDataProvider";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   LuSearch,
   LuUser,
@@ -24,7 +23,7 @@ import {
   LuCheck,
 } from "react-icons/lu";
 
-export default function ProductPage() {
+function ProductPageContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const initialCategory = searchParams.get("category") || "All Products";
@@ -36,6 +35,8 @@ export default function ProductPage() {
   const [view, setView] = useState("grid");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoriesUnavailable, setCategoriesUnavailable] = useState(false);
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,20 @@ export default function ProductPage() {
   const [inStockOnly, setInStockOnly] = useState(false);
 
   const productsPerPage = 12;
+  const categoryOptions = [{ id: "All Products", categoryName: "All Products" }, ...categories];
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/category?list=1&public=1", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Unable to load categories");
+        return data.categories || [];
+      })
+      .then((data) => { if (active) setCategories(data); })
+      .catch(() => { if (active) setCategoriesUnavailable(true); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -97,8 +112,8 @@ export default function ProductPage() {
 
   const visibleProducts = products;
 
-  const changeCategory = (category) => {
-    setActiveCategory(category);
+  const changeCategory = (categoryId) => {
+    setActiveCategory(categoryId);
     setPage(1);
   };
 
@@ -161,21 +176,22 @@ export default function ProductPage() {
               </div>
 
               <div className="border-t border-[#E4DED2]">
-                {CATEGORIES.map((category) => (
+                {categoryOptions.map((category) => (
                   <button
-                    key={category}
-                    onClick={() => changeCategory(category)}
+                    key={category.id}
+                    onClick={() => changeCategory(category.id)}
                     className={`w-full text-left py-3 border-b border-[#E4DED2] text-sm transition-colors flex justify-between ${
-                      activeCategory === category
+                      activeCategory === category.id
                         ? "text-[#1F3A2E] font-medium"
                         : "text-[#5B564C] hover:text-[#B65C38]"
                     }`}
                   >
-                    <span>{category}</span>
+                    <span>{category.categoryName}</span>
 
-                    {activeCategory === category && <LuCheck size={15} />}
+                    {activeCategory === category.id && <LuCheck size={15} />}
                   </button>
                 ))}
+                {categoriesUnavailable && <p className="py-3 text-xs text-[#8A8378]" role="status">Categories are unavailable.</p>}
               </div>
 
               {/* PRICE FILTER */}
@@ -374,24 +390,25 @@ export default function ProductPage() {
             <h3 className="font-medium mb-3">Categories</h3>
 
             <div className="border-t border-[#E4DED2]">
-              {CATEGORIES.map((category) => (
+              {categoryOptions.map((category) => (
                 <button
-                  key={category}
+                  key={category.id}
                   onClick={() => {
-                    changeCategory(category);
+                    changeCategory(category.id);
                     setMobileFilterOpen(false);
                   }}
                   className={`w-full text-left py-3 border-b border-[#E4DED2] text-sm flex justify-between ${
-                    activeCategory === category
+                    activeCategory === category.id
                       ? "text-[#1F3A2E] font-medium"
                       : "text-[#5B564C]"
                   }`}
                 >
-                  {category}
+                  {category.categoryName}
 
-                  {activeCategory === category && <LuCheck size={15} />}
+                  {activeCategory === category.id && <LuCheck size={15} />}
                 </button>
               ))}
+              {categoriesUnavailable && <p className="py-3 text-xs text-[#8A8378]" role="status">Categories are unavailable.</p>}
             </div>
 
             <div className="mt-8">
@@ -406,5 +423,13 @@ export default function ProductPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ProductPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#F7F3EC]" />}>
+      <ProductPageContent />
+    </Suspense>
   );
 }

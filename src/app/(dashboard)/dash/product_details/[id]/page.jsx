@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import RichTextContent from "@/Component/RichTextContent";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -324,14 +325,26 @@ const ProductDetailsPage = () => {
         <div className="border border-gray-200 rounded-md p-5">
           <h2 className="text-[20px] font-bold mb-4">Description</h2>
 
-          {product.description ? (
-            <p className="text-gray-600 leading-7 whitespace-pre-line">
-              {product.description}
-            </p>
+          {product.description?.replace(/<[^>]*>/g, "").trim() ? (
+            <RichTextContent html={product.description} className="text-gray-600 leading-7" />
           ) : (
             <p className="text-gray-400">No description available.</p>
           )}
         </div>
+
+        {typeof product.specifications === "string" && product.specifications.replace(/<[^>]*>/g, "").trim() ? (
+          <div className="mt-5 border border-gray-200 rounded-md p-5">
+            <h2 className="text-[20px] font-bold mb-4">Product Specifications</h2>
+            <RichTextContent html={product.specifications} className="text-gray-600 leading-7" />
+          </div>
+        ) : Array.isArray(product.specifications) && product.specifications.length > 0 ? (
+          <div className="mt-5 border border-gray-200 rounded-md p-5">
+            <h2 className="text-[20px] font-bold mb-4">Product Specifications</h2>
+            <dl className="divide-y divide-gray-200">
+              {product.specifications.map(({ name, value }, index) => <div key={`${name}-${index}`} className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-2"><dt className="font-medium text-gray-800">{name}</dt><dd className="text-gray-600">{value}</dd></div>)}
+            </dl>
+          </div>
+        ) : null}
 
         {/* ================= STATUS ================= */}
         <div className="border border-gray-200 rounded-md p-5">

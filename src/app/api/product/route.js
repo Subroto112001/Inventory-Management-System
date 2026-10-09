@@ -9,11 +9,15 @@ import { requirePermission } from "@/lib/authorization";
 import { PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 import { increaseStock } from "@/lib/inventory/stockService";
+import { parseProductSpecifications, sanitizeRichText, sanitizeSpecifications } from "@/lib/richText";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 function serializePublicProduct(product) {
+  const imageRecords = Array.isArray(product.images) && product.images.length
+    ? product.images
+    : (product.image?.url ? [product.image] : []);
   return {
     id: product._id.toString(),
     name: product.productName,
@@ -21,13 +25,16 @@ function serializePublicProduct(product) {
     sku: product.productSKU,
     price: product.price,
     discount: product.discount || 0,
-    image: product.image?.url || "",
-    images: product.image?.url ? [product.image.url] : [],
-    description: product.description || "",
-    specifications: product.specifications || [],
+    image: product.image?.url || imageRecords[0]?.url || "",
+    images: imageRecords.map((image) => image.url).filter(Boolean),
+    description: sanitizeRichText(product.description || ""),
+    specifications: sanitizeSpecifications(product.specifications || []),
     unit: product.unit || "",
     brand: product.brand?.brandName || product.brandName || "",
     category: product.category?.categoryName || "",
+    shipping: product.shipping || null,
+    paymentOption: product.paymentOption || "COD_ONLY",
+    returnPolicy: product.returnPolicy || null,
     availability: product.currentStock > 0 ? "In Stock" : "Out of Stock",
     inStock: product.currentStock > 0,
     isActive: product.isActive,
@@ -139,6 +146,7 @@ export async function GET(request) {
     await connectMongoDB();
 
     const products = await Product.find()
+      .populate("brand", "brandName")
       .populate("category", "categoryName categoryCode")
       .sort({ createdAt: -1 })
       .lean();
@@ -183,9 +191,9 @@ export async function GET(request) {
       id: p._id.toString(),
       productName: p.productName,
       productSKU: p.productSKU,
-      brandName: p.brandName || "",
-      description: p.description || "",
-      specifications: p.specifications || [],
+      brandName: p.brand?.brandName || p.brandName || "",
+      description: sanitizeRichText(p.description || ""),
+      specifications: sanitizeSpecifications(p.specifications || []),
       unit: p.unit || "",
       price: p.price,
       wholesalePrice: p.wholesalePrice ?? "",
@@ -207,7 +215,11 @@ export async function GET(request) {
         : null,
 
       // Cloudinary image
-      image: p.image?.url || "",
+      image: p.image?.url || p.images?.[0]?.url || "",
+      images: (p.images?.length ? p.images : (p.image?.url ? [p.image] : [])).map((image) => image.url).filter(Boolean),
+      shipping: p.shipping || null,
+      paymentOption: p.paymentOption || "COD_ONLY",
+      returnPolicy: p.returnPolicy || null,
 
       isActive: p.isActive,
 
@@ -271,13 +283,24 @@ export async function POST(request) {
     const productName = formData.get("productName");
     const productSKU = formData.get("productSKU");
     const price = formData.get("price");
-    const brandName = formData.get("brandName");
+    const brandId = formData.get("brand")?.toString().trim();
     const unit = formData.get("unit");
     const quantity = formData.get("quantity");
-    const description = formData.get("description");
-    let specifications = [];
-    try { specifications = JSON.parse(formData.get("specifications") || "[]"); } catch { return NextResponse.json({ message: "Invalid specifications" }, { status: 400 }); }
-    if (!Array.isArray(specifications) || specifications.length > 50 || specifications.some((item) => !item?.name?.trim() || !item?.value?.trim())) return NextResponse.json({ message: "Each specification needs a name and value" }, { status: 400 });
+    const description = sanitizeRichText(formData.get("description")?.toString() || "");
+    const specificationResult = parseProductSpecifications(formData.get("specifications")?.toString() ?? "");
+    if (description.length > 20000) {
+      return NextResponse.json(
+        { success: false, message: "Product validation failed", errors: [{ field: "description", message: "Description cannot exceed 20000 characters." }] },
+        { status: 400 },
+      );
+    }
+    if (specificationResult.errors.length) {
+      return NextResponse.json(
+        { success: false, message: "Product validation failed", errors: specificationResult.errors },
+        { status: 400 },
+      );
+    }
+    const specifications = specificationResult.value;
     const wholesalePrice = formData.get("wholesalePrice");
     const discount = formData.get("discount");
     const initialStock = formData.get("initialStock");
@@ -287,7 +310,17 @@ export async function POST(request) {
     const categoryId = formData.get("category")?.toString().trim();
 
     // Image from FormData
-    const image = formData.get("image");
+    const legacyImage = formData.get("image");
+    const imageFiles = [...formData.getAll("images"), ...(legacyImage && typeof legacyImage !== "string" && legacyImage.size > 0 ? [legacyImage] : [])];
+    const shippingCharge = formData.get("shippingCharge");
+    const deliveryEstimate = formData.get("deliveryEstimate")?.toString().trim() || "";
+    const freeShipping = formData.get("freeShipping") === "true";
+    const shippingInstructions = formData.get("shippingInstructions")?.toString().trim() || "";
+    const paymentOption = formData.get("paymentOption")?.toString() || "COD_ONLY";
+    const returnEligibleRaw = formData.get("returnEligible");
+    const returnWindowRaw = formData.get("returnWindowDays");
+    const returnConditions = formData.get("returnConditions")?.toString().trim() || "";
+    const returnInstructions = formData.get("returnInstructions")?.toString().trim() || "";
 
     // -------------------------
     // Required fields
@@ -308,6 +341,20 @@ export async function POST(request) {
       );
     }
 
+    if (!brandId) {
+      return NextResponse.json(
+        { message: "Please select a brand for this product!" },
+        { status: 400 },
+      );
+    }
+
+    if (!mongoose.isValidObjectId(brandId)) {
+      return NextResponse.json(
+        { message: "Invalid brand selected!" },
+        { status: 400 },
+      );
+    }
+
     if (!mongoose.isValidObjectId(categoryId)) {
       return NextResponse.json(
         { message: "Invalid category selected!" },
@@ -318,15 +365,27 @@ export async function POST(request) {
     // -------------------------
     // Validate image
     // -------------------------
-    if (image && typeof image !== "string") {
-      if (!image.type?.startsWith("image/")) {
+    if (imageFiles.length > 4) {
+      return NextResponse.json({ message: "A product can have at most four images." }, { status: 400 });
+    }
+    for (const image of imageFiles) {
+      if (!image.type?.startsWith("image/") || image.size > 5 * 1024 * 1024) {
         return NextResponse.json(
-          {
-            message: "Only image files are allowed!",
-          },
+          { message: image.size > 5 * 1024 * 1024 ? "Each image must be 5 MB or smaller." : "Only image files are allowed!" },
           { status: 400 },
         );
       }
+    }
+    const parsedShipping = shippingCharge === null || shippingCharge === "" ? undefined : Number(shippingCharge);
+    const parsedReturnWindow = returnWindowRaw === null || returnWindowRaw === "" ? undefined : Number(returnWindowRaw);
+    if ((parsedShipping !== undefined && (!Number.isFinite(parsedShipping) || parsedShipping < 0)) || (parsedReturnWindow !== undefined && (!Number.isInteger(parsedReturnWindow) || parsedReturnWindow < 0 || parsedReturnWindow > 365))) {
+      return NextResponse.json({ message: "Shipping charge or return window is invalid." }, { status: 400 });
+    }
+    if (returnEligibleRaw !== null && !["true", "false", ""].includes(returnEligibleRaw.toString())) {
+      return NextResponse.json({ message: "Return eligibility is invalid." }, { status: 400 });
+    }
+    if (!["COD_ONLY", "ONLINE_ONLY", "BOTH"].includes(paymentOption)) {
+      return NextResponse.json({ message: "Select a valid product payment option." }, { status: 400 });
     }
 
     await connectMongoDB();
@@ -352,6 +411,14 @@ export async function POST(request) {
       );
     }
 
+    const brandDoc = await Brand.findById(brandId).select("_id brandName").lean();
+    if (!brandDoc) {
+      return NextResponse.json(
+        { message: "Selected brand was not found!" },
+        { status: 404 },
+      );
+    }
+
     // -------------------------
     // Check duplicate SKU
     // -------------------------
@@ -373,11 +440,8 @@ export async function POST(request) {
     // -------------------------
     // Upload image
     // -------------------------
-    let uploadedImage = null;
-
-    if (image && typeof image !== "string" && image.size > 0) {
-      uploadedImage = await uploadImageToCloudinary(image, "products");
-    }
+    const uploadedImages = await Promise.all(imageFiles.map((file) => uploadImageToCloudinary(file, "products")));
+    const imageRecords = uploadedImages.map((image) => ({ public_id: image.publicId, url: image.url }));
 
     // -------------------------
     // Stock
@@ -406,14 +470,14 @@ export async function POST(request) {
 
       price: Number(price),
 
-      brandName: brandName || "",
+      brand: brandDoc._id,
 
       unit: unit || "",
 
       quantity: Number(quantity) || 0,
 
-      description: description || "",
-      specifications: specifications.map(({name,value}) => ({name:name.trim(),value:value.trim()})),
+      description,
+      specifications,
 
       wholesalePrice:
         wholesalePrice === "" || wholesalePrice === null
@@ -432,12 +496,21 @@ export async function POST(request) {
       category: categoryDoc._id,
 
       // Cloudinary
-      image: uploadedImage
-        ? {
-            public_id: uploadedImage.publicId,
-            url: uploadedImage.url,
-          }
-        : undefined,
+      image: imageRecords[0],
+      images: imageRecords,
+      shipping: {
+        charge: freeShipping ? 0 : parsedShipping,
+        deliveryEstimate,
+        freeShipping,
+        instructions: shippingInstructions,
+      },
+      paymentOption,
+      returnPolicy: {
+        eligible: returnEligibleRaw === null || returnEligibleRaw === "" ? undefined : returnEligibleRaw === "true",
+        windowDays: parsedReturnWindow,
+        conditions: returnConditions,
+        instructions: returnInstructions,
+      },
       createdBy: access.user._id,
     });
 
@@ -490,12 +563,11 @@ export async function POST(request) {
           price: newProduct.price,
           categoryId: categoryDoc._id.toString(),
 
-          image: newProduct.image
-            ? {
-                public_id: newProduct.image.public_id,
-                url: newProduct.image.url,
-              }
-            : null,
+          image: newProduct.image || null,
+          images: imageRecords.map((image) => image.url),
+          shipping: newProduct.shipping,
+          paymentOption: newProduct.paymentOption || "COD_ONLY",
+          returnPolicy: newProduct.returnPolicy,
         },
       },
       { status: 201 },
@@ -505,11 +577,14 @@ export async function POST(request) {
 
     // Mongoose validation error
     if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((val) => val.message);
-
       return NextResponse.json(
         {
-          message: messages.join(", "),
+          success: false,
+          message: "Product validation failed",
+          errors: Object.entries(error.errors).map(([field, validationError]) => ({
+            field,
+            message: validationError.message,
+          })),
         },
         { status: 400 },
       );

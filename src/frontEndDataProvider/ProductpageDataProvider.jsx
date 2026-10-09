@@ -2,7 +2,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useWishlist } from "@/Component/website/Cart/WishlistContext";
-import { LuHeart, LuShoppingCart, LuStar } from "react-icons/lu";
+import { LuHeart, LuShoppingCart, LuStar, LuGitCompare } from "react-icons/lu";
+import { useCompare } from "@/Component/website/Cart/CompareContext";
 
 export const CATEGORIES = [
   "All Products",
@@ -44,8 +45,11 @@ function Stars({ rating = 0 }) {
 }
 
 export function ProductCard({ product }) {
-  const { has, toggle } = useWishlist();
+  const { has, toggle, pendingIds } = useWishlist();
   const { addItem } = useCart();
+  const { add: addToCompare, has: isCompared } = useCompare();
+  const [compareNotice, setCompareNotice] = useState("");
+  const [wishlistNotice, setWishlistNotice] = useState("");
   const liked = has(product.id);
   const inStock = product.inStock ?? false;
 
@@ -62,14 +66,27 @@ export function ProductCard({ product }) {
 
         <button
           type="button"
+          disabled={pendingIds.includes(String(product.id))}
           aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
-          onClick={() => toggle(product).catch(() => {})}
+          onClick={async () => { try { const updated = await toggle(product); if (updated) setWishlistNotice(liked ? "Removed from wishlist" : "Added to wishlist"); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
           className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 ${
             liked ? "text-[#B65C38]" : "text-[#211F1D]"
           }`}
         >
           <LuHeart size={16} className={liked ? "fill-[#B65C38]" : ""} />
         </button>
+        {wishlistNotice && <span role="status" className="absolute left-3 top-3 rounded bg-white px-2 py-1 text-[10px] text-[#211F1D] shadow">{wishlistNotice}</span>}
+
+        <button
+          type="button"
+          aria-label={isCompared(product.id) ? "Already in comparison" : "Add to compare"}
+          title={isCompared(product.id) ? "Already in comparison" : "Add to compare"}
+          onClick={() => setCompareNotice(addToCompare(product.id))}
+          className={`absolute right-3 top-14 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 ${isCompared(product.id) ? "text-[#1F3A2E]" : "text-[#211F1D]"}`}
+        >
+          <LuGitCompare size={16} />
+        </button>
+        {compareNotice && <span role="status" className="absolute right-3 top-24 rounded bg-white px-2 py-1 text-[10px] text-[#211F1D] shadow">{compareNotice === "added" ? "Added to compare" : compareNotice === "exists" ? "Already compared" : compareNotice === "loading" ? "Loading comparisons…" : "Compare list is full"}</span>}
 
         <button
           type="button"

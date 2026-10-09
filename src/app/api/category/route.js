@@ -13,14 +13,12 @@ export const revalidate = 0;
 // =====================================================
 export async function GET(request) {
   try {
-    // -------------------------
-    // Authentication
-    // -------------------------
-    const access = await requirePermission(
-      request,
-      PERMISSIONS.CATEGORIES_READ,
-    );
-    if (!access.ok) return access.response;
+    const { searchParams } = new URL(request.url);
+    const publicList = searchParams.get("list") === "1" && searchParams.get("public") === "1";
+    if (!publicList) {
+      const access = await requirePermission(request, PERMISSIONS.CATEGORIES_READ);
+      if (!access.ok) return access.response;
+    }
 
     // -------------------------
     // Connect Database
@@ -31,11 +29,10 @@ export async function GET(request) {
     // Lightweight list for dropdowns (e.g. Add Product form)
     // GET /api/category?list=1
     // -------------------------
-    const { searchParams } = new URL(request.url);
     if (searchParams.get("list") === "1") {
       const list = await Category.find({ isActive: true })
         .select("categoryName categoryCode")
-        .sort({ categoryName: 1 })
+        .sort({ categoryName: 1, _id: 1 })
         .lean();
 
       return NextResponse.json(

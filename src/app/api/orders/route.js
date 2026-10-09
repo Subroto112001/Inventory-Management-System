@@ -114,6 +114,8 @@ export async function POST(request) {
 
     const orderItems = [];
     let calculatedSubtotal = 0;
+    let configuredDeliveryCharge = 0;
+    let standardShippingSubtotal = 0;
 
     for (const item of cart) {
       const rawProductId = item.id || item._id;
@@ -142,6 +144,14 @@ export async function POST(request) {
       const productId = new mongoose.Types.ObjectId(rawProductId);
       const purchasePrice = Math.max(0, Number(product.price) * (1 - Number(product.discount || 0) / 100));
       calculatedSubtotal += purchasePrice * quantity;
+      const productShipping = product.shipping || {};
+      if (productShipping.freeShipping) {
+        // This line has no shipping charge.
+      } else if (productShipping.charge !== undefined && productShipping.charge !== null) {
+        configuredDeliveryCharge += Number(productShipping.charge) * quantity;
+      } else {
+        standardShippingSubtotal += purchasePrice * quantity;
+      }
 
       orderItems.push({
         product: productId,
@@ -218,8 +228,9 @@ export async function POST(request) {
     const numAmountReceived = isCustomer(authenticatedUser)
       ? 0
       : Number(amountReceived) || 0;
-    const calculatedDelivery =
-      orderType === "Home Delivery" && calculatedSubtotal < 75 ? 12 : 0;
+    const calculatedDelivery = orderType === "Home Delivery"
+      ? configuredDeliveryCharge + (standardShippingSubtotal > 0 && standardShippingSubtotal < 75 ? 12 : 0)
+      : 0;
     const numTax = calculatedTax.tax;
     const numDeliveryCharge = isCustomer(authenticatedUser)
       ? calculatedDelivery
