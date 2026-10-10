@@ -153,6 +153,7 @@ const CameraScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
 const defaultFormState = {
   productName: "",
   productSKU: "",
+  category: "",
   price: "",
   brandName: "",
   unit: "",
@@ -190,6 +191,10 @@ const EditProductPage = () => {
   const router = useRouter();
 
   const [formData, setFormData] = useState(defaultFormState);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState("");
+  const [currentCategory, setCurrentCategory] = useState(null);
   const [currentStock, setCurrentStock] = useState(0); // read-only, not part of PUT payload
   const [gallery, setGallery] = useState([]);
   const galleryRef = useRef([]);
@@ -201,6 +206,20 @@ const EditProductPage = () => {
 
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/category?list=1", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Unable to load categories.");
+        return data.categories || [];
+      })
+      .then((list) => { if (active) setCategories(list); })
+      .catch((error) => { if (active) setCategoriesError(error.message || "Unable to load categories."); })
+      .finally(() => { if (active) setCategoriesLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   // Fetch the existing product and pre-fill the form
   useEffect(() => {
@@ -219,10 +238,16 @@ const EditProductPage = () => {
         }
 
         const product = data.product;
+        setCurrentCategory(product.categoryId ? {
+          id: product.categoryId,
+          name: product.categoryName || "Current category",
+          isActive: product.categoryIsActive !== false,
+        } : null);
 
         setFormData({
           productName: product.productName ?? "",
           productSKU: product.productSKU ?? "",
+          category: product.categoryId ?? "",
           price: product.price ?? "",
           brandName: product.brandName ?? "",
           unit: product.unit ?? "",
@@ -326,6 +351,14 @@ const EditProductPage = () => {
     }
     if (!formData.price) {
       setPublishError("Price is required.");
+      return;
+    }
+    if (!formData.category) {
+      setPublishError("Please select a category.");
+      return;
+    }
+    if (categoriesLoading || categoriesError) {
+      setPublishError(categoriesError || "Categories are still loading. Please try again.");
       return;
     }
 
@@ -530,6 +563,30 @@ const EditProductPage = () => {
               </div>
             );
           })}
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="category" className="text-gray-700 font-medium text-sm">Category</label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              disabled={submitting || loadingProduct || categoriesLoading}
+              className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all disabled:cursor-not-allowed disabled:bg-gray-100"
+              required
+            >
+              <option value="">{categoriesLoading ? "Loading categories..." : "Select a category"}</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.categoryName}</option>
+              ))}
+              {currentCategory && !categories.some((category) => category.id === currentCategory.id) && (
+                <option value={currentCategory.id} disabled={currentCategory.isActive === false}>
+                  {currentCategory.name}{currentCategory.isActive === false ? " (inactive; current category)" : " (unavailable)"}
+                </option>
+              )}
+            </select>
+            {categoriesError && <p className="text-xs text-red-600" role="alert">{categoriesError}</p>}
+          </div>
 
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
             <label htmlFor="specifications-editor" className="text-gray-700 font-medium text-sm">Product Specifications</label>

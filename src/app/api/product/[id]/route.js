@@ -63,7 +63,7 @@ export async function GET(request, { params }) {
       ...(publicRead ? { isActive: true } : {}),
     })
       .populate("brand", "brandName logo")
-      .populate("category", "categoryName")
+      .populate("category", "categoryName isActive")
       .lean();
 
     if (!product) {
@@ -106,6 +106,9 @@ export async function GET(request, { params }) {
           id: product._id.toString(),
           productName: product.productName,
           productSKU: product.productSKU,
+          categoryId: product.category?._id?.toString() || "",
+          categoryName: product.category?.categoryName || "",
+          categoryIsActive: product.category?.isActive !== false,
           brandName: product.brandName || "",
           description: sanitizeRichText(product.description || ""),
           specifications: sanitizeSpecifications(product.specifications || []),
@@ -179,6 +182,7 @@ export async function PUT(request, { params }) {
     const {
       productName,
       productSKU,
+      category,
       price,
       brandName,
       unit,
@@ -231,6 +235,24 @@ export async function PUT(request, { params }) {
       );
     }
 
+    let selectedCategory = null;
+    if (category !== undefined) {
+      const categoryId = String(category).trim();
+      if (!mongoose.isValidObjectId(categoryId)) {
+        return NextResponse.json(
+          { message: "Please select a valid category." },
+          { status: 400 },
+        );
+      }
+      selectedCategory = await Category.findById(categoryId).select("_id isActive categoryName");
+      if (!selectedCategory || (selectedCategory.isActive === false && categoryId !== existingProduct.category?.toString())) {
+        return NextResponse.json(
+          { message: "The selected category is unavailable. Choose an active category." },
+          { status: 400 },
+        );
+      }
+    }
+
     const previousImages = existingProduct.images?.length
       ? existingProduct.images.map((image) => ({ public_id: image.public_id || "", url: image.url }))
       : (existingProduct.image?.url ? [{ public_id: existingProduct.image.public_id || "", url: existingProduct.image.url }] : []);
@@ -265,6 +287,7 @@ export async function PUT(request, { params }) {
 
     existingProduct.productName = productName;
     existingProduct.productSKU = normalizedSKU;
+    if (selectedCategory) existingProduct.category = selectedCategory._id;
     existingProduct.price = Number(price);
     existingProduct.brandName = brandName;
     existingProduct.unit = unit;
@@ -324,6 +347,8 @@ export async function PUT(request, { params }) {
           id: existingProduct._id.toString(),
           productName: existingProduct.productName,
           productSKU: existingProduct.productSKU,
+          categoryId: existingProduct.category.toString(),
+          categoryName: selectedCategory?.categoryName || "",
           price: existingProduct.price,
           image: existingProduct.image || null,
           images: (existingProduct.images || []).map((image) => image.url),

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import RichTextContent from "@/Component/RichTextContent";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { ProductCard as StoreProductCard } from "@/frontEndDataProvider/ProductpageDataProvider";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useWishlist } from "@/Component/website/Cart/WishlistContext";
 import { useCompare } from "@/Component/website/Cart/CompareContext";
@@ -39,77 +39,6 @@ function Stars({ rating }) {
           }
         />
       ))}
-    </div>
-  );
-}
-
-function ProductCard({ product }) {
-  const { has, toggle, pendingIds } = useWishlist();
-  const { addItem } = useCart();
-  const { add: addToCompare, has: isCompared } = useCompare();
-  const [wishlistNotice, setWishlistNotice] = useState("");
-  const liked = has(product.id);
-  const inStock = product.inStock ?? false;
-
-  return (
-    <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-lg hover:border-[#C9A659] transition-all duration-200">
-      <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
-        <Link href={`/product/product_details?id=${product.id}`}>
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
-          />
-        </Link>
-
-        <button
-          type="button"
-          disabled={pendingIds.includes(String(product.id))}
-          onClick={async () => { try { await toggle(product); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
-          className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center ${
-            liked ? "text-[#B65C38]" : "text-[#211F1D]"
-          }`}
-        >
-          <LuHeart size={16} className={liked ? "fill-[#B65C38]" : ""} />
-        </button>
-        {wishlistNotice && <span role="status" className="absolute top-24 right-3 rounded bg-white px-2 py-1 text-[10px] shadow">{wishlistNotice}</span>}
-
-        <button type="button" onClick={() => addToCompare(product.id)} aria-label="Add to compare" title="Add to compare" className={`absolute top-14 right-3 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center ${isCompared(product.id) ? "text-[#1F3A2E]" : "text-[#211F1D]"}`}><LuGitCompare size={16}/></button>
-
-        <button
-          type="button"
-          disabled={!inStock}
-          onClick={() => addItem(product)}
-          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <LuShoppingCart size={15} />
-          {inStock ? "Add to cart" : "Out of stock"}
-        </button>
-      </div>
-
-      <div className="p-4">
-        <p className="text-xs text-[#8A8378] mb-1">{product.category}</p>
-
-        <h3 className="text-sm text-[#211F1D] mb-2">{product.name}</h3>
-
-        <div className="flex items-center gap-1.5 mb-2">
-          <Stars rating={product.rating} />
-
-          <span className="text-xs text-[#8A8378]">({product.reviews})</span>
-        </div>
-
-        <div className="flex items-baseline gap-2">
-          <span className="text-[#1F3A2E] text-base font-medium">
-            ${product.price}
-          </span>
-
-          {product.oldPrice && (
-            <span className="text-xs text-[#8A8378] line-through">
-              ${product.oldPrice}
-            </span>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
@@ -509,7 +438,7 @@ function ProductDetailsContent() {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {relatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <StoreProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>

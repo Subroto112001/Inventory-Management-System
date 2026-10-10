@@ -1,20 +1,14 @@
 "use client";
 
 import { PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
+import { ProductCard } from "@/frontEndDataProvider/ProductpageDataProvider";
 import Link from "next/link";
-import { useCart } from "@/Component/website/Cart/CartContext";
-import { useWishlist } from "@/Component/website/Cart/WishlistContext";
-import { useCompare } from "@/Component/website/Cart/CompareContext";
 import { useEffect, useRef, useState } from "react";
 import {
   LuSearch,
   LuUser,
-  LuGitCompare,
-  LuShoppingCart,
-  LuHeart,
   LuChevronLeft,
   LuChevronRight,
-  LuStar,
   LuMenu,
   LuX,
   LuTruck,
@@ -35,112 +29,6 @@ import {
  * */
 
 const FEATURED_TABS = ["Kitchen & Dining", "Furniture", "Lighting", "Textiles"];
-
-/* =========================================================
-   STARS
-========================================================= */
-
-function Stars({ rating }) {
-  const full = Math.round(rating);
-
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <LuStar
-          key={i}
-          size={13}
-          className={
-            i < full
-              ? "fill-[#C9A659] text-[#C9A659]"
-              : "fill-[#E4DED2] text-[#E4DED2]"
-          }
-        />
-      ))}
-    </div>
-  );
-}
-
-/* =========================================================
-   PRODUCT CARD
-========================================================= */
-
-function ProductCard({ product }) {
-  const { image, category, name, price, oldPrice, rating, reviews, badge } =
-    product;
-  const { addItem } = useCart();
-  const { has, toggle } = useWishlist();
-  const { add: addToCompare, has: isCompared } = useCompare();
-  const [wishlistNotice, setWishlistNotice] = useState("");
-  const [compareNotice, setCompareNotice] = useState("");
-  const liked = has(product.id);
-  const inStock = product.inStock ?? false;
-
-  return (
-    <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200">
-      <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
-        <Link href={`/product/product_details?id=${product.id}`}>
-          <img
-            src={image || "/placeholder-product.svg"}
-            alt={name}
-            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
-          />
-        </Link>
-
-        {badge ? (
-          <span className="absolute top-3 left-3 bg-[#1F3A2E] text-[#F7F3EC] text-xs px-2 py-1 rounded-sm">
-            {badge}
-          </span>
-        ) : null}
-
-        <button
-          type="button"
-          aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
-          onClick={async () => { try { const updated = await toggle(product); if (updated) setWishlistNotice(liked ? "Removed from wishlist" : "Added to wishlist"); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#B65C38]"
-        >
-          <LuHeart size={15} className={liked ? "fill-[#B65C38] text-[#B65C38]" : ""} />
-        </button>
-        <button type="button" onClick={() => setCompareNotice(addToCompare(product.id))} aria-label={isCompared(product.id) ? "Already in comparison" : "Add to compare"} title="Add to compare" className="absolute top-14 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D]"><LuGitCompare size={15}/></button>
-        {wishlistNotice && <span role="status" className="absolute top-3 left-3 rounded bg-white px-2 py-1 text-[10px] shadow">{wishlistNotice}</span>}
-        {compareNotice && <span role="status" className="absolute top-24 right-3 rounded bg-white px-2 py-1 text-[10px] shadow">{compareNotice === "added" ? "Added to compare" : compareNotice === "exists" ? "Already compared" : compareNotice === "loading" ? "Loading comparisons…" : "Compare list is full"}</span>}
-
-        <button
-          type="button"
-          disabled={!inStock}
-          onClick={() => addItem(product)}
-          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <LuShoppingCart size={14} />
-          {inStock ? "Add to cart" : "Out of stock"}
-        </button>
-      </div>
-
-      <div className="p-4">
-        <p className="text-xs text-[#8A8378] mb-1">{category}</p>
-
-        <h3 className="text-sm text-[#211F1D] leading-snug mb-1.5 line-clamp-2">
-          {name}
-        </h3>
-
-        <div className="flex items-center gap-1.5 mb-2">
-          <Stars rating={rating} />
-
-          <span className="text-xs text-[#8A8378]">({reviews})</span>
-        </div>
-
-        <div className="flex items-baseline gap-2">
-          <span className="text-[#1F3A2E] text-base">${price}</span>
-
-          {oldPrice ? (
-            <span className="text-xs text-[#8A8378] line-through">
-              ${oldPrice}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function EcommerceHomePage() {
   const scrollerRef = useRef(null);

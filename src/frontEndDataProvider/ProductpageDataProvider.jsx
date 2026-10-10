@@ -2,7 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useWishlist } from "@/Component/website/Cart/WishlistContext";
-import { LuHeart, LuShoppingCart, LuStar, LuGitCompare } from "react-icons/lu";
+import { LuHeart, LuShoppingCart, LuGitCompare } from "react-icons/lu";
 import { useCompare } from "@/Component/website/Cart/CompareContext";
 
 export const CATEGORIES = [
@@ -26,24 +26,6 @@ export const SORT_OPTIONS = [
   "ABCD",
 ];
 
-function Stars({ rating = 0 }) {
-  return (
-    <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
-      {Array.from({ length: 5 }, (_, index) => (
-        <LuStar
-          key={index}
-          size={15}
-          className={
-            index < Math.round(Number(rating) || 0)
-              ? "fill-[#C9A659] text-[#C9A659]"
-              : "fill-[#E4DED2] text-[#E4DED2]"
-          }
-        />
-      ))}
-    </div>
-  );
-}
-
 export function ProductCard({ product }) {
   const { has, toggle, pendingIds } = useWishlist();
   const { addItem } = useCart();
@@ -52,75 +34,67 @@ export function ProductCard({ product }) {
   const [wishlistNotice, setWishlistNotice] = useState("");
   const liked = has(product.id);
   const inStock = product.inStock ?? false;
+  const basePrice = Number(product.price) || 0;
+  const discount = Number(product.discount);
+  const hasDiscount = Number.isFinite(discount) && discount > 0 && discount <= 100;
+  const currentPrice = hasDiscount ? basePrice * (1 - discount / 100) : basePrice;
+  const brandName = product.brandName || (typeof product.brand === "string" ? product.brand : product.brand?.brandName) || "";
+  const categoryName = typeof product.category === "string" ? product.category : product.category?.categoryName || "";
+  const image = product.image || product.images?.[0] || "/placeholder-product.svg";
+  const name = product.name || product.productName || "Product";
 
   return (
-    <article className="group overflow-hidden rounded-md border border-[#E4DED2] bg-white transition-all duration-200 hover:border-[#C9A659] hover:shadow-lg">
-      <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
-        <Link href={`/product/product_details?id=${encodeURIComponent(product.id)}`}>
+    <article className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E4DED2] bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#C9A659] hover:shadow-lg">
+      <div className="relative mx-3 mt-3 aspect-[4/5] overflow-hidden rounded-xl bg-[#F7F3EC] sm:aspect-square">
+        <Link href={`/product/product_details?id=${encodeURIComponent(product.id)}`} className="absolute inset-0 flex items-center justify-center p-4 sm:p-5">
           <img
-            src={product.image || "/placeholder-product.svg"}
-            alt={product.name || "Product"}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            src={image}
+            alt={name}
+            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
           />
         </Link>
+
+        {hasDiscount && <span className="absolute left-3 top-3 rounded-full bg-[#1F3A2E] px-2.5 py-1 text-[11px] font-semibold text-white">-{discount}%</span>}
 
         <button
           type="button"
           disabled={pendingIds.includes(String(product.id))}
           aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
           onClick={async () => { try { const updated = await toggle(product); if (updated) setWishlistNotice(liked ? "Removed from wishlist" : "Added to wishlist"); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
-          className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 ${
+          className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-sm transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3A2E] ${
             liked ? "text-[#B65C38]" : "text-[#211F1D]"
           }`}
         >
           <LuHeart size={16} className={liked ? "fill-[#B65C38]" : ""} />
         </button>
-        {wishlistNotice && <span role="status" className="absolute left-3 top-3 rounded bg-white px-2 py-1 text-[10px] text-[#211F1D] shadow">{wishlistNotice}</span>}
 
         <button
           type="button"
           aria-label={isCompared(product.id) ? "Already in comparison" : "Add to compare"}
           title={isCompared(product.id) ? "Already in comparison" : "Add to compare"}
           onClick={() => setCompareNotice(addToCompare(product.id))}
-          className={`absolute right-3 top-14 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 ${isCompared(product.id) ? "text-[#1F3A2E]" : "text-[#211F1D]"}`}
+          className={`absolute right-3 top-15 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-sm transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3A2E] ${isCompared(product.id) ? "text-[#1F3A2E]" : "text-[#211F1D]"}`}
         >
           <LuGitCompare size={16} />
         </button>
-        {compareNotice && <span role="status" className="absolute right-3 top-24 rounded bg-white px-2 py-1 text-[10px] text-[#211F1D] shadow">{compareNotice === "added" ? "Added to compare" : compareNotice === "exists" ? "Already compared" : compareNotice === "loading" ? "Loading comparisons…" : "Compare list is full"}</span>}
-
-        <button
-          type="button"
-          disabled={!inStock}
-          onClick={() => addItem(product)}
-          className="absolute inset-x-3 bottom-3 flex translate-y-10 items-center justify-center gap-2 rounded-sm bg-[#211F1D] py-2.5 text-sm text-[#F7F3EC] opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <LuShoppingCart size={15} />
-          {inStock ? "Add to cart" : "Out of stock"}
-        </button>
       </div>
 
-      <div className="p-4">
-        <p className="mb-1 text-xs text-[#8A8378]">{product.category}</p>
-        <Link
-          href={`/product/product_details?id=${encodeURIComponent(product.id)}`}
-          className="mb-2 block text-sm text-[#211F1D] hover:text-[#1F3A2E]"
-        >
-          {product.name}
-        </Link>
-        <div className="mb-2 flex items-center gap-1.5">
-          <Stars rating={product.rating} />
-          <span className="text-xs text-[#8A8378]">({product.reviews ?? 0})</span>
+      <div className="flex flex-1 flex-col p-4 pt-3">
+        {brandName && <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A8378]">{brandName}</p>}
+        <div className="flex items-start justify-between gap-3">
+          <Link href={`/product/product_details?id=${encodeURIComponent(product.id)}`} className="line-clamp-2 min-w-0 flex-1 text-sm font-medium leading-5 text-[#211F1D] transition-colors hover:text-[#1F3A2E]">
+            {name}
+          </Link>
+          <div className="shrink-0 text-right">
+            <span className="block text-sm font-semibold text-[#1F3A2E]">${currentPrice.toFixed(2)}</span>
+            {hasDiscount && <span className="block text-xs text-[#8A8378] line-through">${basePrice.toFixed(2)}</span>}
+          </div>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-base font-medium text-[#1F3A2E]">
-            ${Number(product.price || 0).toFixed(2)}
-          </span>
-          {product.oldPrice ? (
-            <span className="text-xs text-[#8A8378] line-through">
-              ${product.oldPrice}
-            </span>
-          ) : null}
-        </div>
+        {categoryName && <p className="mt-2 line-clamp-1 text-xs text-[#8A8378]">{categoryName}</p>}
+        <button type="button" disabled={!inStock} onClick={() => addItem(product)} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1F3A2E] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#294c3d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3A2E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#D8D5CE] disabled:text-[#6F685E]">
+          <LuShoppingCart size={16} />{inStock ? "Add to Cart" : "Out of Stock"}
+        </button>
+        {(wishlistNotice || compareNotice) && <p className="mt-2 text-xs text-[#6F685E]" role="status">{wishlistNotice || (compareNotice === "added" ? "Added to compare" : compareNotice === "exists" ? "Already in comparison" : compareNotice === "loading" ? "Loading comparisons..." : "Compare list is full")}</p>}
       </div>
     </article>
   );

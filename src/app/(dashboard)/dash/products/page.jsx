@@ -144,7 +144,7 @@ const Page = () => {
         </div>
         {/* heading of this page */}
         {/* Product Section*/}
-        <div className="flex flex-wrap gap-5 mt-5">
+        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {loadingProducts ? (
             <p className="text-gray-500">Loading products...</p>
           ) : products.length === 0 ? (
@@ -159,6 +159,10 @@ const Page = () => {
                 price={Number(product.price || 0)}
                 quantity={Number(product.quantity || 0)}
                 image={product.image || placeholder}
+                categoryName={product.categoryName || product.category?.categoryName || ""}
+                brandName={product.brandName || ""}
+                discount={Number(product.discount || 0)}
+                lowStockAlert={Number(product.lowStockAlert || 0)}
                 currentStock={product.currentStock}
                 offers={product.offers}
                 onDeleteClick={handleDeleteClick}

@@ -31,7 +31,7 @@ export default async function FrontendLayout({ children }) {
     >
       <CartProvider>
        <CompareProvider>
-        <WishlistProvider>
+        <WishlistProvider branding={theme}>
         <FrontHeader settings={theme} />
         <main>{children}</main>
         <FrontFooter settings={theme} />
