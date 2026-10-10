@@ -28,14 +28,11 @@ import {
  *  FEATURED TABS
  * */
 
-const FEATURED_TABS = ["Kitchen & Dining", "Furniture", "Lighting", "Textiles"];
-
 export default function EcommerceHomePage() {
   const scrollerRef = useRef(null);
 
   const [heroActive, setHeroActive] = useState(0);
   const [offerActive, setOfferActive] = useState(0);
-  const [activeTab, setActiveTab] = useState(FEATURED_TABS[0]);
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [slides, setSlides] = useState([]);
@@ -107,11 +104,6 @@ export default function EcommerceHomePage() {
     return () => controller.abort();
   }, []);
 
-  const featuredProducts = products
-    .filter((product) =>
-      product.category?.toLowerCase().startsWith(activeTab.toLowerCase()),
-    )
-    .slice(0, 4);
   const heroSlides = slides.filter((slide) => slide.isActive);
   const offerSlides = heroSlides.length ? heroSlides : [];
   const newArrivals = products.slice(0, 4);
@@ -348,43 +340,6 @@ export default function EcommerceHomePage() {
             EXCLUSIVE PRODUCTS
         =================================================== */}
 
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
-          <div className="flex items-end justify-between gap-6 mb-8">
-            <div>
-              <p className="text-sm text-[#B65C38] mb-1">
-                Members get first pick
-              </p>
-
-              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">
-                Exclusive products
-              </h2>
-            </div>
-
-            <a
-              href="#"
-              className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
-            >
-              View all exclusives
-            </a>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-            {exclusiveProductsLoading ? (
-              <p className="text-sm text-[#8A8378]">
-                Loading exclusive products...
-              </p>
-            ) : exclusiveProducts.length === 0 ? (
-              <p className="text-sm text-[#8A8378]">
-                No exclusive products available right now.
-              </p>
-            ) : (
-              exclusiveProducts.map((item) => (
-                <ProductCard key={item.productId} product={item.product} />
-              ))
-            )}
-          </div>
-        </section>
-
         {/* ===================================================
             OFFER SLIDER
         =================================================== */}
@@ -500,37 +455,26 @@ export default function EcommerceHomePage() {
         =================================================== */}
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">Hand-picked</p>
+              <p className="mb-1 text-sm text-[#B65C38]">Hand-picked</p>
 
               <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D]">
                 Featured products
               </h2>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              {FEATURED_TABS.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`text-sm px-4 py-1.5 rounded-sm border transition-colors ${
-                    activeTab === tab
-                      ? "bg-[#1F3A2E] border-[#1F3A2E] text-[#F7F3EC]"
-                      : "border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E]"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {featuredProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+            {exclusiveProductsLoading ? (
+              <p className="text-sm text-[#8A8378]" role="status">Loading featured products...</p>
+            ) : exclusiveProducts.length === 0 ? (
+              <p className="text-sm text-[#8A8378]">No featured products are available right now.</p>
+            ) : (
+              exclusiveProducts.map((item) => (
+                <ProductCard key={item.productId} product={item.product} />
+              ))
+            )}
           </div>
         </section>
 
@@ -556,7 +500,7 @@ export default function EcommerceHomePage() {
             </a>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {newArrivals.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

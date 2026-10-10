@@ -436,7 +436,7 @@ function ProductDetailsContent() {
             <h2 className="font-serif text-3xl">Related products</h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
             {relatedProducts.map((product) => (
               <StoreProductCard key={product.id} product={product} />
             ))}

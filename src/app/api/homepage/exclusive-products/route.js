@@ -26,7 +26,8 @@ const serializePublicProduct = (product) => ({
   sku: product.productSKU,
   price: product.price,
   discount: product.discount || 0,
-  image: product.image?.url || "",
+  image: product.image?.url || product.images?.find((image) => image?.url)?.url || "",
+  images: (product.images || []).map((image) => image?.url).filter(Boolean),
   category: product.category?.categoryName || "",
   brand: product.brand?.brandName || "",
   availability: product.currentStock > 0 ? "In Stock" : "Out of Stock",
@@ -41,7 +42,7 @@ export async function GET(request) {
     const publicRead =
       searchParams.get("public") === "1" || searchParams.get("active") === "1";
 
-    if (adminRequest) {
+    if (!publicRead || adminRequest) {
       const access = await requirePermission(
         request,
         PERMISSIONS.HOMEPAGE_MANAGE,
@@ -53,7 +54,7 @@ export async function GET(request) {
     const filter = publicRead ? { isActive: true } : {};
 
     const assignments = await ExclusiveProduct.find(filter)
-      .sort({ displayOrder: 1, createdAt: -1 })
+      .sort({ displayOrder: 1, createdAt: -1, _id: 1 })
       .populate({
         path: "productId",
         populate: [
@@ -66,16 +67,16 @@ export async function GET(request) {
     const items = assignments
       .map((assignment) => {
         const product = assignment.productId;
-        if (!product || !product.isActive) return null;
+        if (publicRead && (!product || !product.isActive)) return null;
 
         return {
           id: assignment._id.toString(),
-          productId: product._id.toString(),
+          productId: product?._id?.toString() || assignment.productId?.toString() || "",
           displayOrder: assignment.displayOrder ?? 0,
           isActive: assignment.isActive,
           createdAt: assignment.createdAt,
           updatedAt: assignment.updatedAt,
-          product: serializePublicProduct(product),
+          product: product?.isActive ? serializePublicProduct(product) : null,
         };
       })
       .filter(Boolean);
@@ -108,6 +109,12 @@ export async function POST(request) {
         { status: 400 },
       );
     }
+    if (!Number.isInteger(displayOrder) || displayOrder < 0) {
+      return NextResponse.json(
+        { success: false, message: "Display order must be a non-negative whole number" },
+        { status: 400 },
+      );
+    }
 
     await connectMongoDB();
     const product = await Product.findById(productId).lean();
@@ -131,7 +138,7 @@ export async function POST(request) {
 
     const assignment = await ExclusiveProduct.create({
       productId,
-      displayOrder: Number.isFinite(displayOrder) ? displayOrder : 0,
+      displayOrder,
       isActive:
         payload.isActive === undefined
           ? true
@@ -152,6 +159,12 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("Create exclusive product error:", error);
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { success: false, message: "This product is already listed as featured" },
+        { status: 409 },
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -173,7 +186,7 @@ export async function PATCH(request) {
     const payload = await parseRequestObject(request);
     const assignmentId = String(payload.id || payload._id || "").trim();
 
-    if (!assignmentId) {
+    if (!mongoose.isValidObjectId(assignmentId)) {
       return NextResponse.json(
         { success: false, message: "Assignment id is required" },
         { status: 400 },
@@ -224,7 +237,36 @@ export async function PATCH(request) {
     }
 
     if (payload.displayOrder !== undefined) {
-      assignment.displayOrder = Number(payload.displayOrder) || 0;
+      const displayOrder = Number(payload.displayOrder);
+      const orderedAssignments = await ExclusiveProduct.find().sort({
+        displayOrder: 1,
+        createdAt: -1,
+        _id: 1,
+      });
+      const currentIndex = orderedAssignments.findIndex(
+        (item) => item._id.toString() === assignmentId,
+      );
+      if (!Number.isInteger(displayOrder) || displayOrder < 0 || displayOrder >= orderedAssignments.length) {
+        return NextResponse.json(
+          { success: false, message: "Display order is outside the featured product list" },
+          { status: 400 },
+        );
+      }
+      if (currentIndex >= 0 && currentIndex !== displayOrder) {
+        const [moved] = orderedAssignments.splice(currentIndex, 1);
+        orderedAssignments.splice(displayOrder, 0, moved);
+        await ExclusiveProduct.bulkWrite(
+          orderedAssignments.map((item, index) => ({
+            updateOne: {
+              filter: { _id: item._id },
+              update: { $set: { displayOrder: index } },
+            },
+          })),
+        );
+        assignment.displayOrder = displayOrder;
+      } else {
+        assignment.displayOrder = displayOrder;
+      }
     }
 
     if (payload.isActive !== undefined) {
@@ -232,7 +274,8 @@ export async function PATCH(request) {
         payload.isActive === true || payload.isActive === "true";
     }
 
-    await assignment.save();
+    if (payload.displayOrder === undefined) await assignment.save();
+    else if (payload.isActive !== undefined || payload.productId) await assignment.save();
 
     return NextResponse.json({
       success: true,
@@ -269,13 +312,14 @@ export async function DELETE(request) {
     if (!id) {
       const payload = await parseRequestObject(request).catch(() => ({}));
       const assignmentId = String(payload.id || payload._id || "").trim();
-      if (!assignmentId) {
+      if (!mongoose.isValidObjectId(assignmentId)) {
         return NextResponse.json(
           { success: false, message: "Assignment id is required" },
           { status: 400 },
         );
       }
 
+      await connectMongoDB();
       const deleted = await ExclusiveProduct.findByIdAndDelete(assignmentId);
       return NextResponse.json({
         success: !!deleted,
@@ -285,6 +329,13 @@ export async function DELETE(request) {
       });
     }
 
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json(
+        { success: false, message: "A valid assignment id is required" },
+        { status: 400 },
+      );
+    }
+    await connectMongoDB();
     const deleted = await ExclusiveProduct.findByIdAndDelete(id);
     return NextResponse.json({
       success: !!deleted,

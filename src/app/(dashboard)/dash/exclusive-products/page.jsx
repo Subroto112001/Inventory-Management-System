@@ -9,9 +9,9 @@ export default function ExclusiveProductsPage() {
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const loadAssignments = async () => {
-    setLoading(true);
     try {
       const response = await fetch("/api/homepage/exclusive-products?admin=1");
       const data = await response.json();
@@ -26,7 +26,13 @@ export default function ExclusiveProductsPage() {
   };
 
   useEffect(() => {
-    loadAssignments();
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) loadAssignments();
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Fetch products (10 items by default or filtered by search)
@@ -68,6 +74,7 @@ export default function ExclusiveProductsPage() {
     }
 
     try {
+      setSuccess("");
       const response = await fetch("/api/homepage/exclusive-products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,6 +88,7 @@ export default function ExclusiveProductsPage() {
         throw new Error(data.message || "Unable to add exclusive product");
       setError("");
       await loadAssignments();
+      setSuccess(`${product.name} added to featured products.`);
     } catch (assignmentError) {
       setError(assignmentError.message);
     }
@@ -88,6 +96,7 @@ export default function ExclusiveProductsPage() {
 
   const handleToggle = async (id, currentValue) => {
     try {
+      setSuccess("");
       const response = await fetch("/api/homepage/exclusive-products", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -97,17 +106,19 @@ export default function ExclusiveProductsPage() {
       if (!response.ok)
         throw new Error(data.message || "Unable to update assignment");
       await loadAssignments();
+      setError("");
+      setSuccess(`Featured product ${currentValue ? "hidden" : "shown"}.`);
     } catch (toggleError) {
       setError(toggleError.message);
     }
   };
 
   const handleReorder = async (id, direction) => {
-    const assignment = items.find((item) => item.id === id);
-    if (!assignment) return;
-
-    const nextOrder = Number(assignment.displayOrder || 0) + direction;
+    const currentIndex = items.findIndex((item) => item.id === id);
+    const nextOrder = currentIndex + direction;
+    if (currentIndex < 0 || nextOrder < 0 || nextOrder >= items.length) return;
     try {
+      setSuccess("");
       const response = await fetch("/api/homepage/exclusive-products", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -117,6 +128,8 @@ export default function ExclusiveProductsPage() {
       if (!response.ok)
         throw new Error(data.message || "Unable to reorder assignment");
       await loadAssignments();
+      setError("");
+      setSuccess("Featured product order updated.");
     } catch (reorderError) {
       setError(reorderError.message);
     }
@@ -126,6 +139,7 @@ export default function ExclusiveProductsPage() {
     if (!window.confirm("Remove this product from the exclusive list?")) return;
 
     try {
+      setSuccess("");
       const response = await fetch(
         `/api/homepage/exclusive-products?id=${encodeURIComponent(id)}`,
         {
@@ -136,6 +150,8 @@ export default function ExclusiveProductsPage() {
       if (!response.ok)
         throw new Error(data.message || "Unable to remove product");
       await loadAssignments();
+      setError("");
+      setSuccess("Product removed from featured products.");
     } catch (deleteError) {
       setError(deleteError.message);
     }
@@ -151,13 +167,18 @@ export default function ExclusiveProductsPage() {
           storefront
         </p>
         <h1 className="mt-1 text-3xl font-bold text-[var(--theme-text)]">
-          Exclusive products
+          Featured products
         </h1>
       </div>
 
       {error ? (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </div>
+      ) : null}
+      {success ? (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status">
+          {success}
         </div>
       ) : null}
 
@@ -168,10 +189,10 @@ export default function ExclusiveProductsPage() {
           <div className="flex flex-col rounded-xl border border-[var(--theme-border)] bg-white p-5 shadow-sm h-full">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--theme-text)]">
-                Current assignments
+                Current featured products
               </h2>
               <span className="text-sm text-[var(--theme-muted)]">
-                {items.length} active
+                {items.length} assigned
               </span>
             </div>
 
@@ -181,7 +202,7 @@ export default function ExclusiveProductsPage() {
               </div>
             ) : items.length === 0 ? (
               <div className="flex-1 flex items-center justify-center rounded-lg border border-dashed border-[var(--theme-border)] px-4 py-10 text-center text-sm text-[var(--theme-muted)]">
-                No exclusive products assigned yet.
+                No featured products assigned yet.
               </div>
             ) : (
               <div className="space-y-3 overflow-y-auto max-h-[600px] pr-1">
@@ -194,15 +215,18 @@ export default function ExclusiveProductsPage() {
                       <img
                         src={item.product?.image || "/placeholder-product.svg"}
                         alt={item.product?.name || "Exclusive product"}
-                        className="h-14 w-14 shrink-0 rounded-md object-cover"
+                        className="h-14 w-14 shrink-0 rounded-md bg-[var(--theme-background)] object-contain"
                       />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-[var(--theme-text)]">
-                          {item.product?.name || item.productId}
+                          {item.product?.name || "Unavailable product"}
                         </p>
                         <p className="text-xs text-[var(--theme-muted)]">
                           {item.product?.category || "Product"} • $
                           {Number(item.product?.price || 0).toFixed(2)}
+                        </p>
+                        <p className="text-xs text-[var(--theme-muted)]">
+                          {item.product?.availability || "Unavailable"}
                         </p>
                       </div>
                     </div>
@@ -229,7 +253,8 @@ export default function ExclusiveProductsPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(item.id, -1)}
-                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50"
+                        disabled={items.findIndex((entry) => entry.id === item.id) === 0}
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         ↑
                       </button>
@@ -237,7 +262,8 @@ export default function ExclusiveProductsPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(item.id, 1)}
-                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50"
+                        disabled={items.findIndex((entry) => entry.id === item.id) === items.length - 1}
+                        className="rounded-md border border-[var(--theme-border)] px-2 py-1 text-xs font-medium text-[var(--theme-text)] hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         ↓
                       </button>
@@ -265,7 +291,7 @@ export default function ExclusiveProductsPage() {
                 Product Catalog
               </h2>
               <p className="text-xs text-[var(--theme-muted)]">
-                Search or select products to add as exclusive
+                Search or select products to feature on the storefront
               </p>
             </div>
 
