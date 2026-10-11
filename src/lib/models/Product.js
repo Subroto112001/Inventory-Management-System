@@ -13,7 +13,6 @@ const productSchema = new Schema(
     productSKU: {
       type: String,
       trim: true,
-      unique: true,
       required: [true, "Product SKU is required"],
       uppercase: true,
     },
@@ -83,6 +82,11 @@ const productSchema = new Schema(
       ref: "Category",
       default: null,
     },
+    subcategory: {
+      type: Types.ObjectId,
+      ref: "Subcategory",
+      default: null,
+    },
     // --- Media ---
     image: {
       public_id: { type: String },
@@ -118,7 +122,27 @@ const productSchema = new Schema(
   { timestamps: true },
 );
 
-const Product =
-  mongoose.models.Product || mongoose.model("Product", productSchema);
+// Ignore legacy records where the field is absent while enforcing uniqueness
+// for every actual SKU string.
+productSchema.index(
+  { productSKU: 1 },
+  {
+    name: "productSKU_unique_string",
+    unique: true,
+    partialFilterExpression: { productSKU: { $type: "string" } },
+  },
+);
+productSchema.index({ category: 1, subcategory: 1, isActive: 1 });
+
+// During development Mongoose keeps models across Next.js module reloads. If
+// Product was first compiled before subcategory was added, the module source
+// can be current while the cached model still rejects populate("subcategory").
+// Recompile only that stale model; normal startup and current models are reused.
+const cachedProductModel = mongoose.models.Product;
+if (cachedProductModel && cachedProductModel.schema.path("subcategory")?.options?.ref !== "Subcategory") {
+  mongoose.deleteModel("Product");
+}
+
+const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
 
 export default Product;

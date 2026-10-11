@@ -1,7 +1,3 @@
-/* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
 /* CSS Variables for Theme Colors & Spacing */
 .dashboard-main {
   --color-primary: var(--theme-primary);
@@ -30,15 +26,16 @@
 
 /* Base Styles */
 .dashboard-main {
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   background-color: var(--color-background);
   color: var(--color-on-background);
-  padding: 24px;
+  padding: 0;
   width: 100%;
-  height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
   box-sizing: border-box;
 }
+
+.dashboard-error { font-family: inherit; }
 
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -102,14 +99,13 @@
 .card {
   background-color: var(--color-surface-lowest);
   border: 1px solid var(--color-surface-variant);
-  border-radius: var(--radius-xl);
-  padding: 20px;
+  border-radius: 1rem;
+  padding: 18px;
   position: relative;
   overflow: hidden;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .card:hover {
-  transform: translateY(-2px);
   box-shadow: 0px 4px 12px rgba(0,0,0,0.05);
 }
 .card-header {
@@ -150,11 +146,11 @@
 .trend-warning { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
 
 /* Charts Area Placeholder */
-.chart-container { height: 350px; display: flex; flex-direction: column; }
+.chart-container { min-height: 340px; display: flex; flex-direction: column; }
 .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .btn-icon { background: none; border: none; cursor: pointer; color: var(--color-secondary); padding: 6px; border-radius: 4px; }
 .btn-icon:hover { background-color: var(--color-surface-variant); }
-.chart-placeholder { flex: 1; border: 2px dashed var(--color-surface-variant); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--color-secondary); }
+.chart-placeholder { flex: 1; min-height: 260px; border: 1px solid var(--color-surface-variant); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--color-secondary); background: var(--color-surface-lowest); }
 
 /* Table Section */
 .table-section {
@@ -210,3 +206,93 @@
 .status-low { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
 .status-out { background-color: var(--color-danger-bg); color: var(--color-danger-text); }
 .text-error { color: var(--color-error); font-weight: 600;}
+
+@media (max-width: 639px) {
+  .dashboard-main { padding-bottom: 1rem; }
+  .card { padding: 15px; }
+  .table-header { padding: 16px; align-items: flex-start; gap: 12px; }
+  .data-table th, .data-table td { padding: 10px 12px; white-space: nowrap; }
+  .chart-container { min-height: 320px; }
+}
+
+/* Reference-inspired dashboard composition: compact summary row, then a
+   revenue-first overview with the existing supporting data below it. */
+.dashboard-main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-content: start;
+  gap: 16px;
+}
+.dashboard-main > * { grid-column: 1 / -1; min-width: 0; margin-bottom: 0 !important; }
+.dashboard-layout-scroll:has(.dashboard-main) { padding: 16px !important; }
+.dashboard-header { align-items: center; gap: 12px; padding: 0 2px; }
+.dashboard-header .text-h1 { margin: 0 0 3px; font-size: 24px; line-height: 1.2; }
+.dashboard-header .text-body { font-size: 13px; }
+.dashboard-alert { margin: 0 !important; }
+.dashboard-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.dashboard-main .card {
+  border-color: color-mix(in srgb, var(--theme-border) 82%, #94a3b8);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 3%);
+}
+.dashboard-main .card:hover { box-shadow: 0 6px 18px rgb(15 23 42 / 7%); }
+.dashboard-main .card-header { margin-bottom: 12px; }
+.dashboard-main .icon-box { width: 34px; height: 34px; border-radius: 10px; }
+.dashboard-kpis .text-h2 { font-size: 23px; line-height: 1.15; }
+.dashboard-kpis .text-label-sm { letter-spacing: .035em; }
+.dashboard-kpis .btn-link { margin-top: 12px; font-size: 11px; }
+.dashboard-charts {
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
+  gap: 16px;
+}
+.dashboard-charts .chart-container { min-height: 0; }
+.dashboard-charts .chart-header { margin-bottom: 14px; }
+.dashboard-charts .chart-placeholder { min-height: 220px; border: 0; background: transparent; }
+.dashboard-charts .chart-placeholder[style] { height: 230px !important; }
+.dashboard-charts .text-h3,
+.dashboard-orders .text-h3 { font-size: 15px; line-height: 1.3; }
+.dashboard-orders {
+  grid-template-columns: minmax(0, 2fr) minmax(230px, 1fr);
+  gap: 16px;
+}
+.dashboard-orders > .card { min-width: 0; grid-column: auto !important; }
+.dashboard-orders .chart-header { margin-bottom: 12px; }
+.dashboard-orders .table-responsive { max-height: 330px; }
+.dashboard-orders .data-table th,
+.dashboard-orders .data-table td,
+.dashboard-offers .data-table th,
+.dashboard-offers .data-table td,
+.dashboard-stock .data-table th,
+.dashboard-stock .data-table td { padding: 9px 12px; font-size: 12px; }
+.dashboard-offers { grid-column: span 7 !important; }
+.dashboard-stock { grid-column: span 5 !important; }
+.dashboard-offers .table-header,
+.dashboard-stock .table-header { padding: 16px; }
+.dashboard-offers .table-header .text-h3,
+.dashboard-stock .table-header .text-h3 { font-size: 15px; line-height: 1.3; }
+.dashboard-offers .table-responsive,
+.dashboard-stock .table-responsive { max-height: 310px; }
+
+@media (max-width: 1100px) {
+  .dashboard-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-offers,
+  .dashboard-stock { grid-column: 1 / -1 !important; }
+}
+@media (max-width: 760px) {
+  .dashboard-main { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .dashboard-main > * { grid-column: 1 / -1 !important; }
+  .dashboard-charts,
+  .dashboard-orders { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-charts .chart-placeholder[style] { height: 220px !important; }
+  .dashboard-offers .table-responsive,
+  .dashboard-stock .table-responsive { max-height: none; }
+}
+@media (max-width: 480px) {
+  .dashboard-kpis { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-header .text-h1 { font-size: 21px; }
+  .dashboard-main .card { padding: 14px; }
+}
+@media (max-width: 640px) {
+  .dashboard-layout-scroll:has(.dashboard-main) { padding: 12px !important; }
+}

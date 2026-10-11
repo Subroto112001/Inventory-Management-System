@@ -2,7 +2,10 @@
 
 import { Suspense, useEffect, useState } from "react";
 import RichTextContent from "@/Component/RichTextContent";
+import ProductFaq from "@/Component/website/Product/ProductFaq";
+import ProductAnalysisInfographic from "@/Component/website/Product/ProductAnalysisInfographic";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { ProductCard as StoreProductCard } from "@/frontEndDataProvider/ProductpageDataProvider";
 import { useCart } from "@/Component/website/Cart/CartContext";
 import { useWishlist } from "@/Component/website/Cart/WishlistContext";
@@ -59,6 +62,7 @@ function ProductDetailsContent() {
   const [wishlistNotice, setWishlistNotice] = useState("");
   const [compareNotice, setCompareNotice] = useState("");
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [productAnalysis, setProductAnalysis] = useState(null);
   const [loading, setLoading] = useState(Boolean(productId));
   const [error, setError] = useState(productId ? "" : "Product not found");
 
@@ -85,6 +89,12 @@ function ProductDetailsContent() {
 
 
         });
+        fetch(`/api/product/${encodeURIComponent(loadedProduct.id)}/analysis?public=1`, { signal: controller.signal })
+          .then((response) => response.ok ? response.json() : null)
+          .then((data) => setProductAnalysis(data?.analysis || null))
+          .catch((analysisError) => {
+            if (analysisError.name !== "AbortError") setProductAnalysis(null);
+          });
         const reviewsResponse = await fetch(`/api/reviews?productId=${encodeURIComponent(loadedProduct.id)}`, { signal: controller.signal });
         if (reviewsResponse.ok) setReviewsData(await reviewsResponse.json());
         const relatedResponse = await fetch(
@@ -180,9 +190,9 @@ function ProductDetailsContent() {
         {/* BREADCRUMB */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
           <div className="text-sm text-[#8A8378]">
-            Home
+            <Link href="/" className="hover:text-[#1F3A2E]">Home</Link>
             <span className="mx-2">/</span>
-            {PRODUCT.category || ""}
+            {PRODUCT.category || "Products"}
             <span className="mx-2">/</span>
             <span className="text-[#211F1D]">{PRODUCT.name}</span>
           </div>
@@ -193,11 +203,11 @@ function ProductDetailsContent() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
             {/* IMAGE GALLERY */}
             <div>
-              <div className="relative bg-[#F0EBE1] rounded-md overflow-hidden aspect-square">
+              <div className="relative aspect-square overflow-hidden rounded-2xl border border-[#E4DED2] bg-[#F0EBE1]">
                 <img
                   src={PRODUCT.images[activeImage] || "/placeholder-product.svg"}
                   alt={PRODUCT.name}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-contain p-4 sm:p-8"
                 />
 
                 {PRODUCT.badge && (
@@ -228,7 +238,7 @@ function ProductDetailsContent() {
                     key={image}
                     type="button"
                     onClick={() => setActiveImage(index)}
-                    className={`aspect-square rounded-md overflow-hidden border-2 transition-colors ${
+                    className={`aspect-square overflow-hidden rounded-lg border-2 bg-white p-1 transition-colors ${
                       activeImage === index
                         ? "border-[#1F3A2E]"
                         : "border-transparent"
@@ -237,7 +247,7 @@ function ProductDetailsContent() {
                     <img
                       src={image}
                       alt={`${PRODUCT.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                   </button>
                 ))}
@@ -246,7 +256,9 @@ function ProductDetailsContent() {
 
             {/* PRODUCT INFO */}
             <div className="flex flex-col">
-              <p className="text-sm text-[#B65C38] mb-2">{PRODUCT.category}</p>
+              {PRODUCT.category && <p className="mb-2 text-sm text-[#B65C38]">{PRODUCT.category}</p>}
+
+              {PRODUCT.brand && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8A8378]">{PRODUCT.brand}</p>}
 
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[2.8rem] leading-tight mb-4">
                 {PRODUCT.name}
@@ -257,7 +269,7 @@ function ProductDetailsContent() {
                 {reviewsData.count > 0 && <Stars rating={reviewsData.averageRating} />}
 
                 <span className="text-sm text-[#5B564C]">
-                  {reviewsData.count > 0 ? `${reviewsData.averageRating} ? ${reviewsData.count} reviews` : ""}
+                  {reviewsData.count > 0 ? `${reviewsData.averageRating} · ${reviewsData.count} reviews` : ""}
                 </span>
 
                 <span className="text-[#E4DED2]">|</span>
@@ -271,35 +283,29 @@ function ProductDetailsContent() {
               <div className="py-5">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl text-[#1F3A2E]">
-                    ${PRODUCT.price}
+                  ${((Number(PRODUCT.price) || 0) * (1 - (Number(PRODUCT.discount) > 0 && Number(PRODUCT.discount) <= 100 ? Number(PRODUCT.discount) : 0) / 100)).toFixed(2)}
                   </span>
 
-                  {PRODUCT.oldPrice && (
+                  {Number(PRODUCT.discount) > 0 && Number(PRODUCT.discount) <= 100 && (
                     <span className="text-lg text-[#8A8378] line-through">
-                      ${PRODUCT.oldPrice}
+                      ${Number(PRODUCT.price || 0).toFixed(2)}
                     </span>
                   )}
 
-                  {PRODUCT.oldPrice && (
+                  {Number(PRODUCT.discount) > 0 && Number(PRODUCT.discount) <= 100 && (
                     <span className="bg-[#B65C38] text-white text-xs px-2 py-1 rounded-sm">
-                      Sale
+                      {Number(PRODUCT.discount)}% off
                     </span>
                   )}
                 </div>
-
-                <p className="text-xs text-[#8A8378] mt-2">
-                  Price includes applicable taxes.
-                </p>
               </div>
 
               {/* DESCRIPTION */}
-              <p className="text-sm sm:text-base leading-7 text-[#5B564C] mb-6">
-                {PRODUCT.description}
-              </p>
+              {PRODUCT.description && <div className="mb-6 text-sm leading-7 text-[#5B564C] sm:text-base"><RichTextContent html={PRODUCT.description} /></div>}
 
               {/* AVAILABILITY */}
-              <div className="flex items-center gap-2 text-sm text-[#1F3A2E] mb-6">
-                <LuCheck size={17} />
+              <div className={`mb-6 flex items-center gap-2 text-sm ${PRODUCT.inStock ? "text-[#1F3A2E]" : "text-red-700"}`}>
+                {PRODUCT.inStock && <LuCheck size={17} />}
                 {PRODUCT.availability || ""}
               </div>
 
@@ -310,6 +316,7 @@ function ProductDetailsContent() {
                 <div className="flex items-center border border-[#E4DED2] rounded-md w-fit bg-white">
                   <button
                     onClick={decreaseQuantity}
+                    disabled={quantity <= 1}
                     className="w-11 h-11 flex items-center justify-center hover:bg-[#F7F3EC]"
                   >
                     <LuMinus size={15} />
@@ -319,6 +326,7 @@ function ProductDetailsContent() {
 
                   <button
                     onClick={increaseQuantity}
+                    disabled={!PRODUCT.inStock}
                     className="w-11 h-11 flex items-center justify-center hover:bg-[#F7F3EC]"
                   >
                     <LuPlus size={15} />
@@ -427,6 +435,9 @@ function ProductDetailsContent() {
         {activeTab==="details" && <div><h2 className="font-serif text-2xl mb-5">Product details</h2>{typeof PRODUCT.specifications === "string" && PRODUCT.specifications.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.specifications} className="text-sm leading-7 text-[#5B564C]" /> : Array.isArray(PRODUCT.specifications) && PRODUCT.specifications.length ? <div className="grid sm:grid-cols-2 border-t border-l border-[#E4DED2]">{PRODUCT.specifications.map(({name,value}, index)=><div key={`${name}-${index}`} className="grid grid-cols-2 border-r border-b border-[#E4DED2]"><div className="bg-[#EFE9DC] px-4 py-3 text-sm">{name}</div><div className="px-4 py-3 text-sm text-[#5B564C]">{value}</div></div>)}</div>:<p className="text-sm text-[#8A8378]">No specifications available</p>}</div>}
         {activeTab==="reviews" && <div>{reviewsData.canReview && !reviewsData.hasReviewed && <form onSubmit={submitReview} className="mb-8 rounded-sm border border-[#E4DED2] bg-white p-5"><h2 className="font-serif text-2xl mb-4">Write a review</h2><label className="block text-sm mb-2" htmlFor="review-rating">Your rating</label><select id="review-rating" value={reviewDraft.rating} onChange={(event)=>setReviewDraft((draft)=>({...draft,rating:Number(event.target.value)}))} className="mb-4 border border-[#E4DED2] rounded-sm p-2"><option value={5}>5 stars</option><option value={4}>4 stars</option><option value={3}>3 stars</option><option value={2}>2 stars</option><option value={1}>1 star</option></select><label className="block text-sm mb-1" htmlFor="review-title">Title (optional)</label><input id="review-title" maxLength={120} value={reviewDraft.title} onChange={(event)=>setReviewDraft((draft)=>({...draft,title:event.target.value}))} className="w-full border border-[#E4DED2] rounded-sm p-3 mb-4"/><label className="block text-sm mb-1" htmlFor="review-body">Your review</label><textarea id="review-body" required maxLength={2000} rows={5} value={reviewDraft.body} onChange={(event)=>setReviewDraft((draft)=>({...draft,body:event.target.value}))} className="w-full border border-[#E4DED2] rounded-sm p-3"/><button disabled={reviewState.loading} className="mt-4 rounded-sm bg-[#1F3A2E] px-5 py-3 text-sm text-white disabled:opacity-60">{reviewState.loading?"Submitting...":"Submit review"}</button>{reviewState.error&&<p role="alert" className="mt-3 text-sm text-red-700">{reviewState.error}</p>}{reviewState.message&&<p role="status" className="mt-3 text-sm text-[#1F3A2E]">{reviewState.message}</p>}</form>}{reviewsData.hasReviewed && <p className="mb-6 text-sm text-[#1F3A2E]">Thanks, you have reviewed this product.</p>}{!reviewsData.canReview && !reviewsData.hasReviewed && <p className="mb-6 text-sm text-[#8A8378]">A delivered purchase is required before you can review this product.</p>}{reviewsData.count>0 && <div className="mb-8"><p className="font-serif text-5xl">{reviewsData.averageRating}</p><div className="mt-2"><Stars rating={reviewsData.averageRating}/></div><p className="text-xs text-[#8A8378] mt-2">Based on {reviewsData.count} reviews</p></div>}{reviewsData.reviews.length ? reviewsData.reviews.map(review=><article key={review.id} className="border-t border-[#E4DED2] py-5"><div className="flex items-center gap-3"><Stars rating={review.rating}/><span className="text-sm">{review.customerName}</span></div>{review.title && <h3 className="font-medium mt-2">{review.title}</h3>}<p className="text-sm leading-7 text-[#5B564C] mt-1">{review.body}</p></article>):<p className="text-sm text-[#8A8378]">No reviews yet</p>}</div>}
         </div></div></section>
+
+        <ProductAnalysisInfographic svg={productAnalysis?.infographicSvg} />
+        <ProductFaq product={PRODUCT} />
 
         {/* RELATED PRODUCTS */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 sm:mt-20">

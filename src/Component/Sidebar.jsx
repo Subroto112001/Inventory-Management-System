@@ -13,6 +13,9 @@ import {
   LuCar,
   LuChevronLeft,
   LuLayoutDashboard,
+  LuChevronDown,
+  LuClipboardList,
+  LuSettings2,
   LuMenu,
   LuSearch,
   LuX,
@@ -24,14 +27,13 @@ import {
 import { PiWarehouse } from "react-icons/pi";
 import { TbBrandBumble } from "react-icons/tb";
 import { VscGraph } from "react-icons/vsc";
-import useCurrentUser from "@/dataProvider/getMe";
 
 const STORAGE_KEY = "sidebar-collapsed";
 const DESKTOP_QUERY = "(min-width: 1024px)"; // Tailwind "lg"
 
 /**
  * Menu is grouped so the list is easier to scan.
- * Routes and role rules are unchanged from the original sidebar.
+ * Entries follow the dashboard API's current role access rules.
  */
 const MENU_GROUPS = [
   {
@@ -42,6 +44,7 @@ const MENU_GROUPS = [
         name: "Reports",
         icon: <HiOutlineDocumentReport />,
         link: "/dash/report",
+        allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Auditor", "Senior HR"],
       },
     ],
   },
@@ -52,21 +55,24 @@ const MENU_GROUPS = [
         name: "Products",
         icon: <MdOutlineProductionQuantityLimits />,
         link: "/dash/products",
+        allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"],
       },
-      { name: "Stock", icon: <CgShutterstock />, link: "/dash/stock" },
-      { name: "Warehouse", icon: <PiWarehouse />, link: "/dash/warehouse" },
-      { name: "Brands", icon: <TbBrandBumble />, link: "/dash/brands" },
-      { name: "Category", icon: <BiCategory />, link: "/dash/category" },
+      { name: "Stock", icon: <CgShutterstock />, link: "/dash/stock", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"] },
+      { name: "Warehouses", icon: <PiWarehouse />, link: "/dash/warehouse", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"] },
+      { name: "Brands", icon: <TbBrandBumble />, link: "/dash/brands", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "Categories", icon: <BiCategory />, link: "/dash/category", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "Subcategories", icon: <BiCategory />, link: "/dash/subcategory", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
     ],
   },
   {
     title: "Sales and purchasing",
     items: [
-      { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/dash/order" },
-      { name: "Sales", icon: <VscGraph />, link: "/dash/create_neworder" },
-      { name: "Procurement (PO)", icon: <LuCar />, link: "/dash/procurement" },
-      { name: "Promotions", icon: <BiSolidOffer />, link: "/dash/promotions" },
-      { name: "Offers", icon: <MdLocalOffer />, link: "/dash/offers" },
+      { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/dash/order", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "Create order", icon: <VscGraph />, link: "/dash/create_neworder", allowedRoles: ["System Admin", "Admin", "Manager", "Inventory Clerk"] },
+      { name: "Procurement (PO)", icon: <LuCar />, link: "/dash/procurement", allowedRoles: ["System Admin", "Admin", "Manager"] },
+      { name: "Promotions", icon: <BiSolidOffer />, link: "/dash/promotions", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "Offers", icon: <MdLocalOffer />, link: "/dash/offers", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "VAT invoices", icon: <LuClipboardList />, link: "/dash/vat", allowedRoles: ["System Admin", "Admin", "Manager"] },
       {
         name: "Homepage sliders",
         icon: <LuLayoutDashboard />,
@@ -84,21 +90,21 @@ const MENU_GROUPS = [
   {
     title: "People",
     items: [
-      { name: "Customers", icon: <FaClipboardUser />, link: "/dash/customer" },
+      { name: "Customers", icon: <FaClipboardUser />, link: "/dash/customer", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "Attendance", icon: <FaClipboardUser />, link: "/dash/attendencepage", allowedRoles: ["System Admin", "Admin", "Manager", "Junior HR", "Assistant HR", "Senior HR"] },
       {
         name: "Users",
         icon: <FaRegUser />,
         link: "/dash/user",
-        allowedRoles: ["Admin", "System Admin"],
-      },
-      {
-        name: "Brand settings",
-        icon: <LuBuilding2 />,
-        link: "/dash/settings",
-        allowedRoles: ["Admin", "System Admin"],
+        allowedRoles: ["System Admin", "Junior HR", "Assistant HR", "Senior HR"],
       },
     ],
   },
+];
+
+const UTILITY_LINKS = [
+  { name: "My profile", icon: <FaRegUser />, link: "/dash/profile" },
+  { name: "Store settings", icon: <LuSettings2 />, link: "/dash/settings", allowedRoles: ["System Admin", "Admin"] },
 ];
 
 /**
@@ -112,15 +118,14 @@ const MENU_GROUPS = [
  *   screens. Set it to false if your header has its own button, then open the
  *   drawer from there with: window.dispatchEvent(new Event("toggle-sidebar"))
  */
-const Sidebar = ({ showMobileButton = true, settings }) => {
+const Sidebar = ({ showMobileButton = true, settings, currentUser }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { mydata, loading } = useCurrentUser();
-
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [query, setQuery] = useState("");
+  const [closedGroups, setClosedGroups] = useState(() => new Set());
   const [tip, setTip] = useState(null); // { label, top }
   const searchRef = useRef(null);
 
@@ -210,8 +215,9 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const role = mydata?.role;
-  const displayName = mydata?.firstName || mydata?.role || role || "Account";
+  const role = currentUser?.role;
+  const loading = !currentUser;
+  const displayName = currentUser?.firstName || role || "Account";
   const storeName = settings?.storeName || "Inventory System";
 
   /**
@@ -287,9 +293,9 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
 
       <nav
         aria-label="Sidebar Navigation"
-        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] border-r border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-2xl transition-[transform,width,visibility] duration-300 ease-out motion-reduce:transition-none lg:static lg:z-auto lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:visible print:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] border-r border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-2xl transition-[transform,width,visibility] duration-300 ease-out motion-reduce:transition-none lg:relative lg:z-auto lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:visible print:hidden ${
           mobileOpen ? "visible translate-x-0" : "invisible -translate-x-full"
-        } ${rail ? "lg:w-[76px]" : "lg:w-64"}`}
+        } ${rail ? "lg:w-[68px]" : "lg:w-56"}`}
       >
         {/* Desktop collapse toggle sits on the sidebar edge */}
         <button
@@ -309,7 +315,7 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
         <div className="flex h-full flex-col p-3">
           {/* Brand */}
           <div
-            className={`flex items-center gap-3 rounded-xl bg-[var(--theme-primary)] p-3 text-[var(--theme-primary-text)] ${
+            className={`flex items-center gap-3 rounded-xl p-2 text-[var(--theme-text)] ${
               rail ? "justify-center" : ""
             }`}
           >
@@ -321,7 +327,7 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
               />
             ) : (
               <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--theme-primary-text)] text-xl text-[var(--theme-primary)]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--theme-primary)]/10 text-xl text-[var(--theme-primary)]"
                 aria-hidden="true"
               >
                 <LuBuilding2 />
@@ -331,7 +337,7 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
               <p className="truncate text-[17px] font-medium leading-tight">
                 {storeName}
               </p>
-              <p className="text-[13px] text-[var(--theme-primary-text)]/70">
+              <p className="text-[12px] text-[var(--theme-muted)]">
                 Operations
               </p>
             </div>
@@ -339,7 +345,7 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
               type="button"
               onClick={() => setMobileOpen(false)}
               aria-label="Close navigation menu"
-              className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-white/80 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 lg:hidden"
+              className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-[var(--theme-muted)] transition-colors hover:bg-[var(--theme-border)]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] lg:hidden"
             >
               <LuX />
             </button>
@@ -419,21 +425,18 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
               </p>
             ) : (
               visibleGroups.map((group, groupIndex) => (
-                <div key={group.title} className={groupIndex > 0 ? "mt-4" : ""}>
+                <div key={group.title} className={groupIndex > 0 ? "mt-3" : ""}>
                   {rail ? (
-                    groupIndex > 0 && (
-                      <div
-                        className="mx-3 mb-2 h-px bg-gray-100"
-                        aria-hidden="true"
-                      />
-                    )
+                    <button type="button" onClick={() => setClosedGroups((previous) => { const next = new Set(previous); next.has(group.title) ? next.delete(group.title) : next.add(group.title); return next; })} aria-label={`${closedGroups.has(group.title) ? "Expand" : "Collapse"} ${group.title}`} aria-expanded={!closedGroups.has(group.title)} className="mx-auto mb-1 flex h-5 w-10 items-center justify-center text-gray-300 hover:text-[var(--theme-primary)]">
+                      <span className="h-px w-7 bg-current" aria-hidden="true" />
+                    </button>
                   ) : (
-                    <p className="mb-1.5 px-3 text-xs font-medium text-gray-400">
-                      {group.title}
-                    </p>
+                    <button type="button" onClick={() => setClosedGroups((previous) => { const next = new Set(previous); next.has(group.title) ? next.delete(group.title) : next.add(group.title); return next; })} aria-expanded={!closedGroups.has(group.title)} className="mb-1.5 flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--theme-muted)] hover:text-[var(--theme-text)]">
+                      {group.title}<LuChevronDown className={`transition-transform ${closedGroups.has(group.title) ? "-rotate-90" : ""}`} size={14} />
+                    </button>
                   )}
 
-                  <ul className="flex flex-col gap-1">
+                  {!closedGroups.has(group.title) && <ul className="flex flex-col gap-1">
                     {group.items.map((item) => {
                       const active = isActive(item.link);
 
@@ -451,14 +454,14 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
                               rail ? "justify-center" : ""
                             } ${
                               active
-                                ? "bg-[var(--theme-primary)] font-medium text-[var(--theme-primary-text)] shadow-md shadow-black/10"
+                                ? "bg-[var(--theme-primary)]/10 font-medium text-[var(--theme-primary)]"
                                 : "text-[var(--theme-muted)] hover:bg-[var(--theme-primary)]/10 hover:text-[var(--theme-primary)]"
                             }`}
                           >
                             <span
                               className={`shrink-0 text-xl transition-transform duration-200 group-hover:scale-110 motion-reduce:transition-none ${
                                 active
-                                  ? "text-[var(--theme-primary-text)]"
+                                  ? "text-[var(--theme-primary)]"
                                   : "text-[var(--theme-primary)]"
                               }`}
                               aria-hidden="true"
@@ -476,10 +479,17 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
                         </li>
                       );
                     })}
-                  </ul>
+                  </ul>}
                 </div>
               ))
             )}
+          </div>
+
+          <div className={`mb-2 flex flex-col gap-1 border-t border-[var(--theme-border)] pt-2 ${rail ? "items-center" : ""}`}>
+            {UTILITY_LINKS.filter((item) => !item.allowedRoles || item.allowedRoles.includes(role)).map((item) => {
+              const active = isActive(item.link);
+              return <Link key={item.link} href={item.link} onClick={() => setMobileOpen(false)} aria-current={active ? "page" : undefined} title={rail ? item.name : undefined} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${rail ? "justify-center" : ""} ${active ? "bg-[var(--theme-primary)]/10 font-medium text-[var(--theme-primary)]" : "text-[var(--theme-muted)] hover:bg-[var(--theme-primary)]/5 hover:text-[var(--theme-primary)]"}`}><span className="shrink-0 text-lg" aria-hidden="true">{item.icon}</span><span className={labelClass}>{item.name}</span></Link>;
+            })}
           </div>
 
           {/* Signed-in user */}
@@ -498,7 +508,7 @@ const Sidebar = ({ showMobileButton = true, settings }) => {
               <p className="truncate text-sm font-medium text-[var(--theme-text)]">
                 {loading ? "Loading..." : displayName}
               </p>
-              {role && mydata?.name && (
+              {role && (
                 <p className="truncate text-xs text-[var(--theme-muted)]">
                   {role}
                 </p>

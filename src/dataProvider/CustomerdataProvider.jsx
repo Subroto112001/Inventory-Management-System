@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-const CustomerdataProvider = () => {
+const CustomerdataProvider = (enabled = true) => {
   const [customers, setCustomers] = useState([]);
+  const [totalCustomers, setTotalCustomers] = useState(0);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
+    if (!enabled) {
+      setLoadingCustomers(false);
+      return;
+    }
     setLoadingCustomers(true);
 
     try {
@@ -18,6 +23,7 @@ const CustomerdataProvider = () => {
 
       if (res.ok) {
         setCustomers(data.customers || []);
+        setTotalCustomers(Number(data.pagination?.total ?? data.customers?.length ?? 0));
       } else {
         console.error(
           "Failed to load customers:",
@@ -32,14 +38,15 @@ const CustomerdataProvider = () => {
     } finally {
       setLoadingCustomers(false);
     }
-  };
+  }, [enabled]);
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [fetchCustomers]);
 
   return {
     customers,
+    totalCustomers,
     loadingCustomers,
     fetchCustomers,
   };

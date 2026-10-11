@@ -15,6 +15,15 @@ const Page = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("");
+
+  const visibleProducts = products.filter((product) => {
+    if (categoryFilter === "uncategorized") return !product.categoryId;
+    if (!categoryFilter) return true;
+    if (categories.some((category) => category.id === categoryFilter && !category.parentCategoryId)) return product.categoryId === categoryFilter;
+    return product.subcategoryId === categoryFilter;
+  });
 
   const handleDeleteClick = (id, name) => {
     setSelectedProduct({ id, name });
@@ -68,7 +77,12 @@ const Page = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+    const timer = window.setTimeout(() => fetchProducts(), 0);
+    fetch("/api/category?list=1&includeSubcategories=1", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setCategories(data.categories || []))
+      .catch(() => setCategories([]));
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (
@@ -112,11 +126,15 @@ const Page = () => {
                 className="border border-gray-200 rounded-md p-2 bg-gray-50 focus:outline-none focus:ring-0 focus:border-gray-200"
                 name="category"
                 id="category"
+                value={categoryFilter}
+                onChange={(event) => setCategoryFilter(event.target.value)}
               >
                 <option value="">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="clothing">Clothing</option>
-                <option value="home">Home</option>
+                <option value="uncategorized">Uncategorized</option>
+                {categories.filter((category) => !category.parentCategoryId).map((parent) => <optgroup key={parent.id} label={parent.categoryName}>
+                  <option value={parent.id}>{parent.categoryName}</option>
+                  {categories.filter((category) => category.parentCategoryId === parent.id).map((child) => <option key={child.id} value={child.id}>— {child.categoryName}</option>)}
+                </optgroup>)}
               </select>
               {/* category */}
               <select
@@ -147,10 +165,10 @@ const Page = () => {
         <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {loadingProducts ? (
             <p className="text-gray-500">Loading products...</p>
-          ) : products.length === 0 ? (
+          ) : visibleProducts.length === 0 ? (
             <p className="text-gray-500">No products found.</p>
           ) : (
-            products.map((product) => (
+            visibleProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 id={product.id}
@@ -159,7 +177,7 @@ const Page = () => {
                 price={Number(product.price || 0)}
                 quantity={Number(product.quantity || 0)}
                 image={product.image || placeholder}
-                categoryName={product.categoryName || product.category?.categoryName || ""}
+                categoryName={[product.categoryName || product.category?.categoryName, product.subcategoryName].filter(Boolean).join(" · ")}
                 brandName={product.brandName || ""}
                 discount={Number(product.discount || 0)}
                 lowStockAlert={Number(product.lowStockAlert || 0)}

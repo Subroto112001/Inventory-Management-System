@@ -154,6 +154,7 @@ const defaultFormState = {
   productName: "",
   productSKU: "",
   category: "",
+  subcategory: "",
   price: "",
   brandName: "",
   unit: "",
@@ -194,7 +195,10 @@ const EditProductPage = () => {
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState("");
+  const parentCategories = categories.filter((category) => !category.parentCategoryId);
+  const availableSubcategories = categories.filter((category) => category.parentCategoryId === formData.category);
   const [currentCategory, setCurrentCategory] = useState(null);
+  const [currentSubcategory, setCurrentSubcategory] = useState(null);
   const [currentStock, setCurrentStock] = useState(0); // read-only, not part of PUT payload
   const [gallery, setGallery] = useState([]);
   const galleryRef = useRef([]);
@@ -209,7 +213,7 @@ const EditProductPage = () => {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/category?list=1", { cache: "no-store" })
+    fetch("/api/category?list=1&includeSubcategories=1", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Unable to load categories.");
@@ -243,11 +247,13 @@ const EditProductPage = () => {
           name: product.categoryName || "Current category",
           isActive: product.categoryIsActive !== false,
         } : null);
+        setCurrentSubcategory(product.categoryId && product.subcategoryId ? { id: product.subcategoryId, name: product.subcategoryName || "Current subcategory" } : null);
 
         setFormData({
           productName: product.productName ?? "",
           productSKU: product.productSKU ?? "",
           category: product.categoryId ?? "",
+          subcategory: product.categoryId ? product.subcategoryId ?? "" : "",
           price: product.price ?? "",
           brandName: product.brandName ?? "",
           unit: product.unit ?? "",
@@ -290,6 +296,7 @@ const EditProductPage = () => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
+      ...(name === "category" ? { subcategory: "" } : {}),
     }));
   };
 
@@ -353,8 +360,8 @@ const EditProductPage = () => {
       setPublishError("Price is required.");
       return;
     }
-    if (!formData.category) {
-      setPublishError("Please select a category.");
+    if (formData.subcategory && !availableSubcategories.some((item) => item.id === formData.subcategory) && formData.subcategory !== currentSubcategory?.id) {
+      setPublishError("Select a subcategory that belongs to the selected Category.");
       return;
     }
     if (categoriesLoading || categoriesError) {
@@ -573,10 +580,9 @@ const EditProductPage = () => {
               onChange={handleChange}
               disabled={submitting || loadingProduct || categoriesLoading}
               className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all disabled:cursor-not-allowed disabled:bg-gray-100"
-              required
             >
-              <option value="">{categoriesLoading ? "Loading categories..." : "Select a category"}</option>
-              {categories.map((category) => (
+              <option value="">{categoriesLoading ? "Loading categories..." : "Uncategorized"}</option>
+              {parentCategories.map((category) => (
                 <option key={category.id} value={category.id}>{category.categoryName}</option>
               ))}
               {currentCategory && !categories.some((category) => category.id === currentCategory.id) && (
@@ -586,6 +592,15 @@ const EditProductPage = () => {
               )}
             </select>
             {categoriesError && <p className="text-xs text-red-600" role="alert">{categoriesError}</p>}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="subcategory" className="text-gray-700 font-medium text-sm">Subcategory <span className="font-normal text-gray-500">(optional)</span></label>
+            <select id="subcategory" name="subcategory" value={formData.subcategory} onChange={handleChange} disabled={submitting || loadingProduct || !formData.category || availableSubcategories.length === 0} className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all disabled:cursor-not-allowed disabled:bg-gray-100">
+              <option value="">No subcategory</option>
+              {availableSubcategories.map((subcategory) => <option key={subcategory.id} value={subcategory.id}>{subcategory.categoryName}</option>)}
+              {currentSubcategory && formData.subcategory === currentSubcategory.id && !availableSubcategories.some((item) => item.id === currentSubcategory.id) && <option value={currentSubcategory.id}>{currentSubcategory.name} (current assignment)</option>}
+            </select>
           </div>
 
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">

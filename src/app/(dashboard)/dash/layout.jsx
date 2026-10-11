@@ -17,5 +17,12 @@ export default async function DashboardLayout({ children }) {
     redirect("/");
   }
 
-  return <MainLayout>{children}</MainLayout>;
+  const currentUser = user ? {
+    id: user._id?.toString(),
+    role: user.role,
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    email: user.email || "",
+  } : null;
+  return <MainLayout currentUser={currentUser}>{children}</MainLayout>;
 }

@@ -65,6 +65,11 @@ const categorySchema = new Schema(
   },
 );
 
+// Drop a stale hot-reload model compiled with the former self-reference field.
+if (mongoose.models.Category?.schema.path("parentCategory")) {
+  mongoose.deleteModel("Category");
+}
+
 const Category =
   mongoose.models.Category || mongoose.model("Category", categorySchema);
 

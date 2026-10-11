@@ -6,6 +6,7 @@ import {
 } from "@/frontEndDataProvider/ProductpageDataProvider";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import {
   LuSearch,
@@ -25,6 +26,7 @@ import {
 
 function ProductPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialSearch = searchParams.get("search") || "";
   const initialCategory = searchParams.get("category") || "All Products";
 
@@ -48,7 +50,7 @@ function ProductPageContent() {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/category?list=1&public=1", { cache: "no-store" })
+    fetch("/api/category?list=1&public=1&includeSubcategories=1", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Unable to load categories");
@@ -115,6 +117,11 @@ function ProductPageContent() {
   const changeCategory = (categoryId) => {
     setActiveCategory(categoryId);
     setPage(1);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (categoryId === "All Products") nextParams.delete("category");
+    else nextParams.set("category", categoryId);
+    nextParams.delete("subcategory");
+    router.replace(`/product${nextParams.size ? `?${nextParams.toString()}` : ""}`, { scroll: false });
   };
 
   return (
@@ -186,7 +193,7 @@ function ProductPageContent() {
                         : "text-[#5B564C] hover:text-[#B65C38]"
                     }`}
                   >
-                    <span>{category.categoryName}</span>
+                    <span className={category.parentCategoryId ? "pl-4 text-xs" : ""}>{category.parentCategoryId ? `↳ ${category.parentCategoryName} / ${category.categoryName}` : category.categoryName}</span>
 
                     {activeCategory === category.id && <LuCheck size={15} />}
                   </button>
@@ -403,7 +410,7 @@ function ProductPageContent() {
                       : "text-[#5B564C]"
                   }`}
                 >
-                  {category.categoryName}
+                  {category.parentCategoryId ? `↳ ${category.parentCategoryName} / ${category.categoryName}` : category.categoryName}
 
                   {activeCategory === category.id && <LuCheck size={15} />}
                 </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import RichTextContent from "@/Component/RichTextContent";
 import Link from "next/link";
@@ -21,7 +21,7 @@ const ProductDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -42,13 +42,17 @@ const ProductDetailsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params?.id]);
 
   useEffect(() => {
-    if (params?.id) {
-      fetchProduct();
-    }
-  }, [params?.id]);
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active && params?.id) fetchProduct();
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchProduct, params?.id]);
 
   // -----------------------------
   // Loading
@@ -121,13 +125,21 @@ const ProductDetailsPage = () => {
             </div>
           </div>
 
-          <Link
-            href={`/editproduct/${product.id}`}
-            className="bg-[var(--theme-primary)] text-white py-2 px-4 border border-[var(--theme-primary)] rounded-md flex items-center gap-2 cursor-pointer hover:bg-transparent hover:text-[var(--theme-primary)] transition-all"
-          >
-            <MdEdit className="text-[20px]" />
-            <span>Edit Product</span>
-          </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              href={`/dash/product-analysis/${product.id}`}
+              className="flex items-center gap-2 rounded-md border border-[var(--theme-primary)] px-4 py-2 text-[var(--theme-primary)] transition-all hover:bg-[var(--theme-primary)] hover:text-white"
+            >
+              Product analysis
+            </Link>
+            <Link
+              href={`/dash/editproduct/${product.id}`}
+              className="flex items-center gap-2 rounded-md border border-[var(--theme-primary)] bg-[var(--theme-primary)] px-4 py-2 text-white transition-all hover:bg-transparent hover:text-[var(--theme-primary)]"
+            >
+              <MdEdit className="text-[20px]" />
+              <span>Edit Product</span>
+            </Link>
+          </div>
         </div>
 
         {/* ================= PRODUCT MAIN ================= */}

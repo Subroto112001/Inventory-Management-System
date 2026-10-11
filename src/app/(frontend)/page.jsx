@@ -311,7 +311,7 @@ export default function EcommerceHomePage() {
                 No categories available right now.
               </p>
             ) : (
-              categories.map((cat) => (
+              categories.filter((cat) => !cat.parentCategoryId).map((cat) => (
 
 <Link
   key={cat.id}
@@ -327,7 +327,7 @@ export default function EcommerceHomePage() {
   </div>
 
   <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
-    {cat.name}
+    {cat.categoryName || cat.name}
   </p>
 </Link>
 

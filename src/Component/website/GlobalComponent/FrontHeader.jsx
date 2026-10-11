@@ -90,12 +90,14 @@ export default function FrontHeader({ settings }) {
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState(false);
+  const topLevelCategories = categories.filter((category) => !category.parentCategoryId);
   const navigationLinks = [
     BASE_NAV_LINKS[0],
     BASE_NAV_LINKS[1],
-    ...categories.map((category) => ({
+    ...topLevelCategories.map((category) => ({
       label: category.categoryName,
       href: `/product?category=${encodeURIComponent(category.id)}`,
+      subcategories: categories.filter((item) => item.parentCategoryId === category.id),
     })),
     BASE_NAV_LINKS[2],
   ];
@@ -104,16 +106,10 @@ export default function FrontHeader({ settings }) {
     let active = true;
     const loadCategories = async () => {
       try {
-        const response = await fetch("/api/category?list=1&public=1", { cache: "no-store" });
+        const response = await fetch("/api/category?list=1&public=1&includeSubcategories=1", { cache: "no-store" });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Unable to load categories");
-        const seen = new Set();
-        const uniqueCategories = (data.categories || []).filter((category) => {
-          const normalizedName = String(category.categoryName || "").trim().toLowerCase();
-          if (!category.id || !normalizedName || seen.has(normalizedName)) return false;
-          seen.add(normalizedName);
-          return true;
-        });
+        const uniqueCategories = (data.categories || []).filter((category) => category.id && category.categoryName);
         if (active) setCategories(uniqueCategories);
         if (active) setCategoriesError(false);
       } catch {
@@ -420,17 +416,14 @@ export default function FrontHeader({ settings }) {
             className="flex items-center gap-7 overflow-x-auto scroll-smooth py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {navigationLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`whitespace-nowrap text-sm transition-colors ${
-                  isActiveLink(link.href)
-                    ? "text-[var(--store-accent)]"
-                    : "text-[var(--store-text)] hover:text-[var(--store-accent)]"
-                }`}
-              >
-                {link.label}
-              </Link>
+              <div key={link.label} className="group relative py-1">
+                <Link href={link.href} className={`whitespace-nowrap text-sm transition-colors ${isActiveLink(link.href) ? "text-[var(--store-accent)]" : "text-[var(--store-text)] hover:text-[var(--store-accent)]"}`}>
+                  {link.label}
+                </Link>
+                {link.subcategories?.length > 0 && <div className="invisible absolute left-0 top-full z-50 min-w-48 translate-y-1 rounded-lg border border-[#E4DED2] bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  {link.subcategories.map((subcategory) => <Link key={subcategory.id} href={`/product?category=${encodeURIComponent(subcategory.id)}`} className="block rounded-md px-3 py-2 text-sm text-[var(--store-text)] hover:bg-[#F7F3EC] hover:text-[var(--store-accent)]">{subcategory.categoryName}</Link>)}
+                </div>}
+              </div>
             ))}
             {!categoriesLoading && categories.length === 0 && <span className="whitespace-nowrap text-xs text-[var(--theme-muted)]" role="status">{categoriesError ? "Categories unavailable" : "No categories available"}</span>}
           </div>
@@ -469,18 +462,10 @@ export default function FrontHeader({ settings }) {
 
             <div className="flex flex-col gap-1">
               {navigationLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`border-b border-[#E4DED2] py-2.5 text-sm ${
-                    isActiveLink(link.href)
-                      ? "text-[var(--store-accent)]"
-                      : "text-[#211F1D]"
-                  }`}
-                >
-                  {link.label}
-                </Link>
+                <div key={link.label} className="border-b border-[#E4DED2] py-2">
+                  <Link href={link.href} onClick={() => setMobileOpen(false)} className={`block py-1 text-sm ${isActiveLink(link.href) ? "text-[var(--store-accent)]" : "text-[#211F1D]"}`}>{link.label}</Link>
+                  {link.subcategories?.map((subcategory) => <Link key={subcategory.id} href={`/product?category=${encodeURIComponent(subcategory.id)}`} onClick={() => setMobileOpen(false)} className="block py-1.5 pl-4 text-sm text-[#5B564C] hover:text-[var(--store-accent)]">{subcategory.categoryName}</Link>)}
+                </div>
               ))}
               {!categoriesLoading && categories.length === 0 && <p className="py-2 text-xs text-[#8A8378]" role="status">{categoriesError ? "Categories unavailable" : "No categories available"}</p>}
             </div>

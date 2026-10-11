@@ -7,6 +7,7 @@ import { requirePermission } from "@/lib/authorization";
 import { PERMISSIONS } from "@/lib/authorization";
 import Brand from "@/lib/models/Brand";
 import Category from "@/lib/models/Category";
+import Subcategory from "@/lib/models/Subcategory";
 import { parseProductSpecifications, sanitizeRichText, sanitizeSpecifications } from "@/lib/richText";
 import { uploadImageToCloudinary, deleteCloudinaryFile } from "@/lib/cloudinary/cloudinary";
 
@@ -29,6 +30,10 @@ function serializePublicProduct(product) {
     unit: product.unit || "",
     brand: product.brand?.brandName || product.brandName || "",
     category: product.category?.categoryName || "",
+    categoryId: product.category?._id?.toString() || "",
+    subcategory: product.subcategory?.subcategoryName || "",
+    subcategoryName: product.subcategory?.subcategoryName || "",
+    subcategoryId: product.subcategory?._id?.toString() || "",
     shipping: product.shipping || null,
     paymentOption: product.paymentOption || "COD_ONLY",
     returnPolicy: product.returnPolicy || null,
@@ -64,6 +69,7 @@ export async function GET(request, { params }) {
     })
       .populate("brand", "brandName logo")
       .populate("category", "categoryName isActive")
+      .populate("subcategory", "subcategoryName category")
       .lean();
 
     if (!product) {
@@ -108,8 +114,10 @@ export async function GET(request, { params }) {
           productSKU: product.productSKU,
           categoryId: product.category?._id?.toString() || "",
           categoryName: product.category?.categoryName || "",
+          subcategoryId: product.subcategory?._id?.toString() || "",
+          subcategoryName: product.subcategory?.subcategoryName || "",
           categoryIsActive: product.category?.isActive !== false,
-          brandName: product.brandName || "",
+          brandName: product.brand?.brandName || product.brandName || "",
           description: sanitizeRichText(product.description || ""),
           specifications: sanitizeSpecifications(product.specifications || []),
           unit: product.unit || "",
@@ -183,6 +191,7 @@ export async function PUT(request, { params }) {
       productName,
       productSKU,
       category,
+      subcategory,
       price,
       brandName,
       unit,
@@ -238,19 +247,34 @@ export async function PUT(request, { params }) {
     let selectedCategory = null;
     if (category !== undefined) {
       const categoryId = String(category).trim();
-      if (!mongoose.isValidObjectId(categoryId)) {
-        return NextResponse.json(
-          { message: "Please select a valid category." },
-          { status: 400 },
-        );
+      if (categoryId) {
+        if (!mongoose.isValidObjectId(categoryId)) {
+          return NextResponse.json(
+            { message: "Please select a valid category." },
+            { status: 400 },
+          );
+        }
+        selectedCategory = await Category.findById(categoryId).select("_id isActive categoryName");
+        if (!selectedCategory || (selectedCategory.isActive === false && categoryId !== existingProduct.category?.toString())) {
+          return NextResponse.json(
+            { message: "The selected Category is unavailable. Choose an active Category." },
+            { status: 400 },
+          );
       }
-      selectedCategory = await Category.findById(categoryId).select("_id isActive categoryName");
-      if (!selectedCategory || (selectedCategory.isActive === false && categoryId !== existingProduct.category?.toString())) {
-        return NextResponse.json(
-          { message: "The selected category is unavailable. Choose an active category." },
-          { status: 400 },
-        );
       }
+    } else if (existingProduct.category) {
+      selectedCategory = await Category.findById(existingProduct.category).select("_id isActive categoryName");
+    }
+
+    const subcategoryId = subcategory === undefined
+      ? existingProduct.subcategory?.toString() || ""
+      : String(subcategory || "").trim();
+    let selectedSubcategory = null;
+    if (subcategoryId) {
+      if (!selectedCategory) return NextResponse.json({ message: "Select a Category before selecting a Subcategory." }, { status: 400 });
+      if (!mongoose.isValidObjectId(subcategoryId)) return NextResponse.json({ message: "Please select a valid subcategory." }, { status: 400 });
+      selectedSubcategory = await Subcategory.findOne({ _id: subcategoryId, category: selectedCategory._id }).select("_id subcategoryName isActive");
+      if (!selectedSubcategory || (selectedSubcategory.isActive === false && subcategoryId !== existingProduct.subcategory?.toString())) return NextResponse.json({ message: "The selected Subcategory does not belong to this Category or is unavailable." }, { status: 400 });
     }
 
     const previousImages = existingProduct.images?.length
@@ -285,9 +309,12 @@ export async function PUT(request, { params }) {
       }
     }
 
+    const previousCategoryId = existingProduct.category?.toString() || "";
+    const previousSubcategoryId = existingProduct.subcategory?.toString() || "";
     existingProduct.productName = productName;
     existingProduct.productSKU = normalizedSKU;
-    if (selectedCategory) existingProduct.category = selectedCategory._id;
+    existingProduct.category = selectedCategory?._id || null;
+    existingProduct.subcategory = selectedSubcategory?._id || null;
     existingProduct.price = Number(price);
     existingProduct.brandName = brandName;
     existingProduct.unit = unit;
@@ -335,7 +362,38 @@ export async function PUT(request, { params }) {
     // note: currentStock ইচ্ছাকৃতভাবে এখানে টাচ করা হয়নি —
     // এটা initialStock এডিট করলে বদলানো উচিত না, বরং stock adjustment API দিয়ে বদলানো উচিত
 
-    await existingProduct.save();
+    const categorySession = await mongoose.startSession();
+    try {
+      await categorySession.withTransaction(async () => {
+        await existingProduct.save({ session: categorySession });
+        const nextCategoryId = selectedCategory?._id?.toString() || "";
+        const nextSubcategoryId = selectedSubcategory?._id?.toString() || "";
+        if (nextCategoryId !== previousCategoryId && selectedCategory) {
+          const addedParent = await Category.updateOne(
+            { _id: selectedCategory._id, isActive: true },
+            { $addToSet: { products: existingProduct._id } },
+            { session: categorySession },
+          );
+          if (addedParent.matchedCount !== 1) throw new Error("The selected category is no longer available.");
+        }
+        if (nextSubcategoryId !== previousSubcategoryId && selectedSubcategory) {
+          const addedChild = await Subcategory.updateOne(
+            { _id: selectedSubcategory._id, category: selectedCategory._id, isActive: true },
+            { $addToSet: { products: existingProduct._id } },
+            { session: categorySession },
+          );
+          if (addedChild.matchedCount !== 1) throw new Error("The selected subcategory is no longer available.");
+        }
+        if (previousCategoryId && previousCategoryId !== nextCategoryId) {
+          await Category.updateOne({ _id: previousCategoryId }, { $pull: { products: existingProduct._id } }, { session: categorySession });
+        }
+        if (previousSubcategoryId && previousSubcategoryId !== nextSubcategoryId) {
+          await Subcategory.updateOne({ _id: previousSubcategoryId }, { $pull: { products: existingProduct._id } }, { session: categorySession });
+        }
+      });
+    } finally {
+      await categorySession.endSession();
+    }
     const retainedIds = new Set(nextImages.map((image) => image.public_id).filter(Boolean));
     for (const image of previousImages) if (image.public_id && !retainedIds.has(image.public_id)) deleteCloudinaryFile(image.public_id).catch(() => {});
 
@@ -347,8 +405,10 @@ export async function PUT(request, { params }) {
           id: existingProduct._id.toString(),
           productName: existingProduct.productName,
           productSKU: existingProduct.productSKU,
-          categoryId: existingProduct.category.toString(),
+          categoryId: existingProduct.category?.toString() || "",
           categoryName: selectedCategory?.categoryName || "",
+          subcategoryId: selectedSubcategory?._id?.toString() || "",
+          subcategoryName: selectedSubcategory?.subcategoryName || "",
           price: existingProduct.price,
           image: existingProduct.image || null,
           images: (existingProduct.images || []).map((image) => image.url),

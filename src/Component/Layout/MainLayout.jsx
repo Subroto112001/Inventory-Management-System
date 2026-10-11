@@ -6,13 +6,13 @@ import {
   themeStyleVars,
 } from "@/lib/storeSettings";
 
-export default async function MainLayout({ children }) {
+export default async function MainLayout({ children, currentUser }) {
   const settings = await getStoreSettings();
   const theme = normalizeTheme(settings);
 
   return (
     <div
-      className="flex h-screen flex-col bg-[var(--theme-background)]"
+      className="flex h-dvh min-h-0 overflow-hidden bg-[var(--theme-background)]"
       style={{
         ...themeStyleVars(settings),
         fontFamily: theme.fontFamily,
@@ -20,21 +20,11 @@ export default async function MainLayout({ children }) {
         "--color-primary-container": theme.primary,
       }}
     >
-      {/* Header Section */}
-      <header
-        className="h-[70px] w-full shrink-0 z-50 shadow-md bg-[var(--theme-primary)]"
-        aria-label="Global Header"
-      >
-        <Header settings={theme} />
-      </header>
-
-      <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar settings={theme} />
-
-        {/* Main Content */}
+      <Sidebar settings={theme} currentUser={currentUser} showMobileButton={false} />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <Header settings={theme} currentUser={currentUser} />
         <main
-          className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6 focus:outline-none"
+          className="dashboard-layout-scroll min-h-0 min-w-0 flex-1 overflow-y-auto p-4 focus:outline-none sm:p-5 lg:p-7"
           id="main-content"
           tabIndex="-1"
           aria-label="Main Content"

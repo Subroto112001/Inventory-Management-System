@@ -21,8 +21,6 @@ import {
   MdAttachMoney,
   MdArrowUpward,
   MdArrowDownward,
-  MdMoreVert,
-  MdFilterList,
   MdArrowForward,
   MdErrorOutline,
   MdRefresh,
@@ -33,6 +31,13 @@ import {
 import CustomerdataProvider from "@/dataProvider/CustomerdataProvider";
 import Link from "next/link";
 import OfferdataProvider from "@/dataProvider/OfferdataProvider";
+import useCurrentUser from "@/dataProvider/getMe";
+
+const PRODUCT_VIEW_ROLES = ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"];
+const ORDER_VIEW_ROLES = ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"];
+const CUSTOMER_VIEW_ROLES = ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"];
+const OFFER_VIEW_ROLES = ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"];
+const REPORT_VIEW_ROLES = ["System Admin", "Admin", "Warehouse Manager", "Manager", "Auditor", "Senior HR"];
 
 const formatCurrency = (value) =>
   `$${(Number(value) || 0).toLocaleString("en-US", {
@@ -40,6 +45,7 @@ const formatCurrency = (value) =>
   })}`;
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const localDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 const formatDate = (date) => {
   if (!date) return "—";
@@ -91,44 +97,68 @@ const getOrderStatusClass = (status) => {
 };
 
 const Page = () => {
+  const { mydata: currentUser, loading: loadingCurrentUser } = useCurrentUser();
+  const role = currentUser?.role;
+  const canViewProducts = PRODUCT_VIEW_ROLES.includes(role);
+  const canViewOrders = ORDER_VIEW_ROLES.includes(role);
+  const canViewCustomers = CUSTOMER_VIEW_ROLES.includes(role);
+  const canViewOffers = OFFER_VIEW_ROLES.includes(role);
+  const canViewReports = REPORT_VIEW_ROLES.includes(role);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [orderSummary, setOrderSummary] = useState(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [productLoadError, setProductLoadError] = useState("");
+  const [orderLoadError, setOrderLoadError] = useState("");
 
-  const { customers, loadingCustomers, fetchCustomers } =
-    CustomerdataProvider();
+  const { totalCustomers, loadingCustomers } = CustomerdataProvider(canViewCustomers);
 
-  const { offers, loadingOffers, fetchOffers } = OfferdataProvider();
+  const { offers, totalOffers, loadingOffers } = OfferdataProvider(canViewOffers);
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setLoadError("");
-
     try {
-      const [productRes, orderRes] = await Promise.all([
-        fetch("/api/product", {
-          cache: "no-store",
-        }),
-
-        fetch("/api/orders", {
-          cache: "no-store",
-        }),
+      const now = new Date();
+      const todayStart = startOfDay(now);
+      const yesterdayStart = new Date(todayStart);
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const weekStart = new Date(todayStart);
+      weekStart.setDate(weekStart.getDate() - 6);
+      const query = new URLSearchParams({
+        dashboard: "1",
+        todayStart: todayStart.toISOString(),
+        yesterdayStart: yesterdayStart.toISOString(),
+        monthStart: monthStart.toISOString(),
+        weekStart: weekStart.toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      });
+      const load = async (url, allowed) => {
+        if (!allowed) return null;
+        const response = await fetch(url, { cache: "no-store" });
+        const data = await response.json();
+        if (response.status === 403) return null;
+        if (!response.ok || !data.success) throw new Error(data.message || `Failed to load ${url.includes("product") ? "products" : "orders"}`);
+        return data;
+      };
+      const [productResult, orderResult] = await Promise.allSettled([
+        load("/api/product", canViewProducts),
+        load(`/api/orders?${query.toString()}`, canViewOrders),
       ]);
-
-      const productData = await productRes.json();
-      const orderData = await orderRes.json();
-
-      if (!productRes.ok || !productData.success) {
-        throw new Error(productData.message || "Failed to load products");
+      setLoadError("");
+      if (productResult.status === "fulfilled") {
+        setProducts(productResult.value?.products || []);
+        setProductLoadError("");
+      } else {
+        setProductLoadError(productResult.reason?.message || "Products could not be loaded.");
       }
-
-      if (!orderRes.ok || !orderData.success) {
-        throw new Error(orderData.message || "Failed to load orders");
+      if (orderResult.status === "fulfilled") {
+        setOrders(orderResult.value?.orders || []);
+        setOrderSummary(orderResult.value?.dashboard || null);
+        setOrderLoadError("");
+      } else {
+        setOrderLoadError(orderResult.reason?.message || "Orders could not be loaded.");
       }
-
-      setProducts(productData.products || []);
-      setOrders(orderData.orders || []);
     } catch (err) {
       setLoadError(
         err.message || "Something went wrong while loading the dashboard",
@@ -136,11 +166,11 @@ const Page = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [canViewProducts, canViewOrders]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!loadingCurrentUser) Promise.resolve().then(fetchData);
+  }, [fetchData, loadingCurrentUser]);
 
   // ------------------------------------------------------------
   // Time boundaries
@@ -150,12 +180,6 @@ const Page = () => {
 
   const todayStart = startOfDay(now);
 
-  const yesterdayStart = new Date(todayStart);
-  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-
-  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
   // ------------------------------------------------------------
   // Product-derived stats
@@ -163,17 +187,6 @@ const Page = () => {
 
   const productStats = useMemo(() => {
     const totalProducts = products.length;
-
-    const productsBeforeThisMonth = products.filter(
-      (p) => p.createdAt && new Date(p.createdAt) < thisMonthStart,
-    ).length;
-
-    const productGrowth =
-      productsBeforeThisMonth > 0
-        ? ((totalProducts - productsBeforeThisMonth) /
-            productsBeforeThisMonth) *
-          100
-        : null;
 
     const lowStock = products.filter((p) => {
       const alert = Number(p.lowStockAlert) || 0;
@@ -188,113 +201,41 @@ const Page = () => {
 
     return {
       totalProducts,
-      productGrowth,
       lowStock,
       outOfStockCount,
     };
-  }, [products, thisMonthStart]);
+  }, [products]);
 
   // ------------------------------------------------------------
   // Order-derived stats
   // ------------------------------------------------------------
 
   const orderStats = useMemo(() => {
-    let todaySales = 0;
-    let yesterdaySales = 0;
-    let monthRevenue = 0;
-    let lastMonthRevenue = 0;
-
-    const dayBuckets = [];
-
-    for (let i = 6; i >= 0; i -= 1) {
-      const d = new Date(todayStart);
-
-      d.setDate(d.getDate() - i);
-
-      dayBuckets.push({
-        key: d.toDateString(),
-
-        name: d.toLocaleDateString("en-US", {
-          weekday: "short",
-        }),
-
-        revenue: 0,
-      });
-    }
-
-    const dayMap = Object.fromEntries(dayBuckets.map((b) => [b.key, b]));
-
-    const productUnits = {};
-
-    orders.forEach((order) => {
-      if (order.status === "Cancelled") return;
-
-      const grand = Number(order?.financials?.grandTotal) || 0;
-
-      const created = order.createdAt ? new Date(order.createdAt) : null;
-
-      if (!created) return;
-
-      if (created >= todayStart) {
-        todaySales += grand;
-      } else if (created >= yesterdayStart && created < todayStart) {
-        yesterdaySales += grand;
-      }
-
-      if (created >= thisMonthStart) {
-        monthRevenue += grand;
-      } else if (created >= lastMonthStart && created < thisMonthStart) {
-        lastMonthRevenue += grand;
-      }
-
-      const dayKey = startOfDay(created).toDateString();
-
-      if (dayMap[dayKey]) {
-        dayMap[dayKey].revenue += grand;
-      }
-
-      if (created >= thisMonthStart) {
-        (order.items || []).forEach((item) => {
-          const name = item.name || "Unknown";
-
-          productUnits[name] =
-            (productUnits[name] || 0) + (Number(item.quantity) || 0);
-        });
-      }
-    });
-
+    const todaySales = Number(orderSummary?.todaySales) || 0;
+    const yesterdaySales = Number(orderSummary?.yesterdaySales) || 0;
     const salesGrowth =
       yesterdaySales > 0
         ? ((todaySales - yesterdaySales) / yesterdaySales) * 100
         : null;
-
-    const revenueGrowth =
-      lastMonthRevenue > 0
-        ? ((monthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-        : null;
-
-    const topProducts = Object.entries(productUnits)
-      .map(([name, units]) => ({
-        name,
-        units,
-      }))
-      .sort((a, b) => b.units - a.units)
-      .slice(0, 5);
+    const salesByDay = new Map((orderSummary?.salesTrend || []).map((item) => [item._id, Number(item.revenue) || 0]));
+    const salesTrendData = [];
+    for (let i = 6; i >= 0; i -= 1) {
+      const date = new Date(todayStart);
+      date.setDate(date.getDate() - i);
+      salesTrendData.push({
+        name: date.toLocaleDateString("en-US", { weekday: "short" }),
+        revenue: salesByDay.get(localDateKey(date)) || 0,
+      });
+    }
 
     return {
       todaySales,
       salesGrowth,
-      monthRevenue,
-      revenueGrowth,
-
-      salesTrendData: dayBuckets.map(({ name, revenue }) => ({
-        name,
-        revenue,
-      })),
-
-      topProducts,
+      monthRevenue: Number(orderSummary?.monthRevenue) || 0,
+      salesTrendData,
+      topProducts: orderSummary?.topProducts || [],
     };
-  }, [orders, todayStart, yesterdayStart, thisMonthStart, lastMonthStart]);
+  }, [orderSummary, todayStart]);
 
   // ------------------------------------------------------------
   // Latest 4 Orders
@@ -319,8 +260,6 @@ const Page = () => {
   // Customers
   // ------------------------------------------------------------
 
-  const totalCustomers = customers.length;
-
   // ------------------------------------------------------------
   // Percentage helper
   // ------------------------------------------------------------
@@ -330,9 +269,6 @@ const Page = () => {
 
   const salesGrowth = roundPct(orderStats.salesGrowth);
 
-  const revenueGrowth = roundPct(orderStats.revenueGrowth);
-
-  const productGrowth = roundPct(productStats.productGrowth);
 
   // ------------------------------------------------------------
   // Offer helpers
@@ -395,9 +331,9 @@ const Page = () => {
   // Loading UI
   // ------------------------------------------------------------
 
-  if (isLoading || loadingCustomers) {
+  if (loadingCurrentUser || isLoading || loadingCustomers || loadingOffers) {
     return (
-      <div className="h-screen w-full overflow-hidden bg-gray-50/50 p-6 flex flex-col justify-between">
+      <div className="dashboard-main">
         <span className="sr-only" role="status" aria-live="polite">
           Loading dashboard metrics and statistics...
         </span>
@@ -514,38 +450,12 @@ const Page = () => {
   // Error UI
   // ------------------------------------------------------------
 
-  if (loadError) {
-    return (
-      <div className="flex flex-row h-screen items-center justify-center overflow-hidden">
-        <div className="flex flex-col items-center gap-3 text-center max-w-sm">
-          <MdErrorOutline size={36} className="text-error" aria-hidden="true" />
-
-          <p className="text-h3 text-on-surface">
-            Couldn't load your dashboard
-          </p>
-
-          <p className="text-body text-secondary">{loadError}</p>
-
-          <button
-            onClick={fetchData}
-            className="btn-primary text-label-sm flex items-center gap-1"
-          >
-            <MdRefresh size={16} aria-hidden="true" />
-            Try again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // ------------------------------------------------------------
   // Dashboard
   // ------------------------------------------------------------
 
   return (
-    <div className="h-screen w-full overflow-hidden">
-      <div className="flex flex-row h-full overflow-hidden">
-        <main className="dashboard-main h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="dashboard-main">
           {/* ------------------------------------------------ */}
           {/* Header */}
           {/* ------------------------------------------------ */}
@@ -557,29 +467,38 @@ const Page = () => {
               </h1>
 
               <p className="text-body">
-                Real-time inventory and sales metrics.
+                A live overview of your store operations.
               </p>
             </div>
 
             <div>
-              <button
-                className="btn-primary text-label-sm flex items-center gap-1"
-                aria-label="Add new product to inventory"
-              >
+              {(["System Admin", "Admin", "Manager"].includes(role)) && <Link href="/dash/addnewproduct" className="btn-primary text-label-sm flex items-center gap-1" aria-label="Add new product to inventory">
                 <MdAdd size={20} aria-hidden="true" />
                 Add Product
-              </button>
+              </Link>}
             </div>
           </header>
+
+          {(loadError || productLoadError || orderLoadError) && <div className="card mb-6 dashboard-alert flex flex-wrap items-center justify-between gap-3 border border-amber-300 bg-amber-50" role="status">
+            <div className="flex items-start gap-2 text-amber-900">
+              <MdErrorOutline size={20} aria-hidden="true" />
+              <p className="text-body">
+                {loadError || [productLoadError && `Product data: ${productLoadError}`, orderLoadError && `Order data: ${orderLoadError}`].filter(Boolean).join(" ")}
+              </p>
+            </div>
+            <button onClick={fetchData} className="btn-primary text-label-sm flex items-center gap-1">
+              <MdRefresh size={16} aria-hidden="true" /> Retry failed data
+            </button>
+          </div>}
 
           {/* ------------------------------------------------ */}
           {/* KPI Cards */}
           {/* ------------------------------------------------ */}
 
-          <section aria-label="Key Performance Indicators" className="kpi-grid">
+          <section aria-label="Key Performance Indicators" className="kpi-grid dashboard-kpis">
             {/* Total Products */}
 
-            <article className="card">
+            {canViewProducts && <article className="card">
               <div className="card-header">
                 <div>
                   <h2 className="text-label-sm text-secondary uppercase">
@@ -587,7 +506,7 @@ const Page = () => {
                   </h2>
 
                   <p className="text-h2 text-on-surface">
-                    {productStats.totalProducts.toLocaleString()}
+                    {productLoadError ? "—" : productStats.totalProducts.toLocaleString()}
                   </p>
                 </div>
 
@@ -596,43 +515,20 @@ const Page = () => {
                 </div>
               </div>
 
-              <div className="trend-info">
-                {productGrowth !== null ? (
-                  <span
-                    className={`badge-trend text-label-sm flex items-center gap-1 ${
-                      productGrowth >= 0 ? "trend-up" : "trend-warning"
-                    }`}
-                  >
-                    {productGrowth >= 0 ? (
-                      <MdArrowUpward size={14} />
-                    ) : (
-                      <MdArrowDownward size={14} />
-                    )}
-                    {Math.abs(productGrowth)}%
-                  </span>
-                ) : (
-                  <span className="text-label-sm text-secondary">
-                    New catalog
-                  </span>
-                )}
-
-                <span className="text-label-sm text-secondary">
-                  vs last month
-                </span>
-              </div>
-            </article>
+              <Link href="/dash/products" className="btn-link text-label-sm">View products <MdArrowForward size={16} /></Link>
+            </article>}
 
             {/* Today's Sales */}
 
-            <article className="card">
+            {canViewOrders && <article className="card">
               <div className="card-header">
                 <div>
                   <h2 className="text-label-sm text-secondary uppercase">
-                    Today's Sales
+                    Today&apos;s Sales
                   </h2>
 
                   <p className="text-h2 text-on-surface">
-                    {formatCurrency(orderStats.todaySales)}
+                    {orderLoadError ? "—" : formatCurrency(orderStats.todaySales)}
                   </p>
                 </div>
 
@@ -642,7 +538,7 @@ const Page = () => {
               </div>
 
               <div className="trend-info">
-                {salesGrowth !== null ? (
+                {!orderLoadError && salesGrowth !== null ? (
                   <span
                     className={`badge-trend text-label-sm flex items-center gap-1 ${
                       salesGrowth >= 0 ? "trend-up" : "trend-warning"
@@ -657,7 +553,7 @@ const Page = () => {
                   </span>
                 ) : (
                   <span className="text-label-sm text-secondary">
-                    No sales yesterday
+                    {orderLoadError ? "Sales data unavailable" : "No sales yesterday"}
                   </span>
                 )}
 
@@ -665,11 +561,12 @@ const Page = () => {
                   vs yesterday
                 </span>
               </div>
-            </article>
+              <Link href="/dash/order" className="btn-link mt-3 text-label-sm">View orders <MdArrowForward size={16} /></Link>
+            </article>}
 
             {/* Low Stock */}
 
-            <article className="card">
+            {canViewProducts && <article className="card">
               <div className="card-header">
                 <div>
                   <h2 className="text-label-sm text-secondary uppercase">
@@ -677,7 +574,7 @@ const Page = () => {
                   </h2>
 
                   <p className="text-h2 text-on-surface">
-                    {productStats.lowStock.length}
+                    {productLoadError ? "—" : productStats.lowStock.length}
                   </p>
                 </div>
 
@@ -688,18 +585,19 @@ const Page = () => {
 
               <div className="trend-info">
                 <span className="badge-trend text-label-sm trend-warning flex items-center gap-1">
-                  {productStats.outOfStockCount} out of stock
+                  {productLoadError ? "Stock data unavailable" : `${productStats.outOfStockCount} out of stock`}
                 </span>
 
                 <span className="text-label-sm text-secondary">
                   needs action
                 </span>
               </div>
-            </article>
+              <Link href="/dash/stock" className="btn-link mt-3 text-label-sm">Review stock <MdArrowForward size={16} /></Link>
+            </article>}
 
             {/* Monthly Revenue */}
 
-            <article className="card">
+            {canViewOrders && <article className="card">
               <div className="card-header">
                 <div>
                   <h2 className="text-label-sm text-secondary uppercase">
@@ -707,7 +605,7 @@ const Page = () => {
                   </h2>
 
                   <p className="text-h2 text-on-surface">
-                    {formatCurrency(orderStats.monthRevenue)}
+                    {orderLoadError ? "—" : formatCurrency(orderStats.monthRevenue)}
                   </p>
                 </div>
 
@@ -716,38 +614,15 @@ const Page = () => {
                 </div>
               </div>
 
-              <div className="trend-info">
-                {revenueGrowth !== null ? (
-                  <span
-                    className={`badge-trend text-label-sm flex items-center gap-1 ${
-                      revenueGrowth >= 0 ? "trend-up" : "trend-warning"
-                    }`}
-                  >
-                    {revenueGrowth >= 0 ? (
-                      <MdArrowUpward size={14} />
-                    ) : (
-                      <MdArrowDownward size={14} />
-                    )}
-                    {Math.abs(revenueGrowth)}%
-                  </span>
-                ) : (
-                  <span className="text-label-sm text-secondary">
-                    No data last month
-                  </span>
-                )}
-
-                <span className="text-label-sm text-secondary">
-                  vs last month
-                </span>
-              </div>
-            </article>
+              <div className="mt-3 flex items-center justify-between gap-2"><p className="text-label-sm text-secondary">Month to date</p><Link href="/dash/order" className="btn-link text-label-sm">View orders <MdArrowForward size={16} /></Link></div>
+            </article>}
           </section>
 
           {/* ------------------------------------------------ */}
           {/* Charts */}
           {/* ------------------------------------------------ */}
 
-          <section aria-label="Dashboard Charts" className="charts-grid">
+          {canViewOrders && <section aria-label="Dashboard Charts" className="charts-grid dashboard-charts">
             {/* Sales Trend */}
 
             <article className="card chart-container">
@@ -760,12 +635,7 @@ const Page = () => {
                   </p>
                 </div>
 
-                <button
-                  className="btn-icon"
-                  aria-label="More options for Sales Trend chart"
-                >
-                  <MdMoreVert size={24} />
-                </button>
+                <Link href={canViewReports ? "/dash/report" : "/dash/order"} className="btn-link text-label-sm" aria-label="View sales reports">{canViewReports ? "View report" : "View orders"} <MdArrowForward size={16} /></Link>
               </div>
 
               <div
@@ -798,7 +668,7 @@ const Page = () => {
                   </tbody>
                 </table>
 
-                <ResponsiveContainer width="100%" height="100%">
+                {orderStats.salesTrendData.some((item) => item.revenue > 0) && !orderLoadError ? <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={orderStats.salesTrendData}
                     margin={{
@@ -841,7 +711,7 @@ const Page = () => {
                       activeDot={{ r: 8 }}
                     />
                   </LineChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer> : <div className="flex h-full items-center justify-center rounded-xl bg-[var(--theme-background)] text-sm text-[var(--theme-muted)]">{orderLoadError ? "Sales data unavailable." : "No sales recorded in the last 7 days."}</div>}
               </div>
             </article>
 
@@ -859,12 +729,7 @@ const Page = () => {
                   </p>
                 </div>
 
-                <button
-                  className="btn-icon"
-                  aria-label="Filter Top Selling Products"
-                >
-                  <MdFilterList size={24} />
-                </button>
+                <Link href="/dash/products" className="btn-link text-label-sm" aria-label="View products">View products <MdArrowForward size={16} /></Link>
               </div>
 
               <div
@@ -889,7 +754,7 @@ const Page = () => {
 
                   <tbody>
                     {orderStats.topProducts.map((data) => (
-                      <tr key={data.name}>
+                      <tr key={data.productId || data.name}>
                         <td>{data.name}</td>
                         <td>{data.units}</td>
                       </tr>
@@ -897,7 +762,7 @@ const Page = () => {
                   </tbody>
                 </table>
 
-                {orderStats.topProducts.length > 0 ? (
+                {orderStats.topProducts.length > 0 && !orderLoadError ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={orderStats.topProducts}
@@ -945,21 +810,21 @@ const Page = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-secondary text-label-sm">
-                    No sales recorded yet this month.
+                    {orderLoadError ? "Product performance data unavailable." : "No sales recorded yet this month."}
                   </div>
                 )}
               </div>
             </article>
-          </section>
+          </section>}
 
           {/* ------------------------------------------------ */}
           {/* Latest Orders + Customers */}
           {/* ------------------------------------------------ */}
 
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {(canViewOrders || canViewCustomers) && <section className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-3 dashboard-orders">
             {/* Latest 4 Orders */}
 
-            <article className="card lg:col-span-2">
+            {canViewOrders && <article className={`card ${canViewCustomers ? "lg:col-span-2" : "lg:col-span-3"}`}>
               <div className="chart-header">
                 <div>
                   <h3 className="text-h3 text-on-surface">Latest Orders</h3>
@@ -1070,11 +935,11 @@ const Page = () => {
                   </tbody>
                 </table>
               </div>
-            </article>
+            </article>}
 
             {/* Customers */}
 
-            <article className="card">
+            {canViewCustomers && <article className={`card ${canViewOrders ? "lg:col-span-1" : "lg:col-span-3"}`}>
               <div className="card-header">
                 <div>
                   <h3 className="text-h3 text-on-surface">Customers</h3>
@@ -1109,29 +974,29 @@ const Page = () => {
                   <MdArrowForward size={16} />
                 </Link>
               </div>
-            </article>
-          </section>
+            </article>}
+          </section>}
 
           {/* ------------------------------------------------ */}
           {/* Offers */}
           {/* ------------------------------------------------ */}
 
-          <section className="table-section mb-6">
+          {canViewOffers && <section className="table-section mb-6 dashboard-offers">
             <header className="table-header">
               <div>
-                <h3 id="offers-heading" className="text-h3 text-on-surface">
-                  Current Offers
+                  <h3 id="offers-heading" className="text-h3 text-on-surface">
+                  Offers
                 </h3>
 
                 <p className="text-label-sm text-secondary">
-                  Offers currently available on your products.
+                  Latest offers in the catalog.
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <span className="badge-trend text-label-sm trend-up flex items-center gap-1">
                   <MdLocalOffer size={14} />
-                  {offerList.length} Offers
+                  {totalOffers.toLocaleString()} Offers
                 </span>
 
                 <Link
@@ -1230,13 +1095,13 @@ const Page = () => {
                 </tbody>
               </table>
             </div>
-          </section>
+          </section>}
 
           {/* ------------------------------------------------ */}
           {/* Low Stock Action Board */}
           {/* ------------------------------------------------ */}
 
-          <section className="table-section">
+          {canViewProducts && <section className="table-section dashboard-stock">
             <header className="table-header">
               <div>
                 <h3 id="low-stock-heading" className="text-h3 text-on-surface">
@@ -1248,13 +1113,10 @@ const Page = () => {
                 </p>
               </div>
 
-              <button
-                className="btn-link text-label-sm flex items-center gap-1"
-                aria-label="View all low stock items"
-              >
+              <Link href="/dash/stock" className="btn-link text-label-sm flex items-center gap-1" aria-label="View all stock items">
                 View All
                 <MdArrowForward size={16} />
-              </button>
+              </Link>
             </header>
 
             <div className="table-responsive [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -1303,7 +1165,7 @@ const Page = () => {
                           </td>
 
                           <td className="text-secondary">
-                            {p.brandName || "—"}
+                            {p.categoryName || p.category || "—"}
                           </td>
 
                           <td>
@@ -1344,18 +1206,9 @@ const Page = () => {
                           </td>
 
                           <td className="text-center">
-                            <button
-                              className="btn-primary text-label-sm"
-                              style={{
-                                padding: "6px 12px",
-                                margin: "0 auto",
-                              }}
-                              aria-label={`${
-                                isOut ? "Urgent restock" : "Reorder"
-                              } ${p.productName}`}
-                            >
-                              {isOut ? "Urgent Restock" : "Reorder"}
-                            </button>
+                            <Link href={`/dash/product_details/${p.id || p._id}`} className="btn-primary text-label-sm mx-auto" style={{ padding: "6px 12px" }} aria-label={`View stock details for ${p.productName}`}>
+                              Manage stock
+                            </Link>
                           </td>
                         </tr>
                       );
@@ -1376,9 +1229,12 @@ const Page = () => {
                 </tbody>
               </table>
             </div>
-          </section>
-        </main>
-      </div>
+          </section>}
+          {!canViewProducts && !canViewOrders && !canViewCustomers && !canViewOffers && <section className="card max-w-2xl">
+            <h2 className="text-h3 text-on-surface">Welcome to your workspace</h2>
+            <p className="text-body mt-2">Use the navigation menu to open the sections available to your account.</p>
+            {role && ["Junior HR", "Assistant HR", "Senior HR", "Manager", "Admin", "System Admin"].includes(role) && <Link className="btn-link mt-4 text-label-sm" href="/dash/attendencepage">Open attendance <MdArrowForward size={16} /></Link>}
+          </section>}
     </div>
   );
 };

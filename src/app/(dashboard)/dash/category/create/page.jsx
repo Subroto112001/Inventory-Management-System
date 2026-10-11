@@ -95,7 +95,7 @@ export default function CreateCategoryPage() {
     if (!file) return;
 
     // Check image type
-    if (!file.type.startsWith("image/")) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setMessage({
         type: "error",
         text: "Please select a valid image file.",
@@ -235,7 +235,7 @@ export default function CreateCategoryPage() {
 
       // POST API
 
-      const response = await fetch("/api/category", {
+      const response = await fetch("/api/category?type=category", {
         method: "POST",
         body: data,
       });
@@ -290,12 +290,12 @@ export default function CreateCategoryPage() {
             </Link>
 
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900">
                 Create Category
               </h1>
 
               <p className="mt-1 text-sm text-gray-500">
-                Create a new product category.
+                Create a top-level category. Subcategories are managed separately.
               </p>
             </div>
           </div>
@@ -540,7 +540,7 @@ export default function CreateCategoryPage() {
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Link
-              href="/dashboard/category"
+                  href="/dash/category"
               className={`flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-6 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 ${
                 loading ? "pointer-events-none opacity-50" : ""
               }`}

@@ -26,6 +26,7 @@ const Page = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -157,7 +158,7 @@ const Page = () => {
 
       setError("");
 
-      const response = await fetch("/api/category", {
+      const response = await fetch("/api/category?type=category", {
         method: "GET",
         cache: "no-store",
       });
@@ -190,7 +191,8 @@ const Page = () => {
   // ============================================================
 
   useEffect(() => {
-    fetchCategories();
+    const timer = window.setTimeout(() => fetchCategories(), 0);
+    return () => window.clearTimeout(timer);
   }, [fetchCategories]);
 
   // ============================================================
@@ -226,12 +228,13 @@ const Page = () => {
       (category) => getCategoryStatus(category) === "Inactive",
     ).length;
 
-    const totalProducts = categories.reduce(
+    const parentCategories = categories.filter((category) => !category.parentCategoryId);
+    const totalProducts = parentCategories.reduce(
       (total, category) => total + getProductCount(category),
       0,
     );
 
-    const totalLowStock = categories.reduce(
+    const totalLowStock = parentCategories.reduce(
       (total, category) => total + getLowStockCount(category),
       0,
     );
@@ -290,30 +293,16 @@ const Page = () => {
 
     try {
       setIsDeleting(true);
-
-      /*
-       * Your current route only has GET and POST.
-       *
-       * So there is currently no DELETE /api/category
-       * endpoint to call.
-       *
-       * Once you create the DELETE route, use:
-       *
-       * const response = await fetch(
-       *   `/api/category?id=${categoryId}`,
-       *   {
-       *     method: "DELETE",
-       *   }
-       * );
-       */
-
-      setCategories((prev) =>
-        prev.filter((category) => getCategoryId(category) !== categoryId),
-      );
-
+      setActionMessage("");
+      const response = await fetch(`/api/category/${categoryId}`, { method: "DELETE" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result?.message || "Unable to delete category.");
+      setActionMessage(result.message || "Category deleted successfully.");
       setDeleteCategory(null);
+      await fetchCategories(true);
     } catch (error) {
       console.error("Delete Category Error:", error);
+      setActionMessage(error.message || "Unable to delete category.");
     } finally {
       setIsDeleting(false);
     }
@@ -427,6 +416,9 @@ const Page = () => {
               <MdAdd size={20} />
               Add Category
             </Link>
+            <Link href="/dash/subcategory" className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--theme-primary)] px-4 py-2.5 text-sm font-medium text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)]/5 active:scale-[0.98] sm:w-auto">
+              Manage Subcategories
+            </Link>
           </header>
 
           {/* ================================================= */}
@@ -450,6 +442,7 @@ const Page = () => {
               </button>
             </div>
           )}
+        {actionMessage && <div role="status" className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">{actionMessage}</div>}
 
           {/* ================================================= */}
           {/* STATISTICS */}
@@ -700,7 +693,7 @@ const Page = () => {
                       return (
                         <tr
                           key={categoryId}
-                          className="transition hover:bg-gray-50/70"
+                          className={`transition hover:bg-gray-50/70 ${category.parentCategoryId ? "bg-gray-50/50" : ""}`}
                         >
                           {/* Category */}
 
@@ -724,13 +717,14 @@ const Page = () => {
 
                               {/* INFO */}
 
-                              <div className="min-w-0">
+                              <div className={`min-w-0 ${category.parentCategoryId ? "pl-5" : ""}`}>
+                                {category.parentCategoryId && <div className="mb-0.5 text-[11px] text-gray-400">↳ {category.parentCategoryName}</div>}
                                 <div className="truncate font-semibold text-gray-800">
                                   {categoryName}
                                 </div>
 
                                 <div className="mt-0.5 text-xs text-gray-500">
-                                  {category?.categoryCode || "—"}
+                                  {category?.categoryCode || "—"}{category.subcategories?.length > 0 ? ` · ${category.subcategories.length} subcategories` : " · No subcategories"}
                                 </div>
                               </div>
                             </div>
@@ -811,7 +805,7 @@ const Page = () => {
                               {openMenu === categoryId && (
                                 <div className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-lg border border-gray-100 bg-white py-1 text-left shadow-xl">
                                   <Link
-                                    href={`/category/${categoryId}/edit`}
+                                    href={`/dash/category/${categoryId}/edit`}
                                     onClick={() => setOpenMenu(null)}
                                     className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-[var(--theme-primary)]"
                                   >
@@ -823,6 +817,7 @@ const Page = () => {
                                     type="button"
                                     onClick={() => {
                                       setOpenMenu(null);
+                                      setActionMessage("");
 
                                       setDeleteCategory(category);
                                     }}
@@ -911,6 +906,7 @@ const Page = () => {
             {/* Body */}
 
             <div className="px-5 py-5">
+              {actionMessage && <p role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{actionMessage}</p>}
               <p className="text-sm leading-6 text-gray-600">
                 Are you sure you want to delete{" "}
                 <strong className="font-semibold text-gray-900">
@@ -927,8 +923,7 @@ const Page = () => {
                   />
 
                   <p className="text-xs leading-5 text-yellow-800">
-                    If this category is assigned to existing products, make sure
-                    those products are reassigned before deleting the category.
+                    This Category and its Subcategories will be deleted. Products will remain intact and become uncategorized so you can assign them later.
                   </p>
                 </div>
               </div>

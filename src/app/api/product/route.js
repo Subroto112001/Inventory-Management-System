@@ -5,11 +5,13 @@ import Product from "@/lib/models/Product";
 import Offer from "@/lib/models/Offer";
 import Brand from "@/lib/models/Brand";
 import Category from "@/lib/models/Category";
+import Subcategory from "@/lib/models/Subcategory";
 import { requirePermission } from "@/lib/authorization";
 import { PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 import { increaseStock } from "@/lib/inventory/stockService";
 import { parseProductSpecifications, sanitizeRichText, sanitizeSpecifications } from "@/lib/richText";
+import { createProductWithUniqueSku } from "@/lib/productSku";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -32,6 +34,10 @@ function serializePublicProduct(product) {
     unit: product.unit || "",
     brand: product.brand?.brandName || product.brandName || "",
     category: product.category?.categoryName || "",
+    categoryId: product.category?._id?.toString() || "",
+    subcategory: product.subcategory?.subcategoryName || "",
+    subcategoryName: product.subcategory?.subcategoryName || "",
+    subcategoryId: product.subcategory?._id?.toString() || "",
     shipping: product.shipping || null,
     paymentOption: product.paymentOption || "COD_ONLY",
     returnPolicy: product.returnPolicy || null,
@@ -60,10 +66,14 @@ export async function GET(request) {
       );
       const search = searchParams.get("search")?.trim();
       const category = searchParams.get("category")?.trim();
+      const subcategory = searchParams.get("subcategory")?.trim();
       const brand = searchParams.get("brand")?.trim();
       const availability = searchParams.get("availability") === "in-stock";
       const sort = searchParams.get("sort") || "newest";
       const filter = { isActive: true };
+      let requestedCategoryId = null;
+      let categoryConstraint = null;
+      let selectedSubcategoryId = null;
 
       if (search) {
         filter.$or = [
@@ -74,24 +84,43 @@ export async function GET(request) {
       }
       if (availability) filter.currentStock = { $gt: 0 };
       if (category) {
-        const categoryFilter = /^[a-f\d]{24}$/i.test(category)
-          ? { _id: category }
-          : {
-              categoryName: {
-                $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
-                $options: "i",
-              },
-            };
-        const categoryDoc = await Category.findOne(categoryFilter)
-          .select("_id")
-          .lean();
-        if (!categoryDoc)
+        const isId = /^[a-f\d]{24}$/i.test(category);
+        const categoryDoc = await Category.findOne(isId ? { _id: category } : { categoryName: { $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } }).select("_id").lean();
+        if (categoryDoc) {
+          const childIds = await Subcategory.find({ category: categoryDoc._id, isActive: true }).distinct("_id");
+          requestedCategoryId = categoryDoc._id;
+          categoryConstraint = { $or: [{ category: categoryDoc._id }, { subcategory: { $in: childIds } }] };
+        } else if (isId) {
+          const subcategoryDoc = await Subcategory.findById(category).select("_id category isActive").lean();
+          if (!subcategoryDoc || subcategoryDoc.isActive === false) return NextResponse.json({ success: true, products: [], pagination: { page, limit, total: 0, totalPages: 0 } });
+          requestedCategoryId = subcategoryDoc.category;
+          selectedSubcategoryId = subcategoryDoc._id;
+          categoryConstraint = { subcategory: subcategoryDoc._id };
+        } else {
           return NextResponse.json({
             success: true,
             products: [],
             pagination: { page, limit, total: 0, totalPages: 0 },
           });
-        filter.category = categoryDoc._id;
+        }
+      }
+      if (subcategory) {
+        if (!mongoose.isValidObjectId(subcategory)) {
+          return NextResponse.json({ success: false, message: "Invalid subcategory selected." }, { status: 400 });
+        }
+        const child = await Subcategory.findById(subcategory).select("_id category isActive").lean();
+        if (!child?.category) return NextResponse.json({ success: true, products: [], pagination: { page, limit, total: 0, totalPages: 0 } });
+        if (requestedCategoryId && !child.category.equals(requestedCategoryId)) return NextResponse.json({ success: false, message: "The selected subcategory does not belong to the selected category." }, { status: 400 });
+        if (selectedSubcategoryId && !child._id.equals(selectedSubcategoryId)) return NextResponse.json({ success: false, message: "The selected subcategory does not match the selected category." }, { status: 400 });
+        if (child.isActive === false) return NextResponse.json({ success: true, products: [], pagination: { page, limit, total: 0, totalPages: 0 } });
+        categoryConstraint = {
+          subcategory: child._id,
+        };
+      }
+      if (categoryConstraint) {
+        const searchClause = filter.$or;
+        delete filter.$or;
+        filter.$and = [...(searchClause ? [{ $or: searchClause }] : []), categoryConstraint];
       }
       if (brand) {
         const brandFilter = /^[a-f\d]{24}$/i.test(brand)
@@ -121,6 +150,7 @@ export async function GET(request) {
         Product.find(filter)
           .populate("brand", "brandName logo")
           .populate("category", "categoryName")
+          .populate("subcategory", "subcategoryName")
           .sort(sortMap[sort] || sortMap.newest)
           .skip((page - 1) * limit)
           .limit(limit)
@@ -148,6 +178,7 @@ export async function GET(request) {
     const products = await Product.find()
       .populate("brand", "brandName")
       .populate("category", "categoryName categoryCode")
+      .populate("subcategory", "subcategoryName")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -206,6 +237,8 @@ export async function GET(request) {
       // Category
       categoryId: p.category?._id ? p.category._id.toString() : "",
       categoryName: p.category?.categoryName || "",
+      subcategoryId: p.subcategory?._id?.toString() || "",
+      subcategoryName: p.subcategory?.subcategoryName || "",
       category: p.category?._id
         ? {
             id: p.category._id.toString(),
@@ -308,6 +341,7 @@ export async function POST(request) {
 
     // Category (required) — the selected category's _id
     const categoryId = formData.get("category")?.toString().trim();
+    const subcategoryId = formData.get("subcategory")?.toString().trim() || "";
 
     // Image from FormData
     const legacyImage = formData.get("image");
@@ -325,10 +359,10 @@ export async function POST(request) {
     // -------------------------
     // Required fields
     // -------------------------
-    if (!productName || !productSKU || price === null || price === "") {
+    if (!productName || price === null || price === "") {
       return NextResponse.json(
         {
-          message: "Product name, SKU, and price are required!",
+          message: "Product name and price are required!",
         },
         { status: 400 },
       );
@@ -394,7 +428,7 @@ export async function POST(request) {
     // Validate category exists
     // -------------------------
     const categoryDoc = await Category.findById(categoryId)
-      .select("_id isActive")
+      .select("_id isActive categoryCode")
       .lean();
 
     if (!categoryDoc) {
@@ -410,30 +444,22 @@ export async function POST(request) {
         { status: 400 },
       );
     }
+    let subcategoryDoc = null;
+    if (subcategoryId) {
+      if (!mongoose.isValidObjectId(subcategoryId)) {
+        return NextResponse.json({ success: false, message: "Invalid subcategory selected." }, { status: 400 });
+      }
+      subcategoryDoc = await Subcategory.findOne({ _id: subcategoryId, category: categoryDoc._id, isActive: true }).select("_id");
+      if (!subcategoryDoc) {
+        return NextResponse.json({ success: false, message: "The selected subcategory does not belong to this Category." }, { status: 400 });
+      }
+    }
 
     const brandDoc = await Brand.findById(brandId).select("_id brandName").lean();
     if (!brandDoc) {
       return NextResponse.json(
         { message: "Selected brand was not found!" },
         { status: 404 },
-      );
-    }
-
-    // -------------------------
-    // Check duplicate SKU
-    // -------------------------
-    const normalizedSKU = productSKU.toUpperCase();
-
-    const existingProduct = await Product.findOne({
-      productSKU: normalizedSKU,
-    });
-
-    if (existingProduct) {
-      return NextResponse.json(
-        {
-          message: "A product with this SKU already exists!",
-        },
-        { status: 409 },
       );
     }
 
@@ -463,10 +489,9 @@ export async function POST(request) {
     // -------------------------
     // Create Product
     // -------------------------
-    const newProduct = await Product.create({
+    const newProduct = await createProductWithUniqueSku(Product, {
       productName: productName.trim(),
-
-      productSKU: normalizedSKU,
+      productSKU,
 
       price: Number(price),
 
@@ -494,6 +519,7 @@ export async function POST(request) {
 
       // Category
       category: categoryDoc._id,
+      subcategory: subcategoryDoc?._id || null,
 
       // Cloudinary
       image: imageRecords[0],
@@ -512,18 +538,28 @@ export async function POST(request) {
         instructions: returnInstructions,
       },
       createdBy: access.user._id,
-    });
+    }, { categoryCode: categoryDoc.categoryCode, productName: productName.trim() });
 
     // -------------------------
     // Add product to Category.products
     // -------------------------
     try {
-      await Category.updateOne(
-        { _id: categoryDoc._id },
+      const parentAssignment = await Category.updateOne(
+        { _id: categoryDoc._id, isActive: true },
         { $addToSet: { products: newProduct._id } },
       );
+      if (parentAssignment.matchedCount !== 1) throw new Error("The Category was deleted or changed while the product was being created.");
+      if (subcategoryDoc) {
+        const subcategoryAssignment = await Subcategory.updateOne(
+          { _id: subcategoryDoc._id, category: categoryDoc._id, isActive: true },
+          { $addToSet: { products: newProduct._id } },
+        );
+        if (subcategoryAssignment.matchedCount !== 1) throw new Error("The selected Subcategory was deleted or changed while the product was being created.");
+      }
     } catch (categoryError) {
       await Product.deleteOne({ _id: newProduct._id });
+      await Category.updateOne({ _id: categoryDoc._id }, { $pull: { products: newProduct._id } });
+      if (subcategoryDoc) await Subcategory.updateOne({ _id: subcategoryDoc._id }, { $pull: { products: newProduct._id } });
       throw categoryError;
     }
 
@@ -544,6 +580,7 @@ export async function POST(request) {
           { _id: categoryDoc._id },
           { $pull: { products: newProduct._id } },
         );
+        if (subcategoryDoc) await Subcategory.updateOne({ _id: subcategoryDoc._id }, { $pull: { products: newProduct._id } });
         throw stockError;
       }
     }
@@ -598,6 +635,10 @@ export async function POST(request) {
         },
         { status: 409 },
       );
+    }
+
+    if (error.statusCode === 400 || error.statusCode === 503) {
+      return NextResponse.json({ success: false, message: error.message }, { status: error.statusCode });
     }
 
     if (error.statusCode === 403) {

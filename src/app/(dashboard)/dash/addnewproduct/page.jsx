@@ -16,13 +16,14 @@ import {
 
 // Change these if your routes are different
 const PRODUCT_API = "/api/product";
-const CATEGORY_LIST_API = "/api/category?list=1";
+const CATEGORY_LIST_API = "/api/category?list=1&includeSubcategories=1";
 const PRODUCT_LIST_PAGE = "/dash/products";
 
 const INITIAL_FORM = {
   productName: "",
   productSKU: "",
   category: "",
+  subcategory: "",
   brand: "",
   unit: "",
   description: "",
@@ -54,6 +55,7 @@ export default function AddProductPage() {
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState(INITIAL_FORM);
+  const [skuSuffix, setSkuSuffix] = useState("");
 
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -68,6 +70,29 @@ export default function AddProductPage() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [fieldErrors, setFieldErrors] = useState({});
   const [summaryErrors, setSummaryErrors] = useState([]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const bytes = new Uint8Array(6);
+      window.crypto.getRandomValues(bytes);
+      setSkuSuffix(Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase());
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const selectedCategory = categories.find((category) => category.id === formData.category);
+  const parentCategories = categories.filter((category) => !category.parentCategoryId);
+  const availableSubcategories = categories.filter((category) => category.parentCategoryId === formData.category);
+  const skuPrefixSource = selectedCategory?.categoryCode || formData.productName;
+  const skuPrefix = String(skuPrefixSource || "PRD")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 12)
+    .replace(/-+$/g, "") || "PRD";
+  const generatedSku = skuSuffix ? `${skuPrefix}-${skuSuffix}` : "Generating SKU…";
 
   // =====================================================
   // LOAD CATEGORIES
@@ -140,7 +165,12 @@ export default function AddProductPage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+      ...(name === "category" ? { subcategory: "" } : {}),
+      ...(name === "productName" || name === "category" ? { productSKU: "" } : {}),
+    }));
     clearMessage();
   };
 
@@ -154,12 +184,6 @@ export default function AddProductPage() {
       return next;
     });
     setSummaryErrors((prev) => prev.filter((error) => error.field !== name && !error.field.startsWith(`${name}.`)));
-    clearMessage();
-  };
-
-  const handleSKUChange = (e) => {
-    const value = e.target.value.toUpperCase().replace(/\s/g, "");
-    setFormData((prev) => ({ ...prev, productSKU: value }));
     clearMessage();
   };
 
@@ -197,6 +221,9 @@ export default function AddProductPage() {
   };
 
   const resetForm = () => {
+    const bytes = new Uint8Array(6);
+    window.crypto.getRandomValues(bytes);
+    setSkuSuffix(Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase());
     setFormData(INITIAL_FORM);
     images.forEach(({ preview }) => URL.revokeObjectURL(preview));
     imagesRef.current = [];
@@ -212,8 +239,9 @@ export default function AddProductPage() {
     if (!formData.productName.trim()) return "Product name is required.";
     if (formData.productName.trim().length > 150)
       return "Product name cannot exceed 150 characters.";
-    if (!formData.productSKU.trim()) return "Product SKU is required.";
-    if (!formData.category) return "Please select a category.";
+    if (!skuSuffix) return "SKU is still generating. Please try again in a moment.";
+    if (!formData.category) return "Please select a Category.";
+    if (formData.subcategory && !availableSubcategories.some((item) => item.id === formData.subcategory)) return "Select a subcategory that belongs to the selected Category.";
     if (!formData.brand || !brands.some((brand) => brand._id === formData.brand))
       return "Please select a valid brand.";
 
@@ -269,8 +297,9 @@ export default function AddProductPage() {
       const data = new FormData();
 
       data.append("productName", formData.productName.trim());
-      data.append("productSKU", formData.productSKU.trim().toUpperCase());
+      data.append("productSKU", generatedSku);
       data.append("category", formData.category);
+      data.append("subcategory", formData.subcategory);
       data.append("brand", formData.brand);
       data.append("unit", formData.unit.trim());
       data.append("description", formData.description.trim());
@@ -458,15 +487,16 @@ export default function AddProductPage() {
                     <div>
                       <label htmlFor="productSKU" className={labelClass}>
                         SKU
-                        <span className="ml-1 text-red-500">*</span>
+                        <span className="ml-2 text-xs font-normal text-gray-500">System generated</span>
                       </label>
                       <input
                         id="productSKU"
                         name="productSKU"
                         type="text"
-                        value={formData.productSKU}
-                        onChange={handleSKUChange}
-                        placeholder="e.g. WM-001"
+                        value={generatedSku}
+                        readOnly
+                        aria-readonly="true"
+                        placeholder="Generating SKU…"
                         disabled={loading}
                         className={`${inputClass} font-medium uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal`}
                       />
@@ -491,7 +521,7 @@ export default function AddProductPage() {
                             ? "Loading categories..."
                             : "Select a category"}
                         </option>
-                        {categories.map((c) => (
+                        {parentCategories.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.categoryName} ({c.categoryCode})
                           </option>
@@ -510,6 +540,15 @@ export default function AddProductPage() {
                           .
                         </p>
                       )}
+                    </div>
+
+                    {/* SUBCATEGORY */}
+                    <div>
+                      <label htmlFor="subcategory" className={labelClass}>Subcategory <span className="font-normal text-gray-500">(optional)</span></label>
+                      <select id="subcategory" name="subcategory" value={formData.subcategory} onChange={handleChange} disabled={loading || !formData.category || availableSubcategories.length === 0} className={inputClass}>
+                        <option value="">No subcategory</option>
+                        {availableSubcategories.map((subcategory) => <option key={subcategory.id} value={subcategory.id}>{subcategory.categoryName}</option>)}
+                      </select>
                     </div>
 
                     {/* BRAND */}

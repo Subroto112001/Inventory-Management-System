@@ -19,6 +19,76 @@ export async function GET(request) {
     const authenticatedUser = access.user;
     await connectMongoDB();
     const { searchParams } = new URL(request.url);
+    if (searchParams.get("dashboard") === "1") {
+      const parseBoundary = (name) => {
+        const value = searchParams.get(name);
+        if (!value) return null;
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date;
+      };
+      const now = new Date();
+      const todayStart = parseBoundary("todayStart");
+      const yesterdayStart = parseBoundary("yesterdayStart");
+      const monthStart = parseBoundary("monthStart");
+      const weekStart = parseBoundary("weekStart");
+      const timezone = searchParams.get("timezone") || "UTC";
+      try {
+        new Intl.DateTimeFormat("en-US", { timeZone: timezone });
+      } catch {
+        return NextResponse.json({ success: false, message: "Invalid dashboard time zone." }, { status: 400 });
+      }
+      const earliestAllowed = new Date(now.getTime() - 40 * 24 * 60 * 60 * 1000);
+      if (!todayStart || !yesterdayStart || !monthStart || !weekStart ||
+        todayStart > now || yesterdayStart > todayStart || monthStart > todayStart ||
+        weekStart > todayStart || monthStart < earliestAllowed || weekStart < earliestAllowed ||
+        yesterdayStart < earliestAllowed) {
+        return NextResponse.json({ success: false, message: "Invalid dashboard date boundaries." }, { status: 400 });
+      }
+
+      const from = monthStart < weekStart ? monthStart : weekStart;
+      const dashboardFilter = isCustomer(authenticatedUser)
+        ? { customerUser: authenticatedUser._id }
+        : {};
+      const [aggregates, latestOrders] = await Promise.all([
+        Order.aggregate([
+          { $match: { ...dashboardFilter, createdAt: { $gte: from, $lte: now }, status: { $ne: "Cancelled" } } },
+          { $facet: {
+            summary: [{ $group: { _id: null,
+              todaySales: { $sum: { $cond: [{ $gte: ["$createdAt", todayStart] }, "$financials.grandTotal", 0] } },
+              yesterdaySales: { $sum: { $cond: [{ $and: [{ $gte: ["$createdAt", yesterdayStart] }, { $lt: ["$createdAt", todayStart] }] }, "$financials.grandTotal", 0] } },
+              monthRevenue: { $sum: { $cond: [{ $gte: ["$createdAt", monthStart] }, "$financials.grandTotal", 0] } },
+            } }],
+            salesTrend: [
+              { $match: { createdAt: { $gte: weekStart } } },
+              { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone } }, revenue: { $sum: "$financials.grandTotal" } } },
+              { $sort: { _id: 1 } },
+            ],
+            topProducts: [
+              { $match: { createdAt: { $gte: monthStart } } },
+              { $unwind: "$items" },
+              { $group: { _id: "$items.product", name: { $first: "$items.name" }, units: { $sum: "$items.quantity" } } },
+              { $sort: { units: -1, name: 1 } },
+              { $limit: 5 },
+              { $project: { _id: 0, productId: { $toString: "$_id" }, name: 1, units: 1 } },
+            ],
+          } },
+        ]),
+        Order.find(dashboardFilter).sort({ createdAt: -1 }).limit(4).lean(),
+      ]);
+      const report = aggregates[0] || {};
+      const summary = report.summary?.[0] || {};
+      return NextResponse.json({
+        success: true,
+        orders: latestOrders,
+        dashboard: {
+          todaySales: summary.todaySales || 0,
+          yesterdaySales: summary.yesterdaySales || 0,
+          monthRevenue: summary.monthRevenue || 0,
+          salesTrend: report.salesTrend || [],
+          topProducts: report.topProducts || [],
+        },
+      });
+    }
     const page = Math.max(Number(searchParams.get("page")) || 1, 1);
     const limit = Math.min(
       Math.max(Number(searchParams.get("limit")) || 25, 1),

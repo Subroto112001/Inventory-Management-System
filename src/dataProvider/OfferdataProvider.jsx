@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-const OfferdataProvider = () => {
+const OfferdataProvider = (enabled = true) => {
   const [offers, setOffers] = useState([]);
+  const [totalOffers, setTotalOffers] = useState(0);
   const [loadingOffers, setLoadingOffers] = useState(true);
 
-  const fetchOffers = async () => {
+  const fetchOffers = useCallback(async () => {
+    if (!enabled) {
+      setLoadingOffers(false);
+      return;
+    }
     setLoadingOffers(true);
 
     try {
@@ -18,6 +23,7 @@ const OfferdataProvider = () => {
 
       if (res.ok) {
         setOffers(data?.offers || []);
+        setTotalOffers(Number(data?.pagination?.total ?? data?.offers?.length ?? 0));
       } else {
         console.error("Failed to load offers:", data?.message);
       }
@@ -26,14 +32,15 @@ const OfferdataProvider = () => {
     } finally {
       setLoadingOffers(false);
     }
-  };
+  }, [enabled]);
 
   useEffect(() => {
     fetchOffers();
-  }, []);
+  }, [fetchOffers]);
 
   return {
     offers,
+    totalOffers,
     loadingOffers,
     fetchOffers,
   };
