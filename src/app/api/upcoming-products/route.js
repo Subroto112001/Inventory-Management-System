@@ -77,8 +77,9 @@ export async function POST(request) {
       image: images[0] || (body.image?.url ? body.image : undefined), images,
       category: category?._id || null, subcategory: subcategory?._id || null, brand: brand?._id || null,
       specifications: body.specifications || [], unit: body.unit || "", shipping: body.shipping || {},
+      wholesalePrice: body.wholesalePrice === "" || body.wholesalePrice == null ? undefined : Number(body.wholesalePrice),
       paymentOption: body.paymentOption || "COD_ONLY", returnPolicy: body.returnPolicy || {},
-      initialStock, currentStock: 0, quantity: initialStock,
+      initialStock, currentStock: 0, quantity: Number(body.quantity ?? initialStock), lowStockAlert: Number(body.lowStockAlert || 0),
       createdBy: access.user._id, isActive: true, lifecycle: "scheduled", launchAt,
       featuredOnLaunch: body.featuredOnLaunch === true,
       preorder: {
