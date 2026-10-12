@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const inputClass =
-  "mt-1 w-full rounded-md border border-[#D9D2C7] bg-white px-3 py-2.5 text-[#211F1D] outline-none focus:border-[#1F3A2E] focus:ring-2 focus:ring-[#1F3A2E]/15";
+  "mt-1 w-full rounded-md border border-[var(--theme-border)] bg-white px-3 py-2.5 text-[var(--theme-text)] outline-none focus:border-[var(--theme-primary)] focus:ring-2 focus:ring-[var(--theme-primary)]/15";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -76,18 +76,18 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F3EC] px-4 py-10 text-[#211F1D]">
-      <section className="w-full max-w-md rounded-xl border border-[#E4DED2] bg-white p-6 shadow-sm sm:p-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B65C38]">
+    <main className="flex min-h-screen items-center justify-center bg-[var(--theme-background)] px-4 py-10 text-[var(--theme-text)]">
+      <section className="w-full max-w-md rounded-xl border border-[var(--theme-border)] bg-white p-6 shadow-sm sm:p-7">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--theme-secondary)]">
           FIELDHOUSE
         </p>
         <h1 className="mt-3 text-3xl font-semibold">Create your account</h1>
-        <p className="mt-2 text-sm text-[#6F685E]">
+        <p className="mt-2 text-sm text-[var(--theme-muted)]">
           Save your details and track every order in one place.
         </p>
         {success ? (
           <div
-            className="mt-6 rounded-md bg-[#edf5ef] p-4 text-sm text-[#1F3A2E]"
+            className="mt-6 rounded-md bg-[color-mix(in_srgb,var(--theme-success)_12%,white)] p-4 text-sm text-[var(--theme-success)]"
             role="status"
           >
             <p>{success}</p>
@@ -179,13 +179,13 @@ export default function SignupPage() {
                         }))
                       }
                       aria-label={`${visible[name] ? "Hide" : "Show"} ${label.toLowerCase()}`}
-                      className="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-[#1F3A2E]"
+                      className="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-[var(--theme-primary)]"
                     >
                       {visible[name] ? "Hide" : "Show"}
                     </button>
                   </span>
                   {name === "password" ? (
-                    <span className="mt-1 block text-xs font-normal text-[#6F685E]">
+                    <span className="mt-1 block text-xs font-normal text-[var(--theme-muted)]">
                       At least 8 characters with uppercase, lowercase and a
                       number.
                     </span>
@@ -204,14 +204,14 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-md bg-[#1F3A2E] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#294c3d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-md bg-[var(--theme-primary)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--theme-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Creating account..." : "Create account"}
               </button>
             </form>
-            <p className="mt-6 text-center text-sm text-[#6F685E]">
+            <p className="mt-6 text-center text-sm text-[var(--theme-muted)]">
               Already have an account?{" "}
-              <Link href="/login" className="font-semibold text-[#1F3A2E]">
+              <Link href="/login" className="font-semibold text-[var(--theme-primary)]">
                 Log in
               </Link>
             </p>

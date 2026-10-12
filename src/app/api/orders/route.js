@@ -97,6 +97,8 @@ export async function GET(request) {
     const filter = isCustomer(authenticatedUser)
       ? { customerUser: authenticatedUser._id }
       : {};
+    if (searchParams.get("class") === "preorder") filter.orderClass = "preorder";
+    else filter.orderClass = { $ne: "preorder" };
     const [orders, total] = await Promise.all([
       Order.find(filter)
         .sort({ createdAt: -1 })
@@ -177,6 +179,7 @@ export async function POST(request) {
     const products = await Product.find({
       _id: { $in: productIds },
       isActive: true,
+      $or: [{ lifecycle: "live" }, { lifecycle: { $exists: false } }],
     }).lean();
     const productsById = new Map(
       products.map((product) => [product._id.toString(), product]),

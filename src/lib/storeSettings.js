@@ -31,7 +31,7 @@ export function contrastRatio(first, second) {
 }
 
 export function readableText(background) {
-  return contrastRatio(background, "#FFFFFF") >= 4.5 ? "#FFFFFF" : "#211F1D";
+  return contrastRatio(background, "#FFFFFF") >= 4.5 ? "#FFFFFF" : "#111318";
 }
 
 function adjustColor(value, amount) {
@@ -48,7 +48,12 @@ function adjustColor(value, amount) {
 
 export function normalizeTheme(settings = {}) {
   const merged = { ...DEFAULT_STORE_SETTINGS, ...(settings || {}) };
-  const primaryText = readableText(merged.primaryColor);
+  const primaryColor = ["#724BFF", "#7048FF"].includes(
+    String(merged.primaryColor).toUpperCase(),
+  )
+    ? "#000000"
+    : merged.primaryColor;
+  const primaryText = readableText(primaryColor);
   const secondaryText = readableText(
     merged.secondaryColor || merged.accentColor,
   );
@@ -58,7 +63,7 @@ export function normalizeTheme(settings = {}) {
     logo: merged.logo || null,
     favicon: merged.favicon || null,
     fontFamily: merged.fontFamily,
-    primary: merged.primaryColor,
+    primary: primaryColor,
     secondary: merged.secondaryColor || merged.accentColor,
     accent: merged.accentColor,
     background: merged.backgroundColor || merged.surfaceColor,
@@ -69,10 +74,7 @@ export function normalizeTheme(settings = {}) {
     success: merged.successColor,
     warning: merged.warningColor,
     error: merged.errorColor,
-    primaryHover: adjustColor(
-      merged.primaryColor,
-      contrastRatio(merged.primaryColor, "#FFFFFF") > 7 ? -20 : 20,
-    ),
+    primaryHover: adjustColor(primaryColor, -20),
     secondaryHover: adjustColor(
       merged.secondaryColor || merged.accentColor,
       -15,
@@ -101,6 +103,11 @@ export function themeStyleVars(settings) {
     "--theme-warning": theme.warning,
     "--theme-error": theme.error,
     "--theme-font": theme.fontFamily,
+    "--theme-app-background": "#F1F3F5",
+    "--theme-surface-alt": "#F6F7F8",
+    "--theme-shadow": "rgb(17 19 24 / 6%)",
+    "--theme-highlight": "#FFC943",
+    "--theme-info": "#3983F6",
     "--store-primary": theme.primary,
     "--store-accent": theme.accent,
     "--store-surface": theme.surface,

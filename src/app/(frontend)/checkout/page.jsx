@@ -41,11 +41,11 @@ const PERKS = [
 function SectionTitle({ number, title }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <span className="w-7 h-7 rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center text-xs">
+      <span className="w-7 h-7 rounded-full bg-[var(--theme-primary)] text-[var(--theme-background)] flex items-center justify-center text-xs">
         {number}
       </span>
 
-      <h2 className="font-serif text-xl sm:text-2xl text-[#211F1D]">{title}</h2>
+      <h2 className="font-serif text-xl sm:text-2xl text-[var(--theme-text)]">{title}</h2>
     </div>
   );
 }
@@ -157,31 +157,31 @@ export default function CheckoutPage() {
   };
 
   if (authStatus !== "authenticated") {
-    return <div className="min-h-[55vh] bg-[#F7F3EC] px-6 py-20 text-center" role={authStatus === "error" ? "alert" : "status"}>
-      {authStatus === "checking" ? <p className="text-sm text-[#8A8378]">Checking your account…</p> : authStatus === "redirecting" ? <p className="text-sm text-[#8A8378]">Sign in is required for checkout. Redirecting to login…</p> : <p className="text-sm text-red-700">{orderState.error || "Unable to verify your account."}</p>}
+    return <div className="min-h-[55vh] bg-[var(--theme-background)] px-6 py-20 text-center" role={authStatus === "error" ? "alert" : "status"}>
+      {authStatus === "checking" ? <p className="text-sm text-[var(--theme-muted)]">Checking your account…</p> : authStatus === "redirecting" ? <p className="text-sm text-[var(--theme-muted)]">Sign in is required for checkout. Redirecting to login…</p> : <p className="text-sm text-red-700">{orderState.error || "Unable to verify your account."}</p>}
     </div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] font-sans">
+    <div className="min-h-screen bg-[var(--theme-background)] font-sans">
       <main>
         {/* Breadcrumb */}
-        <section className="border-b border-[#E4DED2]">
+        <section className="border-b border-[var(--theme-border)]">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4">
-            <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <a href="#" className="hover:text-[#B65C38] transition-colors">
+            <div className="flex items-center gap-2 text-xs text-[var(--theme-muted)]">
+              <a href="#" className="hover:text-[var(--theme-secondary)] transition-colors">
                 Home
               </a>
 
               <LuChevronRight size={13} />
 
-              <a href="#" className="hover:text-[#B65C38] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-secondary)] transition-colors">
                 Cart
               </a>
 
               <LuChevronRight size={13} />
 
-              <span className="text-[#211F1D]">Checkout</span>
+              <span className="text-[var(--theme-text)]">Checkout</span>
             </div>
           </div>
         </section>
@@ -190,43 +190,43 @@ export default function CheckoutPage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">Almost there</p>
+              <p className="text-sm text-[var(--theme-secondary)] mb-1">Almost there</p>
 
-              <h1 className="font-serif text-3xl sm:text-4xl text-[#211F1D]">
+              <h1 className="font-serif text-3xl sm:text-4xl text-[var(--theme-text)]">
                 Checkout
               </h1>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <LuLock size={14} className="text-[#1F3A2E]" />
+            <div className="flex items-center gap-2 text-xs text-[var(--theme-muted)]">
+              <LuLock size={14} className="text-[var(--theme-primary)]" />
               Secure checkout
             </div>
           </div>
 
           {/* Checkout Progress */}
           <div className="mt-7 flex items-center max-w-2xl">
-            <div className="flex items-center gap-2 text-[#1F3A2E]">
-              <span className="w-7 h-7 rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center text-xs">
+            <div className="flex items-center gap-2 text-[var(--theme-primary)]">
+              <span className="w-7 h-7 rounded-full bg-[var(--theme-primary)] text-[var(--theme-background)] flex items-center justify-center text-xs">
                 1
               </span>
 
               <span className="text-xs sm:text-sm">Information</span>
             </div>
 
-            <div className="flex-1 h-px bg-[#C9A659] mx-3 sm:mx-5" />
+            <div className="flex-1 h-px bg-[var(--theme-highlight)] mx-3 sm:mx-5" />
 
-            <div className="flex items-center gap-2 text-[#8A8378]">
-              <span className="w-7 h-7 rounded-full border border-[#E4DED2] flex items-center justify-center text-xs">
+            <div className="flex items-center gap-2 text-[var(--theme-muted)]">
+              <span className="w-7 h-7 rounded-full border border-[var(--theme-border)] flex items-center justify-center text-xs">
                 2
               </span>
 
               <span className="text-xs sm:text-sm">Payment</span>
             </div>
 
-            <div className="flex-1 h-px bg-[#E4DED2] mx-3 sm:mx-5" />
+            <div className="flex-1 h-px bg-[var(--theme-border)] mx-3 sm:mx-5" />
 
-            <div className="flex items-center gap-2 text-[#8A8378]">
-              <span className="w-7 h-7 rounded-full border border-[#E4DED2] flex items-center justify-center text-xs">
+            <div className="flex items-center gap-2 text-[var(--theme-muted)]">
+              <span className="w-7 h-7 rounded-full border border-[var(--theme-border)] flex items-center justify-center text-xs">
                 3
               </span>
 
@@ -247,63 +247,63 @@ export default function CheckoutPage() {
 
             <div className="space-y-6">
               {/* Contact */}
-              <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md p-5 sm:p-7">
                 <SectionTitle number="1" title="Contact information" />
-                <p className="text-sm text-[#211F1D]">{[form.firstName, form.lastName].filter(Boolean).join(" ")}</p>
-                <p className="mt-1 text-sm text-[#5B564C]">{form.email}</p>
-                <p className="mt-1 text-sm text-[#5B564C]">{form.phone}</p>
-                <Link href="/order?view=dashboard" className="mt-3 inline-block text-sm text-[#1F3A2E] underline">Update account details</Link>
+                <p className="text-sm text-[var(--theme-text)]">{[form.firstName, form.lastName].filter(Boolean).join(" ")}</p>
+                <p className="mt-1 text-sm text-[var(--theme-muted)]">{form.email}</p>
+                <p className="mt-1 text-sm text-[var(--theme-muted)]">{form.phone}</p>
+                <Link href="/order?view=dashboard" className="mt-3 inline-block text-sm text-[var(--theme-primary)] underline">Update account details</Link>
               </div>
 
               {/* Shipping Address */}
-              <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md p-5 sm:p-7">
                 <SectionTitle number="2" title="Shipping address" />
                 {addresses.length ? (
                   <div className="space-y-3">
-                    {addresses.map((address) => <label key={address._id} className="flex cursor-pointer items-start gap-3 rounded-sm border border-[#E4DED2] p-4">
-                      <input type="radio" name="shippingAddress" value={address._id} checked={addressId === address._id} onChange={() => setAddressId(address._id)} className="mt-1 accent-[#1F3A2E]" />
-                      <span className="text-sm text-[#211F1D]"><strong>{address.label || "Address"}</strong>{address.isDefault ? " (Default)" : ""}<br />{[address.fullName, address.phone, address.address, address.area, address.city, address.postalCode, address.country].filter(Boolean).join(", ")}</span>
+                    {addresses.map((address) => <label key={address._id} className="flex cursor-pointer items-start gap-3 rounded-sm border border-[var(--theme-border)] p-4">
+                      <input type="radio" name="shippingAddress" value={address._id} checked={addressId === address._id} onChange={() => setAddressId(address._id)} className="mt-1 accent-[var(--theme-primary)]" />
+                      <span className="text-sm text-[var(--theme-text)]"><strong>{address.label || "Address"}</strong>{address.isDefault ? " (Default)" : ""}<br />{[address.fullName, address.phone, address.address, address.area, address.city, address.postalCode, address.country].filter(Boolean).join(", ")}</span>
                     </label>)}
                   </div>
-                ) : <p className="text-sm text-[#5B564C]">Add a saved address to continue checkout. <Link href="/order?view=addresses" className="underline text-[#1F3A2E]">Manage addresses</Link></p>}
-                {addresses.length > 0 && <Link href="/order?view=addresses" className="mt-4 inline-block text-sm text-[#1F3A2E] underline">Manage saved addresses</Link>}
+                ) : <p className="text-sm text-[var(--theme-muted)]">Add a saved address to continue checkout. <Link href="/order?view=addresses" className="underline text-[var(--theme-primary)]">Manage addresses</Link></p>}
+                {addresses.length > 0 && <Link href="/order?view=addresses" className="mt-4 inline-block text-sm text-[var(--theme-primary)] underline">Manage saved addresses</Link>}
               </div>
 
               {/* Delivery */}
-              <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md p-5 sm:p-7">
                 <SectionTitle number="3" title="Delivery method" />
 
-                <div className="border border-[#1F3A2E] bg-[#F7F3EC] rounded-sm p-4 flex items-center justify-between gap-4">
+                <div className="border border-[var(--theme-primary)] bg-[var(--theme-background)] rounded-sm p-4 flex items-center justify-between gap-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[var(--theme-primary)] text-[var(--theme-background)] flex items-center justify-center shrink-0">
                       <LuTruck size={17} />
                     </div>
 
                     <div>
-                      <p className="text-sm text-[#211F1D]">
+                      <p className="text-sm text-[var(--theme-text)]">
                         Standard delivery
                       </p>
 
-                      <p className="text-xs text-[#8A8378] mt-1">
+                      <p className="text-xs text-[var(--theme-muted)] mt-1">
                         Delivered within 3–5 business days
                       </p>
                     </div>
                   </div>
 
-                  <span className="text-sm text-[#1F3A2E]">
+                  <span className="text-sm text-[var(--theme-primary)]">
                     {quoteLoading ? "Checking..." : shipping === 0 ? "FREE" : `$${Number(shipping).toFixed(2)}`}
                   </span>
                 </div>
               </div>
 
               {/* Payment */}
-              <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md p-5 sm:p-7">
                 <SectionTitle number="4" title="Payment" />
-                <div className="border border-[#1F3A2E] bg-[#F7F3EC] rounded-sm p-4 flex items-center justify-between">
-                  <span className="text-sm text-[#211F1D]">Cash on delivery</span>
-                  <span className="text-xs text-[#1F3A2E]">Available</span>
+                <div className="border border-[var(--theme-primary)] bg-[var(--theme-background)] rounded-sm p-4 flex items-center justify-between">
+                  <span className="text-sm text-[var(--theme-text)]">Cash on delivery</span>
+                  <span className="text-xs text-[var(--theme-primary)]">Available</span>
                 </div>
-                <p className="mt-3 text-xs text-[#8A8378]">Online card payments are not enabled yet.</p>
+                <p className="mt-3 text-xs text-[var(--theme-muted)]">Online card payments are not enabled yet.</p>
               </div>
 
               {/* Terms */}
@@ -312,19 +312,19 @@ export default function CheckoutPage() {
                   id="terms"
                   type="checkbox"
                   required
-                  className="w-4 h-4 mt-0.5 accent-[#1F3A2E]"
+                  className="w-4 h-4 mt-0.5 accent-[var(--theme-primary)]"
                 />
 
                 <label
                   htmlFor="terms"
-                  className="text-xs sm:text-sm text-[#5B564C] leading-relaxed"
+                  className="text-xs sm:text-sm text-[var(--theme-muted)] leading-relaxed"
                 >
                   I agree to the{" "}
-                  <a href="#" className="text-[#1F3A2E] underline">
+                  <a href="#" className="text-[var(--theme-primary)] underline">
                     Terms & Conditions
                   </a>{" "}
                   and{" "}
-                  <a href="#" className="text-[#1F3A2E] underline">
+                  <a href="#" className="text-[var(--theme-primary)] underline">
                     Privacy Policy
                   </a>
                   .
@@ -337,15 +337,15 @@ export default function CheckoutPage() {
             ================================================= */}
 
             <aside className="lg:sticky lg:top-28 h-fit">
-              <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md overflow-hidden">
                 {/* Order Header */}
-                <div className="px-5 sm:px-6 py-5 border-b border-[#E4DED2]">
+                <div className="px-5 sm:px-6 py-5 border-b border-[var(--theme-border)]">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-serif text-xl text-[#211F1D]">
+                    <h2 className="font-serif text-xl text-[var(--theme-text)]">
                       Your order
                     </h2>
 
-                    <span className="text-xs text-[#8A8378]">
+                    <span className="text-xs text-[var(--theme-muted)]">
                       {checkoutProducts.reduce(
                         (sum, product) => sum + product.quantity,
                         0,
@@ -360,34 +360,34 @@ export default function CheckoutPage() {
                   {checkoutProducts.map((product) => (
                     <div key={product.id} className="flex gap-3">
                       {/* Real Product Image */}
-                      <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
+                      <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-[var(--theme-background)] shrink-0">
                         <img
                           src={product.image}
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
 
-                        <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#211F1D] text-white text-[10px] flex items-center justify-center">
+                        <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[var(--theme-text)] text-white text-[10px] flex items-center justify-center">
                           {product.quantity}
                         </span>
                       </div>
 
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-[#8A8378] mb-0.5">
+                        <p className="text-xs text-[var(--theme-muted)] mb-0.5">
                           {product.category}
                         </p>
 
-                        <h3 className="text-sm text-[#211F1D] leading-snug">
+                        <h3 className="text-sm text-[var(--theme-text)] leading-snug">
                           {product.name}
                         </h3>
 
-                        <p className="text-sm text-[#1F3A2E] mt-1">
+                        <p className="text-sm text-[var(--theme-primary)] mt-1">
                           ${product.price}
                         </p>
                       </div>
 
-                      <div className="text-sm text-[#211F1D]">
+                      <div className="text-sm text-[var(--theme-text)]">
                         ${(Number(quote?.items?.find((line) => line.id === product.id)?.price ?? product.price) * product.quantity).toFixed(2)}
                       </div>
                     </div>
@@ -395,12 +395,12 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Coupon */}
-                <div className="px-5 sm:px-6 py-5 border-y border-[#E4DED2] bg-[#F7F3EC]">
+                <div className="px-5 sm:px-6 py-5 border-y border-[var(--theme-border)] bg-[var(--theme-background)]">
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <LuTag
                         size={15}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8378]"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--theme-muted)]"
                       />
 
                       <input
@@ -408,7 +408,7 @@ export default function CheckoutPage() {
                         value={coupon}
                         onChange={(e) => setCoupon(e.target.value)}
                         placeholder="Promo code"
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#E4DED2] rounded-sm text-sm outline-none focus:border-[#1F3A2E]"
+                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-[var(--theme-border)] rounded-sm text-sm outline-none focus:border-[var(--theme-primary)]"
                       />
                     </div>
 
@@ -416,66 +416,66 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={applyCoupon}
 
-                      className="px-4 py-2.5 bg-[#211F1D] text-[#F7F3EC] text-sm rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-50"
+                      className="px-4 py-2.5 bg-[var(--theme-text)] text-[var(--theme-background)] text-sm rounded-sm hover:bg-[var(--theme-primary)] transition-colors disabled:opacity-50"
                     >
                       {appliedCoupon ? "Update" : "Apply"}
                     </button>
                   </div>
 
                   {appliedCoupon && (
-                    <p className="flex items-center gap-1.5 text-xs text-[#1F3A2E] mt-2">
+                    <p className="flex items-center gap-1.5 text-xs text-[var(--theme-primary)] mt-2">
                       <LuCheck size={13} />
                       {appliedCoupon} applied
                     </p>
                   )}
 
                   {quoteError && <p role="alert" className="mt-2 text-xs text-red-700">{quoteError}</p>}
-                  {!appliedCoupon && !quoteError && <p className="text-[11px] text-[#8A8378] mt-2">Enter a promotion code to check its current discount.</p>}
+                  {!appliedCoupon && !quoteError && <p className="text-[11px] text-[var(--theme-muted)] mt-2">Enter a promotion code to check its current discount.</p>}
                 </div>
 
                 {/* Totals */}
                 <div className="p-5 sm:p-6 space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#5B564C]">Subtotal</span>
+                    <span className="text-[var(--theme-muted)]">Subtotal</span>
 
-                    <span className="text-[#211F1D]">
+                    <span className="text-[var(--theme-text)]">
                       ${Number(subtotal).toFixed(2)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#5B564C]">Shipping</span>
+                    <span className="text-[var(--theme-muted)]">Shipping</span>
 
-                    <span className="text-[#211F1D]">
+                    <span className="text-[var(--theme-text)]">
                       {quoteLoading ? "Checking..." : shipping === 0 ? "FREE" : `$${Number(shipping).toFixed(2)}`}
                     </span>
                   </div>
 
                   {Number(quote?.tax || 0) > 0 && (
-                    <div className="flex items-center justify-between text-sm"><span className="text-[#5B564C]">{quote?.taxName || "Tax"}</span><span className="text-[#211F1D]">${Number(quote.tax).toFixed(2)}</span></div>
+                    <div className="flex items-center justify-between text-sm"><span className="text-[var(--theme-muted)]">{quote?.taxName || "Tax"}</span><span className="text-[var(--theme-text)]">${Number(quote.tax).toFixed(2)}</span></div>
                   )}
                   {Boolean(discount) && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-[#1F3A2E]">Discount</span>
+                      <span className="text-[var(--theme-primary)]">Discount</span>
 
-                      <span className="text-[#1F3A2E]">
+                      <span className="text-[var(--theme-primary)]">
                         -${Number(discount).toFixed(2)}
                       </span>
                     </div>
                   )}
 
-                  <div className="border-t border-[#E4DED2] pt-4 mt-4 flex items-center justify-between">
+                  <div className="border-t border-[var(--theme-border)] pt-4 mt-4 flex items-center justify-between">
                     <div>
-                      <span className="font-serif text-lg text-[#211F1D]">
+                      <span className="font-serif text-lg text-[var(--theme-text)]">
                         Total
                       </span>
 
-                      <p className="text-[11px] text-[#8A8378] mt-0.5">
+                      <p className="text-[11px] text-[var(--theme-muted)] mt-0.5">
                         Including applicable taxes
                       </p>
                     </div>
 
-                    <span className="font-serif text-2xl text-[#1F3A2E]">
+                    <span className="font-serif text-2xl text-[var(--theme-primary)]">
                       ${Number(total).toFixed(2)}
                     </span>
                   </div>
@@ -484,7 +484,7 @@ export default function CheckoutPage() {
                   <button
                     type="submit"
                     disabled={orderState.loading || quoteLoading || !quoteMatchesCart || !addressId}
-                    className="w-full mt-3 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors flex items-center justify-center gap-2"
+                    className="w-full mt-3 bg-[var(--theme-primary)] text-[var(--theme-background)] py-3.5 rounded-sm text-sm hover:bg-[var(--theme-primary-hover)] transition-colors flex items-center justify-center gap-2"
                   >
                     <LuLock size={15} />
                     {orderState.loading
@@ -501,12 +501,12 @@ export default function CheckoutPage() {
                     </p>
                   )}
                   {orderState.success && (
-                    <p className="text-xs text-[#1F3A2E]" role="status">
+                    <p className="text-xs text-[var(--theme-primary)]" role="status">
                       {orderState.success}
                     </p>
                   )}
 
-                  <p className="text-[11px] text-[#8A8378] text-center leading-relaxed pt-1">
+                  <p className="text-[11px] text-[var(--theme-muted)] text-center leading-relaxed pt-1">
                     Your payment information is protected using secure
                     encryption.
                   </p>
@@ -514,19 +514,19 @@ export default function CheckoutPage() {
               </div>
 
               {/* Trust Card */}
-              <div className="mt-4 bg-[#EFE9DC] rounded-md p-5">
+              <div className="mt-4 bg-[var(--theme-surface-alt)] rounded-md p-5">
                 <div className="flex items-start gap-3">
                   <LuShieldCheck
                     size={19}
-                    className="text-[#1F3A2E] mt-0.5 shrink-0"
+                    className="text-[var(--theme-primary)] mt-0.5 shrink-0"
                   />
 
                   <div>
-                    <p className="text-sm text-[#211F1D]">
+                    <p className="text-sm text-[var(--theme-text)]">
                       Shop with confidence
                     </p>
 
-                    <p className="text-xs text-[#5B564C] leading-relaxed mt-1">
+                    <p className="text-xs text-[var(--theme-muted)] leading-relaxed mt-1">
                       Secure payments, easy returns, and customer support
                       whenever you need it.
                     </p>
@@ -542,7 +542,7 @@ export default function CheckoutPage() {
         ===================================================== */}
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 border border-[#E4DED2] bg-white rounded-md overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 border border-[var(--theme-border)] bg-white rounded-md overflow-hidden">
             {PERKS.map((perk, index) => {
               const Icon = perk.icon;
 
@@ -551,16 +551,16 @@ export default function CheckoutPage() {
                   key={perk.title}
                   className={`p-5 sm:p-6 flex items-start gap-3 ${
                     index !== PERKS.length - 1
-                      ? "border-b lg:border-b-0 lg:border-r border-[#E4DED2]"
+                      ? "border-b lg:border-b-0 lg:border-r border-[var(--theme-border)]"
                       : ""
                   }`}
                 >
-                  <Icon size={20} className="text-[#1F3A2E] mt-0.5 shrink-0" />
+                  <Icon size={20} className="text-[var(--theme-primary)] mt-0.5 shrink-0" />
 
                   <div>
-                    <p className="text-sm text-[#211F1D]">{perk.title}</p>
+                    <p className="text-sm text-[var(--theme-text)]">{perk.title}</p>
 
-                    <p className="text-xs text-[#8A8378] mt-1">{perk.text}</p>
+                    <p className="text-xs text-[var(--theme-muted)] mt-1">{perk.text}</p>
                   </div>
                 </div>
               );

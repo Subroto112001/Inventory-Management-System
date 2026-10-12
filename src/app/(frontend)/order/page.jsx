@@ -126,15 +126,15 @@ const STATUS_STYLES = {
   },
   Shipped: {
     icon: LuTruck,
-    className: "bg-[#DDE8E1] text-[#1F3A2E]",
+    className: "bg-[color-mix(in_srgb,var(--theme-success)_12%,white)] text-[var(--theme-success)]",
   },
   Delivered: {
     icon: LuPackageCheck,
-    className: "bg-[#1F3A2E] text-[#F7F3EC]",
+    className: "bg-[var(--theme-success)] text-white",
   },
   Cancelled: {
     icon: LuCircleX,
-    className: "bg-[#F3DED5] text-[#B65C38]",
+    className: "bg-[color-mix(in_srgb,var(--theme-error)_12%,white)] text-[var(--theme-error)]",
   },
 };
 
@@ -196,8 +196,8 @@ function Stars({ rating }) {
           size={13}
           className={
             i < Math.round(rating)
-              ? "fill-[#C9A659] text-[#C9A659]"
-              : "fill-[#E4DED2] text-[#E4DED2]"
+              ? "fill-[var(--theme-highlight)] text-[var(--theme-highlight)]"
+              : "fill-[var(--theme-border)] text-[var(--theme-border)]"
           }
         />
       ))}
@@ -235,13 +235,13 @@ function TrackProgress({ status }) {
           <div className="flex flex-col items-center gap-1.5">
             <span
               className={`w-3 h-3 rounded-full ${
-                i <= current ? "bg-[#1F3A2E]" : "bg-[#E4DED2]"
+                i <= current ? "bg-[var(--theme-primary)]" : "bg-[var(--theme-border)]"
               }`}
             />
 
             <span
               className={`text-[11px] whitespace-nowrap ${
-                i <= current ? "text-[#211F1D]" : "text-[#8A8378]"
+                i <= current ? "text-[var(--theme-text)]" : "text-[var(--theme-muted)]"
               }`}
             >
               {step}
@@ -251,7 +251,7 @@ function TrackProgress({ status }) {
           {i < TRACK_STEPS.length - 1 && (
             <div
               className={`flex-1 h-px mx-2 mb-5 ${
-                i < current ? "bg-[#1F3A2E]" : "bg-[#E4DED2]"
+                i < current ? "bg-[var(--theme-primary)]" : "bg-[var(--theme-border)]"
               }`}
             />
           )}
@@ -272,9 +272,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm text-[#211F1D] mb-1.5">
+      <label className="block text-sm text-[var(--theme-text)] mb-1.5">
         {label}
-        {required && <span className="text-[#B65C38] ml-1">*</span>}
+        {required && <span className="text-[var(--theme-secondary)] ml-1">*</span>}
       </label>
 
       <input
@@ -284,7 +284,7 @@ function Field({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className="w-full px-3.5 py-3 bg-white border border-[#E4DED2] rounded-sm text-sm text-[#211F1D] placeholder:text-[#9B9689] outline-none focus:border-[#1F3A2E] focus:ring-1 focus:ring-[#1F3A2E]/10 transition disabled:bg-[#F7F3EC] disabled:text-[#8A8378]"
+        className="w-full px-3.5 py-3 bg-white border border-[var(--theme-border)] rounded-sm text-sm text-[var(--theme-text)] placeholder:text-[var(--theme-muted)] outline-none focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)]/10 transition disabled:bg-[var(--theme-background)] disabled:text-[var(--theme-muted)]"
       />
     </div>
   );
@@ -292,10 +292,10 @@ function Field({
 
 function Toggle({ checked, onChange, label, text }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-4 border-b border-[#E4DED2] last:border-b-0">
+    <div className="flex items-start justify-between gap-4 py-4 border-b border-[var(--theme-border)] last:border-b-0">
       <div>
-        <p className="text-sm text-[#211F1D]">{label}</p>
-        <p className="text-xs text-[#8A8378] mt-0.5">{text}</p>
+        <p className="text-sm text-[var(--theme-text)]">{label}</p>
+        <p className="text-xs text-[var(--theme-muted)] mt-0.5">{text}</p>
       </div>
 
       <button
@@ -305,7 +305,7 @@ function Toggle({ checked, onChange, label, text }) {
         aria-label={label}
         onClick={() => onChange(!checked)}
         className={`relative w-10 h-6 rounded-full shrink-0 transition-colors ${
-          checked ? "bg-[#1F3A2E]" : "bg-[#E4DED2]"
+          checked ? "bg-[var(--theme-primary)]" : "bg-[var(--theme-border)]"
         }`}
       >
         <span
@@ -320,14 +320,14 @@ function Toggle({ checked, onChange, label, text }) {
 
 function Panel({ title, text, children, action }) {
   return (
-    <div className="bg-white border border-[#E4DED2] rounded-md p-5 sm:p-7">
+    <div className="bg-white border border-[var(--theme-border)] rounded-md p-5 sm:p-7">
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
-          <h2 className="font-serif text-xl sm:text-2xl text-[#211F1D]">
+          <h2 className="font-serif text-xl sm:text-2xl text-[var(--theme-text)]">
             {title}
           </h2>
 
-          {text && <p className="text-xs text-[#8A8378] mt-1">{text}</p>}
+          {text && <p className="text-xs text-[var(--theme-muted)] mt-1">{text}</p>}
         </div>
 
         {action}
@@ -340,18 +340,18 @@ function Panel({ title, text, children, action }) {
 
 function EmptyState({ icon: Icon, title, text, action, onAction }) {
   return (
-    <div className="bg-white border border-[#E4DED2] rounded-md py-16 px-6 text-center">
-      <Icon size={32} className="mx-auto text-[#8A8378] mb-4" />
+    <div className="bg-white border border-[var(--theme-border)] rounded-md py-16 px-6 text-center">
+      <Icon size={32} className="mx-auto text-[var(--theme-muted)] mb-4" />
 
       <p className="font-serif text-2xl mb-2">{title}</p>
 
-      <p className="text-sm text-[#8A8378] mb-6">{text}</p>
+      <p className="text-sm text-[var(--theme-muted)] mb-6">{text}</p>
 
       {action && (
         <button
           type="button"
           onClick={onAction}
-          className="bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
+          className="bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-5 py-2.5 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
         >
           {action}
         </button>
@@ -371,21 +371,21 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
   const PayIcon = order.payment === "Card" ? LuCreditCard : LuBanknote;
 
   return (
-    <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:border-[#C9A659] transition-colors">
-      <div className="px-5 sm:px-6 py-4 bg-[#F7F3EC] border-b border-[#E4DED2] grid grid-cols-2 md:grid-cols-[1.2fr_1fr_1fr_auto] gap-4 items-center">
+    <div className="bg-white border border-[var(--theme-border)] rounded-md overflow-hidden hover:border-[var(--theme-highlight)] transition-colors">
+      <div className="px-5 sm:px-6 py-4 bg-[var(--theme-background)] border-b border-[var(--theme-border)] grid grid-cols-2 md:grid-cols-[1.2fr_1fr_1fr_auto] gap-4 items-center">
         <div>
-          <p className="text-xs text-[#8A8378]">Order</p>
-          <p className="text-sm text-[#211F1D] font-medium">#{order.id}</p>
+          <p className="text-xs text-[var(--theme-muted)]">Order</p>
+          <p className="text-sm text-[var(--theme-text)] font-medium">#{order.id}</p>
         </div>
 
         <div>
-          <p className="text-xs text-[#8A8378]">Placed on</p>
-          <p className="text-sm text-[#211F1D]">{order.date}</p>
+          <p className="text-xs text-[var(--theme-muted)]">Placed on</p>
+          <p className="text-sm text-[var(--theme-text)]">{order.date}</p>
         </div>
 
         <div>
-          <p className="text-xs text-[#8A8378]">Total</p>
-          <p className="text-sm text-[#1F3A2E] font-medium">
+          <p className="text-xs text-[var(--theme-muted)]">Total</p>
+          <p className="text-sm text-[var(--theme-primary)] font-medium">
             ${total.toFixed(2)}
           </p>
         </div>
@@ -398,7 +398,7 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
       <div className="px-5 sm:px-6 py-5 space-y-4">
         {order.items.map((item) => (
           <div key={item.name} className="flex gap-4">
-            <div className="w-20 h-20 rounded-sm overflow-hidden bg-[#F7F3EC] shrink-0">
+            <div className="w-20 h-20 rounded-sm overflow-hidden bg-[var(--theme-background)] shrink-0">
               <img
                 src={item.image}
                 alt={item.name}
@@ -407,18 +407,18 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#8A8378] mb-0.5">{item.category}</p>
+              <p className="text-xs text-[var(--theme-muted)] mb-0.5">{item.category}</p>
 
-              <h3 className="text-sm text-[#211F1D] leading-snug">
+              <h3 className="text-sm text-[var(--theme-text)] leading-snug">
                 {item.name}
               </h3>
 
-              <p className="text-xs text-[#8A8378] mt-1.5">
+              <p className="text-xs text-[var(--theme-muted)] mt-1.5">
                 Qty {item.quantity}
               </p>
             </div>
 
-            <p className="text-sm text-[#211F1D] shrink-0">
+            <p className="text-sm text-[var(--theme-text)] shrink-0">
               ${(item.price * item.quantity).toFixed(2)}
             </p>
           </div>
@@ -426,33 +426,33 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
       </div>
 
       <div className="px-5 sm:px-6 pb-5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-5 border-t border-[#E4DED2]">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-5 border-t border-[var(--theme-border)]">
           {order.status !== "Cancelled" ? (
             <TrackProgress status={order.status} />
           ) : (
-            <p className="text-sm text-[#5B564C]">
+            <p className="text-sm text-[var(--theme-muted)]">
               This order was cancelled and your payment was refunded.
             </p>
           )}
 
           <div className="md:text-right">
-            <p className="text-xs text-[#8A8378]">
+            <p className="text-xs text-[var(--theme-muted)]">
               {order.status === "Delivered" || order.status === "Cancelled"
                 ? "Status"
                 : "Estimated delivery"}
             </p>
 
-            <p className="text-sm text-[#211F1D]">{order.estimated}</p>
+            <p className="text-sm text-[var(--theme-text)]">{order.estimated}</p>
           </div>
         </div>
       </div>
 
-      <div className="px-5 sm:px-6 py-4 border-t border-[#E4DED2] flex flex-wrap items-center gap-3">
+      <div className="px-5 sm:px-6 py-4 border-t border-[var(--theme-border)] flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex items-center gap-1.5 text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors"
+          className="flex items-center gap-1.5 text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors"
         >
           {open ? "Hide details" : "View details"}
 
@@ -466,7 +466,7 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
           {order.tracking && order.status === "Shipped" && (
             <button
               type="button"
-              className="flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-4 py-2 rounded-sm hover:bg-[#16281F] transition-colors"
+              className="flex items-center gap-2 bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-4 py-2 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
             >
               <LuTruck size={15} />
               Track package
@@ -477,7 +477,7 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
             <button
               type="button"
               onClick={() => onCancel(order)}
-              className="text-sm px-4 py-2 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#B65C38] hover:text-[#B65C38] transition-colors"
+              className="text-sm px-4 py-2 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-secondary)] hover:text-[var(--theme-secondary)] transition-colors"
             >
               Cancel order
             </button>
@@ -487,7 +487,7 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
             <button
               type="button"
               onClick={() => onBuyAgain(order)}
-              className="flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-4 py-2 rounded-sm hover:bg-[#16281F] transition-colors"
+              className="flex items-center gap-2 bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-4 py-2 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
             >
               <LuRepeat size={15} />
               Buy again
@@ -497,7 +497,7 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
           {order.status === "Delivered" && (
             <button
               type="button"
-              className="text-sm px-4 py-2 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
+              className="text-sm px-4 py-2 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)] transition-colors"
             >
               Write a review
             </button>
@@ -506,7 +506,7 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
           {order.status !== "Cancelled" && (
             <button
               type="button"
-              className="flex items-center gap-2 text-sm px-4 py-2 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
+              className="flex items-center gap-2 text-sm px-4 py-2 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)] transition-colors"
             >
               <LuDownload size={15} />
               Invoice
@@ -516,50 +516,50 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
       </div>
 
       {open && (
-        <div className="px-5 sm:px-6 py-6 border-t border-[#E4DED2] bg-[#F7F3EC] grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="px-5 sm:px-6 py-6 border-t border-[var(--theme-border)] bg-[var(--theme-background)] grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <h4 className="text-sm text-[#211F1D] font-medium mb-2 flex items-center gap-2">
-              <LuMapPin size={15} className="text-[#1F3A2E]" />
+            <h4 className="text-sm text-[var(--theme-text)] font-medium mb-2 flex items-center gap-2">
+              <LuMapPin size={15} className="text-[var(--theme-primary)]" />
               Shipping address
             </h4>
 
-            <p className="text-sm text-[#5B564C] leading-relaxed">
+            <p className="text-sm text-[var(--theme-muted)] leading-relaxed">
               {order.address}
             </p>
 
             {order.tracking && (
-              <p className="text-xs text-[#8A8378] mt-3">
+              <p className="text-xs text-[var(--theme-muted)] mt-3">
                 Tracking no.{" "}
-                <span className="text-[#211F1D]">{order.tracking}</span>
+                <span className="text-[var(--theme-text)]">{order.tracking}</span>
               </p>
             )}
           </div>
 
           <div>
-            <h4 className="text-sm text-[#211F1D] font-medium mb-2 flex items-center gap-2">
-              <PayIcon size={15} className="text-[#1F3A2E]" />
+            <h4 className="text-sm text-[var(--theme-text)] font-medium mb-2 flex items-center gap-2">
+              <PayIcon size={15} className="text-[var(--theme-primary)]" />
               Payment
             </h4>
 
-            <p className="text-sm text-[#5B564C]">{order.payment}</p>
+            <p className="text-sm text-[var(--theme-muted)]">{order.payment}</p>
 
-            <p className="text-xs text-[#8A8378] mt-1">{order.paymentStatus}</p>
+            <p className="text-xs text-[var(--theme-muted)] mt-1">{order.paymentStatus}</p>
           </div>
 
           <div>
-            <h4 className="text-sm text-[#211F1D] font-medium mb-2 flex items-center gap-2">
-              <LuReceipt size={15} className="text-[#1F3A2E]" />
+            <h4 className="text-sm text-[var(--theme-text)] font-medium mb-2 flex items-center gap-2">
+              <LuReceipt size={15} className="text-[var(--theme-primary)]" />
               Summary
             </h4>
 
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-[#5B564C]">Subtotal</span>
+                <span className="text-[var(--theme-muted)]">Subtotal</span>
                 <span>${orderSubtotal(order).toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-[#5B564C]">Shipping</span>
+                <span className="text-[var(--theme-muted)]">Shipping</span>
                 <span>
                   {order.shipping === 0
                     ? "FREE"
@@ -568,15 +568,15 @@ function OrderCard({ order, onBuyAgain, onCancel }) {
               </div>
 
               {order.discount > 0 && (
-                <div className="flex justify-between text-[#1F3A2E]">
+                <div className="flex justify-between text-[var(--theme-primary)]">
                   <span>Discount</span>
                   <span>-${order.discount.toFixed(2)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between border-t border-[#E4DED2] pt-2 mt-2">
+              <div className="flex justify-between border-t border-[var(--theme-border)] pt-2 mt-2">
                 <span className="font-serif text-base">Total</span>
-                <span className="font-serif text-base text-[#1F3A2E]">
+                <span className="font-serif text-base text-[var(--theme-primary)]">
                   ${total.toFixed(2)}
                 </span>
               </div>
@@ -617,13 +617,13 @@ function DashboardView({
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div className="bg-[#1F3A2E] rounded-md px-6 sm:px-8 py-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+      <div className="bg-[var(--theme-primary)] rounded-md px-6 sm:px-8 py-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
         <div>
-          <h2 className="font-serif text-2xl sm:text-3xl text-[#F7F3EC]">
+          <h2 className="font-serif text-2xl sm:text-3xl text-[var(--theme-background)]">
             Welcome back, {profile.firstName}
           </h2>
 
-          <p className="text-sm text-[#F7F3EC]/80 mt-1.5">
+          <p className="text-sm text-[var(--theme-background)]/80 mt-1.5">
             {inProgress.length > 0
               ? `You have ${inProgress.length} order${
                   inProgress.length > 1 ? "s" : ""
@@ -635,7 +635,7 @@ function DashboardView({
         <button
           type="button"
           onClick={() => goTo("orders")}
-          className="bg-[#C9A659] cursor-pointer text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors self-start sm:self-auto"
+          className="bg-[var(--theme-highlight)] cursor-pointer text-[var(--theme-text)] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors self-start sm:self-auto"
         >
           View all orders
         </button>
@@ -655,15 +655,15 @@ function DashboardView({
         ].map(({ label, value, icon: Icon }) => (
           <div
             key={label}
-            className="bg-white border border-[#E4DED2] rounded-md p-4 flex items-start justify-between"
+            className="bg-white border border-[var(--theme-border)] rounded-md p-4 flex items-start justify-between"
           >
             <div>
-              <p className="text-xs text-[#8A8378]">{label}</p>
+              <p className="text-xs text-[var(--theme-muted)]">{label}</p>
 
-              <p className="font-serif text-2xl text-[#1F3A2E] mt-1">{value}</p>
+              <p className="font-serif text-2xl text-[var(--theme-primary)] mt-1">{value}</p>
             </div>
 
-            <Icon size={18} className="text-[#8A8378]" />
+            <Icon size={18} className="text-[var(--theme-muted)]" />
           </div>
         ))}
       </div>
@@ -675,15 +675,15 @@ function DashboardView({
             {inProgress.map((order) => (
               <div
                 key={order.id}
-                className="border border-[#E4DED2] rounded-sm p-4 sm:p-5"
+                className="border border-[var(--theme-border)] rounded-sm p-4 sm:p-5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                   <div>
-                    <p className="text-sm text-[#211F1D] font-medium">
+                    <p className="text-sm text-[var(--theme-text)] font-medium">
                       #{order.id}
                     </p>
 
-                    <p className="text-xs text-[#8A8378] mt-0.5">
+                    <p className="text-xs text-[var(--theme-muted)] mt-0.5">
                       Estimated delivery {order.estimated}
                     </p>
                   </div>
@@ -705,7 +705,7 @@ function DashboardView({
           <button
             type="button"
             onClick={() => goTo("orders")}
-            className="text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
+            className="text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors whitespace-nowrap"
           >
             View all
           </button>
@@ -714,7 +714,7 @@ function DashboardView({
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[520px]">
             <thead>
-              <tr className="text-left text-xs text-[#8A8378] border-b border-[#E4DED2]">
+              <tr className="text-left text-xs text-[var(--theme-muted)] border-b border-[var(--theme-border)]">
                 <th className="font-normal pb-3">Order</th>
                 <th className="font-normal pb-3">Date</th>
                 <th className="font-normal pb-3">Status</th>
@@ -726,14 +726,14 @@ function DashboardView({
               {recent.map((order) => (
                 <tr
                   key={order.id}
-                  className="border-b border-[#E4DED2] last:border-b-0"
+                  className="border-b border-[var(--theme-border)] last:border-b-0"
                 >
-                  <td className="py-3.5 text-[#211F1D]">#{order.id}</td>
-                  <td className="py-3.5 text-[#5B564C]">{order.date}</td>
+                  <td className="py-3.5 text-[var(--theme-text)]">#{order.id}</td>
+                  <td className="py-3.5 text-[var(--theme-muted)]">{order.date}</td>
                   <td className="py-3.5">
                     <StatusBadge status={order.status} />
                   </td>
-                  <td className="py-3.5 text-right text-[#1F3A2E]">
+                  <td className="py-3.5 text-right text-[var(--theme-primary)]">
                     ${orderTotal(order).toFixed(2)}
                   </td>
                 </tr>
@@ -751,7 +751,7 @@ function DashboardView({
             <button
               type="button"
               onClick={() => goTo("addresses")}
-              className="text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors"
+              className="text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors"
             >
               Manage
             </button>
@@ -759,10 +759,10 @@ function DashboardView({
         >
           {defaultAddress ? (
             <div className="flex gap-3">
-              <LuMapPin size={18} className="text-[#1F3A2E] mt-0.5 shrink-0" />
+              <LuMapPin size={18} className="text-[var(--theme-primary)] mt-0.5 shrink-0" />
 
-              <div className="text-sm text-[#5B564C] leading-relaxed">
-                <p className="text-[#211F1D]">{defaultAddress.name}</p>
+              <div className="text-sm text-[var(--theme-muted)] leading-relaxed">
+                <p className="text-[var(--theme-text)]">{defaultAddress.name}</p>
                 <p>
                   {defaultAddress.line1}
                   {defaultAddress.line2 ? `, ${defaultAddress.line2}` : ""}
@@ -776,7 +776,7 @@ function DashboardView({
               </div>
             </div>
           ) : (
-            <p className="text-sm text-[#8A8378]">
+            <p className="text-sm text-[var(--theme-muted)]">
               You haven&apos;t saved an address yet.
             </p>
           )}
@@ -789,7 +789,7 @@ function DashboardView({
             <button
               type="button"
               onClick={() => goTo("settings")}
-              className="text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors"
+              className="text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors"
             >
               Edit
             </button>
@@ -797,20 +797,20 @@ function DashboardView({
         >
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-3">
-              <LuUser size={17} className="text-[#1F3A2E]" />
-              <span className="text-[#211F1D]">
+              <LuUser size={17} className="text-[var(--theme-primary)]" />
+              <span className="text-[var(--theme-text)]">
                 {profile.firstName} {profile.lastName}
               </span>
             </div>
 
             <div className="flex items-center gap-3">
-              <LuMail size={17} className="text-[#1F3A2E]" />
-              <span className="text-[#5B564C]">{profile.email}</span>
+              <LuMail size={17} className="text-[var(--theme-primary)]" />
+              <span className="text-[var(--theme-muted)]">{profile.email}</span>
             </div>
 
             <div className="flex items-center gap-3">
-              <LuPhone size={17} className="text-[#1F3A2E]" />
-              <span className="text-[#5B564C]">{profile.phone}</span>
+              <LuPhone size={17} className="text-[var(--theme-primary)]" />
+              <span className="text-[var(--theme-muted)]">{profile.phone}</span>
             </div>
           </div>
         </Panel>
@@ -823,7 +823,7 @@ function DashboardView({
           <button
             type="button"
             onClick={() => goTo("wishlist")}
-            className="text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
+            className="text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors whitespace-nowrap"
           >
             View wishlist
           </button>
@@ -833,7 +833,7 @@ function DashboardView({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {wishlist.slice(0, 4).map((item) => (
               <div key={item.id} className="group">
-                <div className="aspect-square rounded-sm overflow-hidden bg-[#F7F3EC] mb-2">
+                <div className="aspect-square rounded-sm overflow-hidden bg-[var(--theme-background)] mb-2">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -841,16 +841,16 @@ function DashboardView({
                   />
                 </div>
 
-                <p className="text-sm text-[#211F1D] leading-snug line-clamp-1">
+                <p className="text-sm text-[var(--theme-text)] leading-snug line-clamp-1">
                   {item.name}
                 </p>
 
-                <p className="text-sm text-[#1F3A2E] mt-0.5">${item.price}</p>
+                <p className="text-sm text-[var(--theme-primary)] mt-0.5">${item.price}</p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-[#8A8378]">Your wishlist is empty.</p>
+          <p className="text-sm text-[var(--theme-muted)]">Your wishlist is empty.</p>
         )}
       </Panel>
     </div>
@@ -932,18 +932,18 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-white border border-[#E4DED2] rounded-md p-4"
+            className="bg-white border border-[var(--theme-border)] rounded-md p-4"
           >
-            <p className="text-xs text-[#8A8378]">{stat.label}</p>
+            <p className="text-xs text-[var(--theme-muted)]">{stat.label}</p>
 
-            <p className="font-serif text-2xl text-[#1F3A2E] mt-1">
+            <p className="font-serif text-2xl text-[var(--theme-primary)] mt-1">
               {stat.value}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white border border-[#E4DED2] rounded-md p-4 mb-5 space-y-4">
+      <div className="bg-white border border-[var(--theme-border)] rounded-md p-4 mb-5 space-y-4">
         <div className="flex overflow-x-auto gap-2 -mx-1 px-1">
           {STATUS_TABS.map((tab) => (
             <button
@@ -955,14 +955,14 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
               }}
               className={`text-sm px-4 py-1.5 rounded-sm border whitespace-nowrap transition-colors ${
                 activeTab === tab
-                  ? "bg-[#1F3A2E] border-[#1F3A2E] text-[#F7F3EC]"
-                  : "border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E]"
+                  ? "bg-[var(--theme-primary)] border-[var(--theme-primary)] text-[var(--theme-background)]"
+                  : "border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)]"
               }`}
             >
               {tab}{" "}
               <span
                 className={
-                  activeTab === tab ? "text-[#F7F3EC]/70" : "text-[#8A8378]"
+                  activeTab === tab ? "text-[var(--theme-background)]/70" : "text-[var(--theme-muted)]"
                 }
               >
                 {counts[tab] || 0}
@@ -975,7 +975,7 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
           <div className="relative flex-1">
             <LuSearch
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8378]"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--theme-muted)]"
             />
 
             <input
@@ -986,7 +986,7 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
                 setPage(1);
               }}
               placeholder="Search by order number or product"
-              className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#E4DED2] rounded-sm text-sm outline-none focus:border-[#1F3A2E] placeholder:text-[#8A8378]"
+              className="w-full pl-9 pr-3 py-2.5 bg-white border border-[var(--theme-border)] rounded-sm text-sm outline-none focus:border-[var(--theme-primary)] placeholder:text-[var(--theme-muted)]"
             />
           </div>
 
@@ -997,7 +997,7 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
                 setSort(e.target.value);
                 setPage(1);
               }}
-              className="appearance-none w-full sm:w-auto border border-[#E4DED2] rounded-sm bg-white text-sm px-4 py-2.5 pr-9 outline-none cursor-pointer focus:border-[#1F3A2E]"
+              className="appearance-none w-full sm:w-auto border border-[var(--theme-border)] rounded-sm bg-white text-sm px-4 py-2.5 pr-9 outline-none cursor-pointer focus:border-[var(--theme-primary)]"
             >
               <option>Newest first</option>
               <option>Oldest first</option>
@@ -1007,7 +1007,7 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
 
             <LuChevronDown
               size={15}
-              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A8378]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--theme-muted)]"
             />
           </div>
         </div>
@@ -1040,7 +1040,7 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
             aria-label="Previous page"
             disabled={page === 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="w-9 h-9 border border-[#E4DED2] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
+            className="w-9 h-9 border border-[var(--theme-border)] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
           >
             <LuChevronLeft size={17} />
           </button>
@@ -1052,8 +1052,8 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
               onClick={() => setPage(i + 1)}
               className={`w-9 h-9 rounded-md text-sm ${
                 page === i + 1
-                  ? "bg-[#1F3A2E] text-white"
-                  : "bg-white border border-[#E4DED2] hover:border-[#1F3A2E]"
+                  ? "bg-[var(--theme-primary)] text-white"
+                  : "bg-white border border-[var(--theme-border)] hover:border-[var(--theme-primary)]"
               }`}
             >
               {i + 1}
@@ -1065,7 +1065,7 @@ function OrdersView({ orders, onBuyAgain, onCancel }) {
             aria-label="Next page"
             disabled={page === totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="w-9 h-9 border border-[#E4DED2] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
+            className="w-9 h-9 border border-[var(--theme-border)] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
           >
             <LuChevronRight size={17} />
           </button>
@@ -1095,15 +1095,15 @@ function WishlistView({ wishlist, onRemove, onAddToCart, onAddAll, goShop }) {
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-5">
-        <p className="text-sm text-[#8A8378]">
-          <span className="text-[#211F1D] font-medium">{wishlist.length}</span>{" "}
+        <p className="text-sm text-[var(--theme-muted)]">
+          <span className="text-[var(--theme-text)] font-medium">{wishlist.length}</span>{" "}
           saved {wishlist.length === 1 ? "item" : "items"}
         </p>
 
         <button
           type="button"
           onClick={onAddAll}
-          className="flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-4 py-2 rounded-sm hover:bg-[#16281F] transition-colors"
+          className="flex items-center gap-2 bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-4 py-2 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
         >
           <LuShoppingCart size={15} />
           Add all to cart
@@ -1114,9 +1114,9 @@ function WishlistView({ wishlist, onRemove, onAddToCart, onAddAll, goShop }) {
         {wishlist.map((item) => (
           <div
             key={item.id}
-            className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200"
+            className="group bg-white border border-[var(--theme-border)] rounded-md overflow-hidden hover:shadow-md hover:border-[var(--theme-highlight)] transition-all duration-200"
           >
-            <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
+            <div className="relative aspect-square overflow-hidden bg-[var(--theme-background)]">
               <img
                 src={item.image}
                 alt={item.name}
@@ -1127,30 +1127,30 @@ function WishlistView({ wishlist, onRemove, onAddToCart, onAddAll, goShop }) {
                 type="button"
                 onClick={() => onRemove(item.id)}
                 aria-label={`Remove ${item.name} from wishlist`}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 flex items-center justify-center text-[#B65C38] hover:bg-white"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 flex items-center justify-center text-[var(--theme-secondary)] hover:bg-white"
               >
-                <LuHeart size={15} className="fill-[#B65C38]" />
+                <LuHeart size={15} className="fill-[var(--theme-secondary)]" />
               </button>
             </div>
 
             <div className="p-4">
-              <p className="text-xs text-[#8A8378] mb-1">{item.category}</p>
+              <p className="text-xs text-[var(--theme-muted)] mb-1">{item.category}</p>
 
-              <h3 className="text-sm text-[#211F1D] leading-snug mb-1.5 line-clamp-2 min-h-[40px]">
+              <h3 className="text-sm text-[var(--theme-text)] leading-snug mb-1.5 line-clamp-2 min-h-[40px]">
                 {item.name}
               </h3>
 
               <div className="flex items-center gap-1.5 mb-2">
                 <Stars rating={item.rating} />
 
-                <span className="text-xs text-[#8A8378]">({item.reviews})</span>
+                <span className="text-xs text-[var(--theme-muted)]">({item.reviews})</span>
               </div>
 
               <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-[#1F3A2E] text-base">${item.price}</span>
+                <span className="text-[var(--theme-primary)] text-base">${item.price}</span>
 
                 {item.oldPrice && (
-                  <span className="text-xs text-[#8A8378] line-through">
+                  <span className="text-xs text-[var(--theme-muted)] line-through">
                     ${item.oldPrice}
                   </span>
                 )}
@@ -1160,7 +1160,7 @@ function WishlistView({ wishlist, onRemove, onAddToCart, onAddAll, goShop }) {
                 <button
                   type="button"
                   onClick={() => onAddToCart(item)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#211F1D] text-[#F7F3EC] text-sm py-2 rounded-sm hover:bg-[#1F3A2E] transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 bg-[var(--theme-text)] text-[var(--theme-background)] text-sm py-2 rounded-sm hover:bg-[var(--theme-primary)] transition-colors"
                 >
                   <LuShoppingCart size={14} />
                   Add to cart
@@ -1170,7 +1170,7 @@ function WishlistView({ wishlist, onRemove, onAddToCart, onAddAll, goShop }) {
                   type="button"
                   onClick={() => onRemove(item.id)}
                   aria-label="Remove"
-                  className="w-9 border border-[#E4DED2] rounded-sm flex items-center justify-center text-[#5B564C] hover:border-[#B65C38] hover:text-[#B65C38] transition-colors"
+                  className="w-9 border border-[var(--theme-border)] rounded-sm flex items-center justify-center text-[var(--theme-muted)] hover:border-[var(--theme-secondary)] hover:text-[var(--theme-secondary)] transition-colors"
                 >
                   <LuTrash2 size={15} />
                 </button>
@@ -1228,7 +1228,7 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
           <button
             type="button"
             onClick={startNew}
-            className="flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-4 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
+            className="flex items-center gap-2 bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-4 py-2.5 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
           >
             <LuPlus size={16} />
             Add new address
@@ -1240,13 +1240,13 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
         <form onSubmit={submit}>
           <Panel title={editing === "new" ? "New address" : "Edit address"}>
             {error && (
-              <p className="mb-4 text-sm text-[#B65C38]" role="alert">
+              <p className="mb-4 text-sm text-[var(--theme-secondary)]" role="alert">
                 {error}
               </p>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-[#211F1D] mb-1.5">
+                <label className="block text-sm text-[var(--theme-text)] mb-1.5">
                   Address label
                 </label>
 
@@ -1258,8 +1258,8 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
                       onClick={() => update("label", label)}
                       className={`flex-1 text-sm py-2.5 rounded-sm border transition-colors ${
                         form.label === label
-                          ? "bg-[#1F3A2E] border-[#1F3A2E] text-[#F7F3EC]"
-                          : "border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E]"
+                          ? "bg-[var(--theme-primary)] border-[var(--theme-primary)] text-[var(--theme-background)]"
+                          : "border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)]"
                       }`}
                     >
                       {label}
@@ -1335,7 +1335,7 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
             <div className="flex gap-3 mt-6">
               <button
                 type="submit"
-                className="bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
+                className="bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-5 py-2.5 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
               >
                 Save address
               </button>
@@ -1343,7 +1343,7 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
               <button
                 type="button"
                 onClick={cancel}
-                className="text-sm px-5 py-2.5 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
+                className="text-sm px-5 py-2.5 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)] transition-colors"
               >
                 Cancel
               </button>
@@ -1366,27 +1366,27 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
             <div
               key={address.id}
               className={`bg-white border rounded-md p-5 flex flex-col ${
-                address.isDefault ? "border-[#1F3A2E]" : "border-[#E4DED2]"
+                address.isDefault ? "border-[var(--theme-primary)]" : "border-[var(--theme-border)]"
               }`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <LuMapPin size={17} className="text-[#1F3A2E]" />
+                  <LuMapPin size={17} className="text-[var(--theme-primary)]" />
 
-                  <span className="text-sm text-[#211F1D] font-medium">
+                  <span className="text-sm text-[var(--theme-text)] font-medium">
                     {address.label}
                   </span>
                 </div>
 
                 {address.isDefault && (
-                  <span className="text-xs px-2 py-1 rounded-sm bg-[#1F3A2E] text-[#F7F3EC]">
+                  <span className="text-xs px-2 py-1 rounded-sm bg-[var(--theme-primary)] text-[var(--theme-background)]">
                     Default
                   </span>
                 )}
               </div>
 
-              <div className="text-sm text-[#5B564C] leading-relaxed flex-1">
-                <p className="text-[#211F1D]">{address.name}</p>
+              <div className="text-sm text-[var(--theme-muted)] leading-relaxed flex-1">
+                <p className="text-[var(--theme-text)]">{address.name}</p>
 
                 <p>
                   {address.line1}
@@ -1404,11 +1404,11 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
                 <p className="mt-1">{address.phone}</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-[#E4DED2]">
+              <div className="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-[var(--theme-border)]">
                 <button
                   type="button"
                   onClick={() => startEdit(address)}
-                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)] transition-colors"
                 >
                   <LuPencil size={14} />
                   Edit
@@ -1427,7 +1427,7 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
                         );
                       }
                     }}
-                    className="text-sm px-3 py-1.5 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
+                    className="text-sm px-3 py-1.5 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)] transition-colors"
                   >
                     Set as default
                   </button>
@@ -1445,7 +1445,7 @@ function AddressesView({ addresses, onSave, onDelete, onSetDefault }) {
                       );
                     }
                   }}
-                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-sm text-[#B65C38] hover:bg-[#F3DED5] transition-colors ml-auto"
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-sm text-[var(--theme-secondary)] hover:bg-[color-mix(in_srgb,var(--theme-secondary)_14%,white)] transition-colors ml-auto"
                 >
                   <LuTrash2 size={14} />
                   Delete
@@ -1577,16 +1577,16 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
           title="Personal details"
           text="This information is used for your orders and receipts."
         >
-          <div className="mb-6 flex flex-col gap-4 border-b border-[#E4DED2] pb-6 sm:flex-row sm:items-center">
-            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[#EFE9DC] text-[#1F3A2E]">
+          <div className="mb-6 flex flex-col gap-4 border-b border-[var(--theme-border)] pb-6 sm:flex-row sm:items-center">
+            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[var(--theme-surface-alt)] text-[var(--theme-primary)]">
               {profilePreview || details.image?.url ? <img src={profilePreview || details.image.url} alt="Profile preview" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-2xl font-semibold">{details.firstName?.charAt(0)?.toUpperCase() || "?"}</div>}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-[#211F1D]">Profile picture</p>
-              <p className="mt-1 text-xs text-[#8A8378]">JPG, PNG, or WebP. Maximum 5 MB.</p>
-              {editingDetails && <label className="mt-3 inline-flex cursor-pointer rounded-sm border border-[#E4DED2] bg-white px-3 py-2 text-sm text-[#1F3A2E] hover:border-[#1F3A2E]">{profileFile ? "Choose a different picture" : "Choose picture"}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={chooseProfileImage} /></label>}
+              <p className="text-sm font-medium text-[var(--theme-text)]">Profile picture</p>
+              <p className="mt-1 text-xs text-[var(--theme-muted)]">JPG, PNG, or WebP. Maximum 5 MB.</p>
+              {editingDetails && <label className="mt-3 inline-flex cursor-pointer rounded-sm border border-[var(--theme-border)] bg-white px-3 py-2 text-sm text-[var(--theme-primary)] hover:border-[var(--theme-primary)]">{profileFile ? "Choose a different picture" : "Choose picture"}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={chooseProfileImage} /></label>}
             </div>
-            {!editingDetails && <button type="button" onClick={() => setEditingDetails(true)} className="rounded-sm border border-[#E4DED2] px-4 py-2 text-sm text-[#1F3A2E] hover:border-[#1F3A2E]">Edit details</button>}
+            {!editingDetails && <button type="button" onClick={() => setEditingDetails(true)} className="rounded-sm border border-[var(--theme-border)] px-4 py-2 text-sm text-[var(--theme-primary)] hover:border-[var(--theme-primary)]">Edit details</button>}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field
@@ -1614,7 +1614,7 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
               value={details.email}
               disabled
             />
-            <p className="-mt-3 text-xs text-[#8A8378]">{details.isEmailVerified ? "Verified sign-in email. Email changes require verification." : "Verify this email address before changing it."}</p>
+            <p className="-mt-3 text-xs text-[var(--theme-muted)]">{details.isEmailVerified ? "Verified sign-in email. Email changes require verification." : "Verify this email address before changing it."}</p>
 
             <Field
               label="Phone number"
@@ -1628,8 +1628,8 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
             />
           </div>
 
-          {detailsError && <p className="mt-4 text-sm text-[#B65C38]" role="alert">{detailsError}</p>}
-          {editingDetails && <div className="mt-6 flex flex-wrap gap-3"><button type="submit" disabled={savingDetails} className="rounded-sm bg-[#1F3A2E] px-5 py-2.5 text-sm text-[#F7F3EC] hover:bg-[#16281F] disabled:opacity-60">{savingDetails ? "Saving..." : "Save changes"}</button><button type="button" disabled={savingDetails} onClick={cancelDetails} className="rounded-sm border border-[#E4DED2] px-5 py-2.5 text-sm text-[#211F1D] hover:border-[#1F3A2E]">Cancel</button></div>}
+          {detailsError && <p className="mt-4 text-sm text-[var(--theme-secondary)]" role="alert">{detailsError}</p>}
+          {editingDetails && <div className="mt-6 flex flex-wrap gap-3"><button type="submit" disabled={savingDetails} className="rounded-sm bg-[var(--theme-primary)] px-5 py-2.5 text-sm text-[var(--theme-background)] hover:bg-[var(--theme-primary-hover)] disabled:opacity-60">{savingDetails ? "Saving..." : "Save changes"}</button><button type="button" disabled={savingDetails} onClick={cancelDetails} className="rounded-sm border border-[var(--theme-border)] px-5 py-2.5 text-sm text-[var(--theme-text)] hover:border-[var(--theme-primary)]">Cancel</button></div>}
         </Panel>
       </form>
 
@@ -1638,23 +1638,23 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
         <Panel title="Change password" text="Use at least 8 characters.">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-sm text-[#211F1D]">Current password<span className="relative mt-1 block"><input type={visiblePasswords.current ? "text" : "password"} autoComplete="current-password" required disabled={savingPassword} value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full rounded-sm border border-[#E4DED2] bg-white px-3.5 py-3 pr-16 text-sm outline-none focus:border-[#1F3A2E] disabled:bg-[#F7F3EC]" /><button type="button" disabled={savingPassword} onClick={() => setVisiblePasswords((state) => ({ ...state, current: !state.current }))} className="absolute inset-y-0 right-3 text-xs font-medium text-[#1F3A2E]">{visiblePasswords.current ? "Hide" : "Show"}</button></span></label>
+              <label className="block text-sm text-[var(--theme-text)]">Current password<span className="relative mt-1 block"><input type={visiblePasswords.current ? "text" : "password"} autoComplete="current-password" required disabled={savingPassword} value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full rounded-sm border border-[var(--theme-border)] bg-white px-3.5 py-3 pr-16 text-sm outline-none focus:border-[var(--theme-primary)] disabled:bg-[var(--theme-background)]" /><button type="button" disabled={savingPassword} onClick={() => setVisiblePasswords((state) => ({ ...state, current: !state.current }))} className="absolute inset-y-0 right-3 text-xs font-medium text-[var(--theme-primary)]">{visiblePasswords.current ? "Hide" : "Show"}</button></span></label>
             </div>
 
-            {[{ key: "next", label: "New password", autocomplete: "new-password" }, { key: "confirm", label: "Confirm new password", autocomplete: "new-password" }].map(({ key, label, autocomplete }) => <label key={key} className="block text-sm text-[#211F1D]">{label}<span className="relative mt-1 block"><input type={visiblePasswords[key] ? "text" : "password"} autoComplete={autocomplete} required disabled={savingPassword} value={passwords[key]} onChange={(e) => setPasswords({ ...passwords, [key]: e.target.value })} className="w-full rounded-sm border border-[#E4DED2] bg-white px-3.5 py-3 pr-16 text-sm outline-none focus:border-[#1F3A2E] disabled:bg-[#F7F3EC]" /><button type="button" disabled={savingPassword} onClick={() => setVisiblePasswords((state) => ({ ...state, [key]: !state[key] }))} className="absolute inset-y-0 right-3 text-xs font-medium text-[#1F3A2E]">{visiblePasswords[key] ? "Hide" : "Show"}</button></span></label>)}
+            {[{ key: "next", label: "New password", autocomplete: "new-password" }, { key: "confirm", label: "Confirm new password", autocomplete: "new-password" }].map(({ key, label, autocomplete }) => <label key={key} className="block text-sm text-[var(--theme-text)]">{label}<span className="relative mt-1 block"><input type={visiblePasswords[key] ? "text" : "password"} autoComplete={autocomplete} required disabled={savingPassword} value={passwords[key]} onChange={(e) => setPasswords({ ...passwords, [key]: e.target.value })} className="w-full rounded-sm border border-[var(--theme-border)] bg-white px-3.5 py-3 pr-16 text-sm outline-none focus:border-[var(--theme-primary)] disabled:bg-[var(--theme-background)]" /><button type="button" disabled={savingPassword} onClick={() => setVisiblePasswords((state) => ({ ...state, [key]: !state[key] }))} className="absolute inset-y-0 right-3 text-xs font-medium text-[var(--theme-primary)]">{visiblePasswords[key] ? "Hide" : "Show"}</button></span></label>)}
           </div>
 
           {passwordError && (
-            <p className="text-sm text-[#B65C38] mt-4" role="alert">
+            <p className="text-sm text-[var(--theme-secondary)] mt-4" role="alert">
               {passwordError}
             </p>
           )}
-          {passwordSuccess && <p className="mt-4 text-sm text-[#1F3A2E]" role="status">{passwordSuccess}</p>}
+          {passwordSuccess && <p className="mt-4 text-sm text-[var(--theme-primary)]" role="status">{passwordSuccess}</p>}
 
           <button
             type="submit"
             disabled={savingPassword}
-            className="mt-6 flex items-center gap-2 bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-6 flex items-center gap-2 bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-5 py-2.5 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LuLock size={15} />
             {savingPassword ? "Updating..." : "Update password"}
@@ -1698,7 +1698,7 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
         <button
           type="button"
           onClick={() => onToast("Notification preferences saved")}
-          className="mt-5 flex items-center gap-2 border border-[#E4DED2] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:border-[#1F3A2E] transition-colors"
+          className="mt-5 flex items-center gap-2 border border-[var(--theme-border)] text-[var(--theme-text)] text-sm px-5 py-2.5 rounded-sm hover:border-[var(--theme-primary)] transition-colors"
         >
           <LuBell size={15} />
           Save preferences
@@ -1714,13 +1714,13 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="text-sm px-5 py-2.5 rounded-sm border border-[#B65C38] text-[#B65C38] hover:bg-[#B65C38] hover:text-white transition-colors"
+            className="text-sm px-5 py-2.5 rounded-sm border border-[var(--theme-secondary)] text-[var(--theme-secondary)] hover:bg-[var(--theme-secondary)] hover:text-white transition-colors"
           >
             Delete my account
           </button>
         ) : (
-          <div className="bg-[#F3DED5] rounded-sm p-4">
-            <p className="text-sm text-[#211F1D] mb-4">
+          <div className="bg-[color-mix(in_srgb,var(--theme-secondary)_14%,white)] rounded-sm p-4">
+            <p className="text-sm text-[var(--theme-text)] mb-4">
               Are you sure? This can&apos;t be undone.
             </p>
 
@@ -1731,7 +1731,7 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
                   setConfirmDelete(false);
                   onToast("Account deletion requested");
                 }}
-                className="text-sm px-4 py-2 rounded-sm bg-[#B65C38] text-white hover:bg-[#9E4D2E] transition-colors"
+                className="text-sm px-4 py-2 rounded-sm bg-[var(--theme-secondary)] text-white hover:bg-[var(--theme-secondary-hover)] transition-colors"
               >
                 Yes, delete account
               </button>
@@ -1739,7 +1739,7 @@ function SettingsView({ profile, onSaveProfile, onToast }) {
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className="text-sm px-4 py-2 rounded-sm border border-[#E4DED2] bg-white text-[#211F1D] hover:border-[#1F3A2E] transition-colors"
+                className="text-sm px-4 py-2 rounded-sm border border-[var(--theme-border)] bg-white text-[var(--theme-text)] hover:border-[var(--theme-primary)] transition-colors"
               >
                 Keep account
               </button>
@@ -2000,7 +2000,7 @@ function AccountPageContent() {
   const heading = VIEW_TITLES[view];
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] font-sans text-[#211F1D]">
+    <div className="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)]">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
@@ -2020,16 +2020,16 @@ function AccountPageContent() {
       {toast && (
         <div
           role="status"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#211F1D] text-[#F7F3EC] text-sm px-5 py-3 rounded-md shadow-lg flex items-center gap-2"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[var(--theme-text)] text-[var(--theme-background)] text-sm px-5 py-3 rounded-md shadow-lg flex items-center gap-2"
         >
-          <LuCheck size={16} className="text-[#C9A659]" />
+          <LuCheck size={16} className="text-[var(--theme-highlight)]" />
           {toast}
         </div>
       )}
 
       {loadingAccount && (
         <p
-          className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 text-sm text-[#8A8378]"
+          className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 text-sm text-[var(--theme-muted)]"
           role="status"
         >
           Loading your account...
@@ -2038,7 +2038,7 @@ function AccountPageContent() {
 
       {accountError && !loadingAccount && (
         <p
-          className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 text-sm text-[#B65C38]"
+          className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 text-sm text-[var(--theme-secondary)]"
           role="alert"
         >
           {accountError}
@@ -2046,10 +2046,10 @@ function AccountPageContent() {
       )}
 
       <main>
-        <section className="border-b border-[#E4DED2]">
+        <section className="border-b border-[var(--theme-border)]">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4">
-            <div className="flex items-center gap-2 text-xs text-[#8A8378]">
-              <a href="#" className="hover:text-[#B65C38] transition-colors">
+            <div className="flex items-center gap-2 text-xs text-[var(--theme-muted)]">
+              <a href="#" className="hover:text-[var(--theme-secondary)] transition-colors">
                 Home
               </a>
 
@@ -2058,44 +2058,44 @@ function AccountPageContent() {
               <button
                 type="button"
                 onClick={() => goTo("dashboard")}
-                className="hover:text-[#B65C38] transition-colors"
+                className="hover:text-[var(--theme-secondary)] transition-colors"
               >
                 Account
               </button>
 
               <LuChevronRight size={13} />
 
-              <span className="text-[#211F1D]">{heading.title}</span>
+              <span className="text-[var(--theme-text)]">{heading.title}</span>
             </div>
           </div>
         </section>
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
-          <p className="text-sm text-[#B65C38] mb-1">{heading.eyebrow}</p>
+          <p className="text-sm text-[var(--theme-secondary)] mb-1">{heading.eyebrow}</p>
 
-          <h1 className="font-serif text-3xl sm:text-4xl text-[#211F1D]">
+          <h1 className="font-serif text-3xl sm:text-4xl text-[var(--theme-text)]">
             {heading.title}
           </h1>
 
-          <p className="text-sm text-[#8A8378] mt-2 max-w-xl">{heading.text}</p>
+          <p className="text-sm text-[var(--theme-muted)] mt-2 max-w-xl">{heading.text}</p>
         </section>
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-[250px_minmax(0,1fr)] gap-8">
             {/* Sidebar */}
             <aside className="lg:sticky lg:top-40 h-fit">
-              <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden">
-                <div className="p-5 flex items-center gap-3 border-b border-[#E4DED2]">
-                  <span className="w-11 h-11 shrink-0 overflow-hidden rounded-full bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md overflow-hidden">
+                <div className="p-5 flex items-center gap-3 border-b border-[var(--theme-border)]">
+                  <span className="w-11 h-11 shrink-0 overflow-hidden rounded-full bg-[var(--theme-primary)] text-[var(--theme-background)] flex items-center justify-center font-serif text-lg">
                     {profile.image?.url ? <img src={profile.image.url} alt="" className="h-full w-full object-cover" /> : profile.firstName.charAt(0).toUpperCase()}
                   </span>
 
                   <div className="min-w-0">
-                    <p className="text-sm text-[#211F1D] truncate">
+                    <p className="text-sm text-[var(--theme-text)] truncate">
                       {profile.firstName} {profile.lastName}
                     </p>
 
-                    <p className="text-xs text-[#8A8378] truncate">
+                    <p className="text-xs text-[var(--theme-muted)] truncate">
                       {profile.email}
                     </p>
                   </div>
@@ -2110,8 +2110,8 @@ function AccountPageContent() {
                       aria-current={view === key ? "page" : undefined}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors whitespace-nowrap lg:w-full text-left ${
                         view === key
-                          ? "bg-[#F7F3EC] text-[#1F3A2E] font-medium"
-                          : "text-[#5B564C] hover:text-[#B65C38]"
+                          ? "bg-[var(--theme-background)] text-[var(--theme-primary)] font-medium"
+                          : "text-[var(--theme-muted)] hover:text-[var(--theme-secondary)]"
                       }`}
                     >
                       <Icon size={17} />
@@ -2121,7 +2121,7 @@ function AccountPageContent() {
 
                   <button
                     type="button"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm text-[#5B564C] hover:text-[#B65C38] transition-colors whitespace-nowrap lg:w-full text-left"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm text-[var(--theme-muted)] hover:text-[var(--theme-secondary)] transition-colors whitespace-nowrap lg:w-full text-left"
                   >
                     <LuLogOut size={17} />
                     Sign out
@@ -2129,18 +2129,18 @@ function AccountPageContent() {
                 </nav>
               </div>
 
-              <div className="hidden lg:block mt-4 bg-[#EFE9DC] rounded-md p-5">
-                <p className="text-sm text-[#211F1D]">
+              <div className="hidden lg:block mt-4 bg-[var(--theme-surface-alt)] rounded-md p-5">
+                <p className="text-sm text-[var(--theme-text)]">
                   Need help with an order?
                 </p>
 
-                <p className="text-xs text-[#5B564C] leading-relaxed mt-1">
+                <p className="text-xs text-[var(--theme-muted)] leading-relaxed mt-1">
                   Our support team is available Mon–Fri, 9am–6pm.
                 </p>
 
                 <a
                   href="#"
-                  className="inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 mt-3 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors"
+                  className="inline-block text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 mt-3 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors"
                 >
                   Contact support
                 </a>
@@ -2200,7 +2200,7 @@ function AccountPageContent() {
         </section>
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 border border-[#E4DED2] bg-white rounded-md overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 border border-[var(--theme-border)] bg-white rounded-md overflow-hidden">
             {PERKS.map((perk, index) => {
               const Icon = perk.icon;
 
@@ -2209,15 +2209,15 @@ function AccountPageContent() {
                   key={perk.title}
                   className={`p-5 sm:p-6 flex items-start gap-3 ${
                     index !== PERKS.length - 1
-                      ? "border-b lg:border-b-0 lg:border-r border-[#E4DED2]"
+                      ? "border-b lg:border-b-0 lg:border-r border-[var(--theme-border)]"
                       : ""
                   }`}
                 >
-                  <Icon size={20} className="text-[#1F3A2E] mt-0.5 shrink-0" />
+                  <Icon size={20} className="text-[var(--theme-primary)] mt-0.5 shrink-0" />
 
                   <div>
-                    <p className="text-sm text-[#211F1D]">{perk.title}</p>
-                    <p className="text-xs text-[#8A8378] mt-1">{perk.text}</p>
+                    <p className="text-sm text-[var(--theme-text)]">{perk.title}</p>
+                    <p className="text-xs text-[var(--theme-muted)] mt-1">{perk.text}</p>
                   </div>
                 </div>
               );

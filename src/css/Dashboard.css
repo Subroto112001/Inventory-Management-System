@@ -14,10 +14,10 @@
   --color-surface-variant: var(--theme-border);
   --color-error: var(--theme-error);
   
-  --color-warning-bg: #FFF3CD;
-  --color-warning-text: #856404;
-  --color-danger-bg: #F8D7DA;
-  --color-danger-text: #721C24;
+  --color-warning-bg: color-mix(in srgb, var(--theme-warning) 14%, white);
+  --color-warning-text: #805300;
+  --color-danger-bg: color-mix(in srgb, var(--theme-error) 12%, white);
+  --color-danger-text: #8e2430;
 
   --spacing-gutter: 16px;
   --radius-lg: 0.5rem;

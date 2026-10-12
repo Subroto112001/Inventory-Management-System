@@ -37,8 +37,8 @@ function Stars({ rating }) {
           size={15}
           className={
             index < Math.round(rating)
-              ? "fill-[#C9A659] text-[#C9A659]"
-              : "fill-[#E4DED2] text-[#E4DED2]"
+              ? "fill-[var(--theme-highlight)] text-[var(--theme-highlight)]"
+              : "fill-[var(--theme-border)] text-[var(--theme-border)]"
           }
         />
       ))}
@@ -61,6 +61,8 @@ function ProductDetailsContent() {
   const [reviewState, setReviewState] = useState({ loading: false, message: "", error: "" });
   const [wishlistNotice, setWishlistNotice] = useState("");
   const [compareNotice, setCompareNotice] = useState("");
+  const [preorderNotice, setPreorderNotice] = useState("");
+  const [preorderPending, setPreorderPending] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [productAnalysis, setProductAnalysis] = useState(null);
   const [loading, setLoading] = useState(Boolean(productId));
@@ -121,7 +123,7 @@ function ProductDetailsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F3EC] px-6 py-20 text-center text-[#8A8378]">
+      <div className="min-h-screen bg-[var(--theme-background)] px-6 py-20 text-center text-[var(--theme-muted)]">
         Loading product...
       </div>
     );
@@ -129,7 +131,7 @@ function ProductDetailsContent() {
 
   if (error || !PRODUCT) {
     return (
-      <div className="min-h-screen bg-[#F7F3EC] px-6 py-20 text-center text-red-700">
+      <div className="min-h-screen bg-[var(--theme-background)] px-6 py-20 text-center text-red-700">
         {error || "Product not found"}
       </div>
     );
@@ -147,6 +149,18 @@ function ProductDetailsContent() {
       setReviewDraft({ rating: 5, title: "", body: "" });
       setReviewState({ loading: false, message: "Your review was submitted.", error: "" });
     } catch (submitError) { setReviewState({ loading: false, message: "", error: submitError.message }); }
+  };
+
+  const placePreorder = async () => {
+    if (preorderPending) return;
+    setPreorderPending(true);
+    setPreorderNotice("Submitting pre-order…");
+    try {
+      const response = await fetch("/api/preorders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: PRODUCT.id, quantity, idempotencyKey: crypto.randomUUID() }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Unable to place pre-order");
+      setPreorderNotice(`Pre-order ${data.order.orderNumber} placed. Payment is pending until fulfillment.`);
+    } catch (error) { setPreorderNotice(error.message); } finally { setPreorderPending(false); }
   };
 
   const decreaseQuantity = () => {
@@ -169,7 +183,7 @@ function ProductDetailsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] text-[#211F1D]">
+    <div className="min-h-screen bg-[var(--theme-background)] text-[var(--theme-text)]">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
@@ -189,12 +203,12 @@ function ProductDetailsContent() {
       <main>
         {/* BREADCRUMB */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
-          <div className="text-sm text-[#8A8378]">
-            <Link href="/" className="hover:text-[#1F3A2E]">Home</Link>
+          <div className="text-sm text-[var(--theme-muted)]">
+            <Link href="/" className="hover:text-[var(--theme-primary)]">Home</Link>
             <span className="mx-2">/</span>
             {PRODUCT.category || "Products"}
             <span className="mx-2">/</span>
-            <span className="text-[#211F1D]">{PRODUCT.name}</span>
+            <span className="text-[var(--theme-text)]">{PRODUCT.name}</span>
           </div>
         </div>
 
@@ -203,7 +217,7 @@ function ProductDetailsContent() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
             {/* IMAGE GALLERY */}
             <div>
-              <div className="relative aspect-square overflow-hidden rounded-2xl border border-[#E4DED2] bg-[#F0EBE1]">
+              <div className="relative aspect-square overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-[#F0EBE1]">
                 <img
                   src={PRODUCT.images[activeImage] || "/placeholder-product.svg"}
                   alt={PRODUCT.name}
@@ -211,7 +225,7 @@ function ProductDetailsContent() {
                 />
 
                 {PRODUCT.badge && (
-                  <span className="absolute top-4 left-4 bg-[#1F3A2E] text-[#F7F3EC] text-xs px-3 py-1.5 rounded-sm">
+                  <span className="absolute top-4 left-4 bg-[var(--theme-primary)] text-[var(--theme-background)] text-xs px-3 py-1.5 rounded-sm">
                     {PRODUCT.badge}
                   </span>
                 )}
@@ -240,7 +254,7 @@ function ProductDetailsContent() {
                     onClick={() => setActiveImage(index)}
                     className={`aspect-square overflow-hidden rounded-lg border-2 bg-white p-1 transition-colors ${
                       activeImage === index
-                        ? "border-[#1F3A2E]"
+                        ? "border-[var(--theme-primary)]"
                         : "border-transparent"
                     }`}
                   >
@@ -256,25 +270,25 @@ function ProductDetailsContent() {
 
             {/* PRODUCT INFO */}
             <div className="flex flex-col">
-              {PRODUCT.category && <p className="mb-2 text-sm text-[#B65C38]">{PRODUCT.category}</p>}
+              {PRODUCT.category && <p className="mb-2 text-sm text-[var(--theme-secondary)]">{PRODUCT.category}</p>}
 
-              {PRODUCT.brand && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8A8378]">{PRODUCT.brand}</p>}
+              {PRODUCT.brand && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--theme-muted)]">{PRODUCT.brand}</p>}
 
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[2.8rem] leading-tight mb-4">
                 {PRODUCT.name}
               </h1>
 
               {/* RATING */}
-              <div className="flex items-center gap-3 pb-5 border-b border-[#E4DED2]">
+              <div className="flex items-center gap-3 pb-5 border-b border-[var(--theme-border)]">
                 {reviewsData.count > 0 && <Stars rating={reviewsData.averageRating} />}
 
-                <span className="text-sm text-[#5B564C]">
+                <span className="text-sm text-[var(--theme-muted)]">
                   {reviewsData.count > 0 ? `${reviewsData.averageRating} · ${reviewsData.count} reviews` : ""}
                 </span>
 
-                <span className="text-[#E4DED2]">|</span>
+                <span className="text-[var(--theme-border)]">|</span>
 
-                <span className="text-sm text-[#8A8378]">
+                <span className="text-sm text-[var(--theme-muted)]">
                   SKU: {PRODUCT.sku}
                 </span>
               </div>
@@ -282,18 +296,18 @@ function ProductDetailsContent() {
               {/* PRICE */}
               <div className="py-5">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl text-[#1F3A2E]">
+                  <span className="text-3xl text-[var(--theme-primary)]">
                   ${((Number(PRODUCT.price) || 0) * (1 - (Number(PRODUCT.discount) > 0 && Number(PRODUCT.discount) <= 100 ? Number(PRODUCT.discount) : 0) / 100)).toFixed(2)}
                   </span>
 
                   {Number(PRODUCT.discount) > 0 && Number(PRODUCT.discount) <= 100 && (
-                    <span className="text-lg text-[#8A8378] line-through">
+                    <span className="text-lg text-[var(--theme-muted)] line-through">
                       ${Number(PRODUCT.price || 0).toFixed(2)}
                     </span>
                   )}
 
                   {Number(PRODUCT.discount) > 0 && Number(PRODUCT.discount) <= 100 && (
-                    <span className="bg-[#B65C38] text-white text-xs px-2 py-1 rounded-sm">
+                    <span className="bg-[var(--theme-secondary)] text-white text-xs px-2 py-1 rounded-sm">
                       {Number(PRODUCT.discount)}% off
                     </span>
                   )}
@@ -301,10 +315,10 @@ function ProductDetailsContent() {
               </div>
 
               {/* DESCRIPTION */}
-              {PRODUCT.description && <div className="mb-6 text-sm leading-7 text-[#5B564C] sm:text-base"><RichTextContent html={PRODUCT.description} /></div>}
+              {PRODUCT.description && <div className="mb-6 text-sm leading-7 text-[var(--theme-muted)] sm:text-base"><RichTextContent html={PRODUCT.description} /></div>}
 
               {/* AVAILABILITY */}
-              <div className={`mb-6 flex items-center gap-2 text-sm ${PRODUCT.inStock ? "text-[#1F3A2E]" : "text-red-700"}`}>
+              <div className={`mb-6 flex items-center gap-2 text-sm ${PRODUCT.inStock ? "text-[var(--theme-primary)]" : "text-red-700"}`}>
                 {PRODUCT.inStock && <LuCheck size={17} />}
                 {PRODUCT.availability || ""}
               </div>
@@ -313,11 +327,11 @@ function ProductDetailsContent() {
               <div className="mb-5">
                 <p className="text-sm font-medium mb-2">Quantity</p>
 
-                <div className="flex items-center border border-[#E4DED2] rounded-md w-fit bg-white">
+                <div className="flex items-center border border-[var(--theme-border)] rounded-md w-fit bg-white">
                   <button
                     onClick={decreaseQuantity}
                     disabled={quantity <= 1}
-                    className="w-11 h-11 flex items-center justify-center hover:bg-[#F7F3EC]"
+                    className="w-11 h-11 flex items-center justify-center hover:bg-[var(--theme-background)]"
                   >
                     <LuMinus size={15} />
                   </button>
@@ -326,8 +340,8 @@ function ProductDetailsContent() {
 
                   <button
                     onClick={increaseQuantity}
-                    disabled={!PRODUCT.inStock}
-                    className="w-11 h-11 flex items-center justify-center hover:bg-[#F7F3EC]"
+                    disabled={PRODUCT.lifecycle === "scheduled" ? Boolean(PRODUCT.preorder?.limit && PRODUCT.preorder.reserved >= PRODUCT.preorder.limit) : !PRODUCT.inStock}
+                    className="w-11 h-11 flex items-center justify-center hover:bg-[var(--theme-background)]"
                   >
                     <LuPlus size={15} />
                   </button>
@@ -335,16 +349,18 @@ function ProductDetailsContent() {
               </div>
 
               {/* ACTIONS */}
+              {PRODUCT.lifecycle === "scheduled" && <div className="mb-4 rounded-lg bg-amber-50 p-4 text-sm text-amber-900"><p>Expected launch: {new Date(PRODUCT.launchAt).toLocaleString()}</p>{PRODUCT.preorder?.expectedShipAt && <p className="mt-1">Expected shipping: {new Date(PRODUCT.preorder.expectedShipAt).toLocaleDateString()}</p>}<p className="mt-1">{PRODUCT.preorder?.enabled ? "Pre-orders are enabled during the configured order window." : "Pre-orders are not available. This item cannot be purchased until launch."}</p></div>}
               <div className="flex gap-3 mb-6">
-                <button
+                {PRODUCT.lifecycle === "scheduled" && (PRODUCT.preorderAvailable ? <button type="button" onClick={placePreorder} disabled={preorderPending} className="flex-1 rounded-md bg-[var(--theme-primary)] py-3.5 text-sm text-white disabled:opacity-50">{preorderPending ? "Submitting…" : "Pre-order"}</button> : <button type="button" disabled className="flex-1 rounded-md border py-3.5 text-sm text-gray-500">Pre-order unavailable</button>)}
+                {PRODUCT.lifecycle !== "scheduled" && <button
                   type="button"
                   disabled={!PRODUCT.inStock}
                   onClick={() => addItem(PRODUCT, quantity)}
-                  className="flex-1 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-md text-sm flex items-center justify-center gap-2 hover:bg-[#16281F] transition-colors"
+                  className="flex-1 bg-[var(--theme-primary)] text-[var(--theme-background)] py-3.5 rounded-md text-sm flex items-center justify-center gap-2 hover:bg-[var(--theme-primary-hover)] transition-colors"
                 >
                   <LuShoppingCart size={18} />
                   {PRODUCT.inStock ? "Add to cart" : "Out of stock"}
-                </button>
+                </button>}
 
                 <button
                   type="button"
@@ -352,57 +368,59 @@ function ProductDetailsContent() {
                   onClick={async () => { try { const updated = await toggle(PRODUCT); if (updated) setWishlistNotice(liked ? "Removed from wishlist" : "Added to wishlist"); } catch (error) { setWishlistNotice(error.message || "Unable to update wishlist"); } }}
                   className={`w-12 h-12 border rounded-md flex items-center justify-center transition-colors ${
                     liked
-                      ? "border-[#B65C38] text-[#B65C38]"
-                      : "border-[#E4DED2] text-[#211F1D]"
+                      ? "border-[var(--theme-secondary)] text-[var(--theme-secondary)]"
+                      : "border-[var(--theme-border)] text-[var(--theme-text)]"
                   }`}
                   aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
                 >
                   <LuHeart
                     size={19}
-                    className={liked ? "fill-[#B65C38]" : ""}
+                    className={liked ? "fill-[var(--theme-secondary)]" : ""}
                   />
                 </button>
 
                 <button
                   type="button"
-                  className="w-12 h-12 border border-[#E4DED2] rounded-md flex items-center justify-center"
+                  className="w-12 h-12 border border-[var(--theme-border)] rounded-md flex items-center justify-center"
                   aria-label="Share"
                 >
                   <LuShare2 size={18} />
                 </button>
-                <button type="button" onClick={() => setCompareNotice(addToCompare(PRODUCT.id))} aria-label={isCompared(PRODUCT.id) ? "Already in comparison" : "Add to compare"} title={isCompared(PRODUCT.id) ? "Already in comparison" : "Add to compare"} className={`w-12 h-12 border rounded-md flex items-center justify-center ${isCompared(PRODUCT.id) ? "border-[#1F3A2E] text-[#1F3A2E]" : "border-[#E4DED2]"}`}><LuGitCompare size={18}/></button>
+                <button type="button" onClick={() => setCompareNotice(addToCompare(PRODUCT.id))} aria-label={isCompared(PRODUCT.id) ? "Already in comparison" : "Add to compare"} title={isCompared(PRODUCT.id) ? "Already in comparison" : "Add to compare"} className={`w-12 h-12 border rounded-md flex items-center justify-center ${isCompared(PRODUCT.id) ? "border-[var(--theme-primary)] text-[var(--theme-primary)]" : "border-[var(--theme-border)]"}`}><LuGitCompare size={18}/></button>
               </div>
-              {(wishlistNotice || compareNotice) && <p className="mb-3 text-xs text-[#1F3A2E]" role="status">{wishlistNotice || (compareNotice === "added" ? "Added to comparison" : compareNotice === "exists" ? "Already in comparison" : compareNotice === "loading" ? "Loading comparison list…" : "Comparison list is full")}</p>}
+              {(wishlistNotice || compareNotice) && <p className="mb-3 text-xs text-[var(--theme-primary)]" role="status">{wishlistNotice || (compareNotice === "added" ? "Added to comparison" : compareNotice === "exists" ? "Already in comparison" : compareNotice === "loading" ? "Loading comparison list…" : "Comparison list is full")}</p>}
 
+              {preorderNotice && <p className="mb-3 text-sm text-[var(--theme-primary)]" role="status">{preorderNotice}</p>}
               {/* BUY NOW */}
               <button
                 type="button"
-                className="w-full border border-[#1F3A2E] text-[#1F3A2E] py-3.5 rounded-md text-sm hover:bg-[#1F3A2E] hover:text-white transition-colors"
+                disabled={PRODUCT.lifecycle === "scheduled" || !PRODUCT.inStock}
+                className="w-full border border-[var(--theme-primary)] text-[var(--theme-primary)] py-3.5 rounded-md text-sm hover:bg-[var(--theme-primary)] hover:text-white transition-colors"
               >
                 Buy it now
               </button>
 
               {/* SHIPPING INFO */}
-              <div className="mt-7 border-t border-[#E4DED2]">
-                <div className="flex gap-4 py-4 border-b border-[#E4DED2]">
-                  <LuTruck size={21} className="text-[#1F3A2E] shrink-0" />
+              <div className="mt-7 border-t border-[var(--theme-border)]">
+                <div className="flex gap-4 py-4 border-b border-[var(--theme-border)]">
+                  <LuTruck size={21} className="text-[var(--theme-primary)] shrink-0" />
 
                   <div>
                     <p className="text-sm font-medium">{PRODUCT.shipping?.freeShipping || PRODUCT.shipping?.charge === 0 ? "Free shipping" : PRODUCT.shipping?.charge != null ? `Shipping $${Number(PRODUCT.shipping.charge).toFixed(2)}` : "Shipping calculated at checkout"}</p>
 
-                    <p className="text-xs text-[#8A8378] mt-1">
+                    <p className="text-xs text-[var(--theme-muted)] mt-1">
                       {PRODUCT.shipping?.deliveryEstimate || PRODUCT.shipping?.instructions || "The shipping charge will be confirmed at checkout."}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 py-4 border-b border-[#E4DED2]">
-                  <LuRotateCcw size={21} className="text-[#1F3A2E] shrink-0" />
+                <div className="flex gap-4 py-4 border-b border-[var(--theme-border)]">
+                  <LuRotateCcw size={21} className="text-[var(--theme-primary)] shrink-0" />
 
                   <div>
                     <p className="text-sm font-medium">{PRODUCT.returnPolicy?.eligible === true ? (PRODUCT.returnPolicy.windowDays ? `${PRODUCT.returnPolicy.windowDays}-day returns` : "Returns accepted") : PRODUCT.returnPolicy?.eligible === false ? "Returns not accepted" : "Return policy not specified"}</p>
 
-                    <p className="text-xs text-[#8A8378] mt-1">
+                    <p className="text-xs text-[var(--theme-muted)] mt-1">
                       {PRODUCT.returnPolicy?.conditions || PRODUCT.returnPolicy?.instructions || (PRODUCT.returnPolicy?.eligible === true ? "See the return conditions for this product." : "Check with customer support for return eligibility.")}
                     </p>
                   </div>
@@ -411,13 +429,13 @@ function ProductDetailsContent() {
                 <div className="flex gap-4 py-4">
                   <LuShieldCheck
                     size={21}
-                    className="text-[#1F3A2E] shrink-0"
+                    className="text-[var(--theme-primary)] shrink-0"
                   />
 
                   <div>
                     <p className="text-sm font-medium">Secure checkout</p>
 
-                    <p className="text-xs text-[#8A8378] mt-1">
+                    <p className="text-xs text-[var(--theme-muted)] mt-1">
                       Your payment information is protected.
                     </p>
                   </div>
@@ -428,12 +446,12 @@ function ProductDetailsContent() {
         </section>
 
         {/* PRODUCT INFORMATION */}
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 sm:mt-20"><div className="border-y border-[#E4DED2]"><div className="flex overflow-x-auto" role="tablist" aria-label="Product information">
-          {[ ["description", "Description"], ["details", "Product details"], ["reviews", "Reviews (" + reviewsData.count + ")"] ].map(([tab,label]) => <button key={tab} role="tab" aria-selected={activeTab===tab} onClick={()=>setActiveTab(tab)} className={`px-5 sm:px-8 py-4 text-sm whitespace-nowrap border-b-2 ${activeTab===tab ? "border-[#1F3A2E] text-[#1F3A2E]" : "border-transparent text-[#8A8378]"}`}>{label}</button>)}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 sm:mt-20"><div className="border-y border-[var(--theme-border)]"><div className="flex overflow-x-auto" role="tablist" aria-label="Product information">
+          {[ ["description", "Description"], ["details", "Product details"], ["reviews", "Reviews (" + reviewsData.count + ")"] ].map(([tab,label]) => <button key={tab} role="tab" aria-selected={activeTab===tab} onClick={()=>setActiveTab(tab)} className={`px-5 sm:px-8 py-4 text-sm whitespace-nowrap border-b-2 ${activeTab===tab ? "border-[var(--theme-primary)] text-[var(--theme-primary)]" : "border-transparent text-[var(--theme-muted)]"}`}>{label}</button>)}
         </div><div className="py-8 max-w-4xl" role="tabpanel">
-        {activeTab==="description" && <div><h2 className="font-serif text-2xl mb-4">Description</h2>{PRODUCT.description?.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.description} className="text-sm leading-7 text-[#5B564C]" /> : <p className="text-sm text-[#8A8378]">No description available</p>}</div>}
-        {activeTab==="details" && <div><h2 className="font-serif text-2xl mb-5">Product details</h2>{typeof PRODUCT.specifications === "string" && PRODUCT.specifications.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.specifications} className="text-sm leading-7 text-[#5B564C]" /> : Array.isArray(PRODUCT.specifications) && PRODUCT.specifications.length ? <div className="grid sm:grid-cols-2 border-t border-l border-[#E4DED2]">{PRODUCT.specifications.map(({name,value}, index)=><div key={`${name}-${index}`} className="grid grid-cols-2 border-r border-b border-[#E4DED2]"><div className="bg-[#EFE9DC] px-4 py-3 text-sm">{name}</div><div className="px-4 py-3 text-sm text-[#5B564C]">{value}</div></div>)}</div>:<p className="text-sm text-[#8A8378]">No specifications available</p>}</div>}
-        {activeTab==="reviews" && <div>{reviewsData.canReview && !reviewsData.hasReviewed && <form onSubmit={submitReview} className="mb-8 rounded-sm border border-[#E4DED2] bg-white p-5"><h2 className="font-serif text-2xl mb-4">Write a review</h2><label className="block text-sm mb-2" htmlFor="review-rating">Your rating</label><select id="review-rating" value={reviewDraft.rating} onChange={(event)=>setReviewDraft((draft)=>({...draft,rating:Number(event.target.value)}))} className="mb-4 border border-[#E4DED2] rounded-sm p-2"><option value={5}>5 stars</option><option value={4}>4 stars</option><option value={3}>3 stars</option><option value={2}>2 stars</option><option value={1}>1 star</option></select><label className="block text-sm mb-1" htmlFor="review-title">Title (optional)</label><input id="review-title" maxLength={120} value={reviewDraft.title} onChange={(event)=>setReviewDraft((draft)=>({...draft,title:event.target.value}))} className="w-full border border-[#E4DED2] rounded-sm p-3 mb-4"/><label className="block text-sm mb-1" htmlFor="review-body">Your review</label><textarea id="review-body" required maxLength={2000} rows={5} value={reviewDraft.body} onChange={(event)=>setReviewDraft((draft)=>({...draft,body:event.target.value}))} className="w-full border border-[#E4DED2] rounded-sm p-3"/><button disabled={reviewState.loading} className="mt-4 rounded-sm bg-[#1F3A2E] px-5 py-3 text-sm text-white disabled:opacity-60">{reviewState.loading?"Submitting...":"Submit review"}</button>{reviewState.error&&<p role="alert" className="mt-3 text-sm text-red-700">{reviewState.error}</p>}{reviewState.message&&<p role="status" className="mt-3 text-sm text-[#1F3A2E]">{reviewState.message}</p>}</form>}{reviewsData.hasReviewed && <p className="mb-6 text-sm text-[#1F3A2E]">Thanks, you have reviewed this product.</p>}{!reviewsData.canReview && !reviewsData.hasReviewed && <p className="mb-6 text-sm text-[#8A8378]">A delivered purchase is required before you can review this product.</p>}{reviewsData.count>0 && <div className="mb-8"><p className="font-serif text-5xl">{reviewsData.averageRating}</p><div className="mt-2"><Stars rating={reviewsData.averageRating}/></div><p className="text-xs text-[#8A8378] mt-2">Based on {reviewsData.count} reviews</p></div>}{reviewsData.reviews.length ? reviewsData.reviews.map(review=><article key={review.id} className="border-t border-[#E4DED2] py-5"><div className="flex items-center gap-3"><Stars rating={review.rating}/><span className="text-sm">{review.customerName}</span></div>{review.title && <h3 className="font-medium mt-2">{review.title}</h3>}<p className="text-sm leading-7 text-[#5B564C] mt-1">{review.body}</p></article>):<p className="text-sm text-[#8A8378]">No reviews yet</p>}</div>}
+        {activeTab==="description" && <div><h2 className="font-serif text-2xl mb-4">Description</h2>{PRODUCT.description?.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.description} className="text-sm leading-7 text-[var(--theme-muted)]" /> : <p className="text-sm text-[var(--theme-muted)]">No description available</p>}</div>}
+        {activeTab==="details" && <div><h2 className="font-serif text-2xl mb-5">Product details</h2>{typeof PRODUCT.specifications === "string" && PRODUCT.specifications.replace(/<[^>]*>/g, "").trim() ? <RichTextContent html={PRODUCT.specifications} className="text-sm leading-7 text-[var(--theme-muted)]" /> : Array.isArray(PRODUCT.specifications) && PRODUCT.specifications.length ? <div className="grid sm:grid-cols-2 border-t border-l border-[var(--theme-border)]">{PRODUCT.specifications.map(({name,value}, index)=><div key={`${name}-${index}`} className="grid grid-cols-2 border-r border-b border-[var(--theme-border)]"><div className="bg-[var(--theme-surface-alt)] px-4 py-3 text-sm">{name}</div><div className="px-4 py-3 text-sm text-[var(--theme-muted)]">{value}</div></div>)}</div>:<p className="text-sm text-[var(--theme-muted)]">No specifications available</p>}</div>}
+        {activeTab==="reviews" && <div>{reviewsData.canReview && !reviewsData.hasReviewed && <form onSubmit={submitReview} className="mb-8 rounded-sm border border-[var(--theme-border)] bg-white p-5"><h2 className="font-serif text-2xl mb-4">Write a review</h2><label className="block text-sm mb-2" htmlFor="review-rating">Your rating</label><select id="review-rating" value={reviewDraft.rating} onChange={(event)=>setReviewDraft((draft)=>({...draft,rating:Number(event.target.value)}))} className="mb-4 border border-[var(--theme-border)] rounded-sm p-2"><option value={5}>5 stars</option><option value={4}>4 stars</option><option value={3}>3 stars</option><option value={2}>2 stars</option><option value={1}>1 star</option></select><label className="block text-sm mb-1" htmlFor="review-title">Title (optional)</label><input id="review-title" maxLength={120} value={reviewDraft.title} onChange={(event)=>setReviewDraft((draft)=>({...draft,title:event.target.value}))} className="w-full border border-[var(--theme-border)] rounded-sm p-3 mb-4"/><label className="block text-sm mb-1" htmlFor="review-body">Your review</label><textarea id="review-body" required maxLength={2000} rows={5} value={reviewDraft.body} onChange={(event)=>setReviewDraft((draft)=>({...draft,body:event.target.value}))} className="w-full border border-[var(--theme-border)] rounded-sm p-3"/><button disabled={reviewState.loading} className="mt-4 rounded-sm bg-[var(--theme-primary)] px-5 py-3 text-sm text-white disabled:opacity-60">{reviewState.loading?"Submitting...":"Submit review"}</button>{reviewState.error&&<p role="alert" className="mt-3 text-sm text-red-700">{reviewState.error}</p>}{reviewState.message&&<p role="status" className="mt-3 text-sm text-[var(--theme-primary)]">{reviewState.message}</p>}</form>}{reviewsData.hasReviewed && <p className="mb-6 text-sm text-[var(--theme-primary)]">Thanks, you have reviewed this product.</p>}{!reviewsData.canReview && !reviewsData.hasReviewed && <p className="mb-6 text-sm text-[var(--theme-muted)]">A delivered purchase is required before you can review this product.</p>}{reviewsData.count>0 && <div className="mb-8"><p className="font-serif text-5xl">{reviewsData.averageRating}</p><div className="mt-2"><Stars rating={reviewsData.averageRating}/></div><p className="text-xs text-[var(--theme-muted)] mt-2">Based on {reviewsData.count} reviews</p></div>}{reviewsData.reviews.length ? reviewsData.reviews.map(review=><article key={review.id} className="border-t border-[var(--theme-border)] py-5"><div className="flex items-center gap-3"><Stars rating={review.rating}/><span className="text-sm">{review.customerName}</span></div>{review.title && <h3 className="font-medium mt-2">{review.title}</h3>}<p className="text-sm leading-7 text-[var(--theme-muted)] mt-1">{review.body}</p></article>):<p className="text-sm text-[var(--theme-muted)]">No reviews yet</p>}</div>}
         </div></div></section>
 
         <ProductAnalysisInfographic svg={productAnalysis?.infographicSvg} />
@@ -442,7 +460,7 @@ function ProductDetailsContent() {
         {/* RELATED PRODUCTS */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 sm:mt-20">
           <div className="mb-8">
-            <p className="text-sm text-[#B65C38] mb-1">You may also like</p>
+            <p className="text-sm text-[var(--theme-secondary)] mb-1">You may also like</p>
 
             <h2 className="font-serif text-3xl">Related products</h2>
           </div>
@@ -456,34 +474,34 @@ function ProductDetailsContent() {
 
         {/* TRUST STRIP */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16 mb-16">
-          <div className="grid grid-cols-1 sm:grid-cols-3 border-y border-[#E4DED2] py-7 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 border-y border-[var(--theme-border)] py-7 gap-6">
             <div className="flex items-center gap-3">
-              <LuTruck size={22} className="text-[#1F3A2E]" />
+              <LuTruck size={22} className="text-[var(--theme-primary)]" />
 
               <div>
                 <p className="text-sm font-medium">{PRODUCT.shipping?.freeShipping || PRODUCT.shipping?.charge === 0 ? "Free shipping" : PRODUCT.shipping?.charge != null ? `Shipping $${Number(PRODUCT.shipping.charge).toFixed(2)}` : "Shipping calculated at checkout"}</p>
 
-                <p className="text-xs text-[#8A8378]">{PRODUCT.shipping?.deliveryEstimate || PRODUCT.shipping?.instructions || "The shipping charge will be confirmed at checkout."}</p>
+                <p className="text-xs text-[var(--theme-muted)]">{PRODUCT.shipping?.deliveryEstimate || PRODUCT.shipping?.instructions || "The shipping charge will be confirmed at checkout."}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <LuRotateCcw size={22} className="text-[#1F3A2E]" />
+              <LuRotateCcw size={22} className="text-[var(--theme-primary)]" />
 
               <div>
                 <p className="text-sm font-medium">{PRODUCT.returnPolicy?.eligible === true ? (PRODUCT.returnPolicy.windowDays ? `${PRODUCT.returnPolicy.windowDays}-day returns` : "Returns accepted") : PRODUCT.returnPolicy?.eligible === false ? "Returns not accepted" : "Return policy not specified"}</p>
 
-                <p className="text-xs text-[#8A8378]">{PRODUCT.returnPolicy?.conditions || PRODUCT.returnPolicy?.instructions || "Check with customer support for return details."}</p>
+                <p className="text-xs text-[var(--theme-muted)]">{PRODUCT.returnPolicy?.conditions || PRODUCT.returnPolicy?.instructions || "Check with customer support for return details."}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <LuShieldCheck size={22} className="text-[#1F3A2E]" />
+              <LuShieldCheck size={22} className="text-[var(--theme-primary)]" />
 
               <div>
                 <p className="text-sm font-medium">Secure checkout</p>
 
-                <p className="text-xs text-[#8A8378]">
+                <p className="text-xs text-[var(--theme-muted)]">
                   Safe and encrypted payments
                 </p>
               </div>
@@ -502,7 +520,7 @@ export default function ProductDetailsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F7F3EC] px-6 py-20 text-center text-[#8A8378]">
+        <div className="min-h-screen bg-[var(--theme-background)] px-6 py-20 text-center text-[var(--theme-muted)]">
           Loading product...
         </div>
       }

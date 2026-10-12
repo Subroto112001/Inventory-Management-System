@@ -6,6 +6,7 @@ export const PERMISSIONS = Object.freeze({
   PRODUCTS_CREATE: "products.create",
   PRODUCTS_UPDATE: "products.update",
   PRODUCTS_DELETE: "products.delete",
+  UPCOMING_PRODUCTS_MANAGE: "upcoming_products.manage",
   INVENTORY_READ: "inventory.read",
   INVENTORY_ADJUST: "inventory.adjust",
   ORDERS_READ: "orders.read",
@@ -132,6 +133,8 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.REPORTS_READ,
   ],
 };
+
+ROLE_PERMISSIONS.Manager.push(PERMISSIONS.UPCOMING_PRODUCTS_MANAGE);
 
 function accessResponse(status, message) {
   return NextResponse.json({ success: false, message }, { status });

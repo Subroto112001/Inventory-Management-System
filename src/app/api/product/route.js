@@ -70,7 +70,7 @@ export async function GET(request) {
       const brand = searchParams.get("brand")?.trim();
       const availability = searchParams.get("availability") === "in-stock";
       const sort = searchParams.get("sort") || "newest";
-      const filter = { isActive: true };
+      const filter = { isActive: true, $and: [{ $or: [{ lifecycle: "live" }, { lifecycle: { $exists: false } }] }] };
       let requestedCategoryId = null;
       let categoryConstraint = null;
       let selectedSubcategoryId = null;
@@ -120,7 +120,7 @@ export async function GET(request) {
       if (categoryConstraint) {
         const searchClause = filter.$or;
         delete filter.$or;
-        filter.$and = [...(searchClause ? [{ $or: searchClause }] : []), categoryConstraint];
+        filter.$and = [...(filter.$and || []), ...(searchClause ? [{ $or: searchClause }] : []), categoryConstraint];
       }
       if (brand) {
         const brandFilter = /^[a-f\d]{24}$/i.test(brand)
@@ -142,7 +142,7 @@ export async function GET(request) {
       }
 
       const sortMap = {
-        newest: { createdAt: -1 },
+        newest: { createdAt: -1, _id: -1 },
         priceAsc: { price: 1 },
         priceDesc: { price: -1 },
       };

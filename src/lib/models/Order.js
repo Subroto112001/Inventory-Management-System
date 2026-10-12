@@ -115,6 +115,10 @@ const orderSchema = new Schema(
       version: { type: String, trim: true, maxlength: 30 },
     },
     idempotencyKey: { type: String, trim: true, maxlength: 100 },
+    orderClass: { type: String, enum: ["standard", "preorder"], default: "standard", index: true },
+    preorderStatus: { type: String, enum: ["Pending confirmation", "Confirmed", "Awaiting launch", "Ready for fulfillment", "Fulfilled", "Cancelled"], default: undefined },
+    preorderProduct: { type: Types.ObjectId, ref: "Product", default: null },
+    preorderExpectedShipAt: { type: Date, default: null },
 
     // --- Payment & Financials ---
     financials: {
@@ -185,6 +189,7 @@ const orderSchema = new Schema(
 );
 
 orderSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
+orderSchema.index({ orderClass: 1, createdAt: -1 });
 
 // ✅ FIX: Synchronous hook without 'next' parameter
 orderSchema.pre("validate", function () {

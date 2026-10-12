@@ -125,7 +125,7 @@ function ProductPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] text-[#211F1D]">
+    <div className="min-h-screen bg-[var(--theme-background)] text-[var(--theme-text)]">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
@@ -143,20 +143,20 @@ function ProductPageContent() {
 
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6">
         {/* BREADCRUMB */}
-        <div className="py-6 text-sm text-[#8A8378]">
+        <div className="py-6 text-sm text-[var(--theme-muted)]">
           Home <span className="mx-2">/</span>
-          <span className="text-[#211F1D]">Shop All</span>
+          <span className="text-[var(--theme-text)]">Shop All</span>
         </div>
 
         {/* PAGE TITLE */}
         <section className="mb-8">
-          <p className="text-sm text-[#B65C38] mb-1">Discover our collection</p>
+          <p className="text-sm text-[var(--theme-secondary)] mb-1">Discover our collection</p>
 
           <h1 className="font-serif text-4xl md:text-5xl mb-3">
             Shop all products
           </h1>
 
-          <p className="text-sm text-[#8A8378] max-w-2xl">
+          <p className="text-sm text-[var(--theme-muted)] max-w-2xl">
             Thoughtfully selected furniture, lighting, kitchenware, textiles and
             home accents made for everyday living.
           </p>
@@ -166,7 +166,7 @@ function ProductPageContent() {
         <button
           type="button"
           onClick={() => setMobileFilterOpen(true)}
-          className="lg:hidden mb-5 flex items-center gap-2 border border-[#E4DED2] bg-white px-4 py-2.5 rounded-md text-sm"
+          className="lg:hidden mb-5 flex items-center gap-2 border border-[var(--theme-border)] bg-white px-4 py-2.5 rounded-md text-sm"
         >
           <LuSlidersHorizontal size={17} />
           Filters
@@ -179,18 +179,18 @@ function ProductPageContent() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-medium">Categories</h2>
 
-                <LuSlidersHorizontal size={17} className="text-[#8A8378]" />
+                <LuSlidersHorizontal size={17} className="text-[var(--theme-muted)]" />
               </div>
 
-              <div className="border-t border-[#E4DED2]">
+              <div className="border-t border-[var(--theme-border)]">
                 {categoryOptions.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => changeCategory(category.id)}
-                    className={`w-full text-left py-3 border-b border-[#E4DED2] text-sm transition-colors flex justify-between ${
+                    className={`w-full text-left py-3 border-b border-[var(--theme-border)] text-sm transition-colors flex justify-between ${
                       activeCategory === category.id
-                        ? "text-[#1F3A2E] font-medium"
-                        : "text-[#5B564C] hover:text-[#B65C38]"
+                        ? "text-[var(--theme-primary)] font-medium"
+                        : "text-[var(--theme-muted)] hover:text-[var(--theme-secondary)]"
                     }`}
                   >
                     <span className={category.parentCategoryId ? "pl-4 text-xs" : ""}>{category.parentCategoryId ? `↳ ${category.parentCategoryName} / ${category.categoryName}` : category.categoryName}</span>
@@ -198,22 +198,22 @@ function ProductPageContent() {
                     {activeCategory === category.id && <LuCheck size={15} />}
                   </button>
                 ))}
-                {categoriesUnavailable && <p className="py-3 text-xs text-[#8A8378]" role="status">Categories are unavailable.</p>}
+                {categoriesUnavailable && <p className="py-3 text-xs text-[var(--theme-muted)]" role="status">Categories are unavailable.</p>}
               </div>
 
               {/* PRICE FILTER */}
               <div className="mt-8">
                 <h3 className="font-medium text-sm mb-4">Price range</h3>
 
-                <div className="h-1 bg-[#E4DED2] relative">
-                  <div className="absolute left-[15%] right-[15%] h-1 bg-[#1F3A2E]" />
+                <div className="h-1 bg-[var(--theme-border)] relative">
+                  <div className="absolute left-[15%] right-[15%] h-1 bg-[var(--theme-primary)]" />
 
-                  <span className="absolute left-[15%] -top-1.5 w-4 h-4 rounded-full bg-[#1F3A2E] border-2 border-white" />
+                  <span className="absolute left-[15%] -top-1.5 w-4 h-4 rounded-full bg-[var(--theme-primary)] border-2 border-white" />
 
-                  <span className="absolute right-[15%] -top-1.5 w-4 h-4 rounded-full bg-[#1F3A2E] border-2 border-white" />
+                  <span className="absolute right-[15%] -top-1.5 w-4 h-4 rounded-full bg-[var(--theme-primary)] border-2 border-white" />
                 </div>
 
-                <div className="flex justify-between mt-4 text-xs text-[#8A8378]">
+                <div className="flex justify-between mt-4 text-xs text-[var(--theme-muted)]">
                   <span>$0</span>
                   <span>$600+</span>
                 </div>
@@ -223,7 +223,7 @@ function ProductPageContent() {
               <div className="mt-8">
                 <h3 className="font-medium text-sm mb-3">Availability</h3>
 
-                <label className="flex items-center gap-2 text-sm text-[#5B564C]">
+                <label className="flex items-center gap-2 text-sm text-[var(--theme-muted)]">
                   <input
                     type="checkbox"
                     checked={inStockOnly}
@@ -231,7 +231,7 @@ function ProductPageContent() {
                       setInStockOnly(event.target.checked);
                       setPage(1);
                     }}
-                    className="accent-[#1F3A2E]"
+                    className="accent-[var(--theme-primary)]"
                   />
                   In stock
                 </label>
@@ -242,14 +242,14 @@ function ProductPageContent() {
           {/* PRODUCT AREA */}
           <section>
             {/* TOOLBAR */}
-            <div className="bg-white border border-[#E4DED2] rounded-md px-4 py-3 mb-5 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-              <p className="text-sm text-[#8A8378]">
+            <div className="bg-white border border-[var(--theme-border)] rounded-md px-4 py-3 mb-5 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <p className="text-sm text-[var(--theme-muted)]">
                 Showing{" "}
-                <span className="text-[#211F1D] font-medium">
+                <span className="text-[var(--theme-text)] font-medium">
                   {visibleProducts.length}
                 </span>{" "}
                 of{" "}
-                <span className="text-[#211F1D] font-medium">
+                <span className="text-[var(--theme-text)] font-medium">
                   {totalProducts}
                 </span>{" "}
                 products
@@ -257,11 +257,11 @@ function ProductPageContent() {
 
               <div className="flex items-center gap-3">
                 {/* VIEW */}
-                <div className="hidden sm:flex border border-[#E4DED2] rounded-md overflow-hidden">
+                <div className="hidden sm:flex border border-[var(--theme-border)] rounded-md overflow-hidden">
                   <button
                     onClick={() => setView("grid")}
                     className={`p-2 ${
-                      view === "grid" ? "bg-[#1F3A2E] text-white" : "bg-white"
+                      view === "grid" ? "bg-[var(--theme-primary)] text-white" : "bg-white"
                     }`}
                   >
                     <LuGrid2X2 size={16} />
@@ -270,7 +270,7 @@ function ProductPageContent() {
                   <button
                     onClick={() => setView("list")}
                     className={`p-2 ${
-                      view === "list" ? "bg-[#1F3A2E] text-white" : "bg-white"
+                      view === "list" ? "bg-[var(--theme-primary)] text-white" : "bg-white"
                     }`}
                   >
                     <LuList size={16} />
@@ -285,7 +285,7 @@ function ProductPageContent() {
                       setSort(e.target.value);
                       setPage(1);
                     }}
-                    className="appearance-none border border-[#E4DED2] rounded-md bg-white text-sm px-4 py-2 pr-9 outline-none cursor-pointer"
+                    className="appearance-none border border-[var(--theme-border)] rounded-md bg-white text-sm px-4 py-2 pr-9 outline-none cursor-pointer"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <option key={option} value={option}>
@@ -296,7 +296,7 @@ function ProductPageContent() {
 
                   <LuChevronDown
                     size={15}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A8378]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--theme-muted)]"
                   />
                 </div>
               </div>
@@ -304,11 +304,11 @@ function ProductPageContent() {
 
             {/* PRODUCTS */}
             {loading ? (
-              <div className="bg-white border border-[#E4DED2] rounded-md py-20 text-center text-sm text-[#8A8378]">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md py-20 text-center text-sm text-[var(--theme-muted)]">
                 Loading products...
               </div>
             ) : error ? (
-              <div className="bg-white border border-[#E4DED2] rounded-md py-20 text-center text-sm text-red-700">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md py-20 text-center text-sm text-red-700">
                 {error}
               </div>
             ) : visibleProducts.length > 0 ? (
@@ -324,10 +324,10 @@ function ProductPageContent() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white border border-[#E4DED2] rounded-md py-20 text-center">
+              <div className="bg-white border border-[var(--theme-border)] rounded-md py-20 text-center">
                 <p className="font-serif text-2xl mb-2">No products found</p>
 
-                <p className="text-sm text-[#8A8378]">
+                <p className="text-sm text-[var(--theme-muted)]">
                   Try another search or category.
                 </p>
               </div>
@@ -339,7 +339,7 @@ function ProductPageContent() {
                 <button
                   disabled={page === 1}
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  className="w-9 h-9 border border-[#E4DED2] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
+                  className="w-9 h-9 border border-[var(--theme-border)] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
                 >
                   <LuChevronLeft size={17} />
                 </button>
@@ -353,8 +353,8 @@ function ProductPageContent() {
                       onClick={() => setPage(pageNumber)}
                       className={`w-9 h-9 rounded-md text-sm ${
                         page === pageNumber
-                          ? "bg-[#1F3A2E] text-white"
-                          : "bg-white border border-[#E4DED2] hover:border-[#1F3A2E]"
+                          ? "bg-[var(--theme-primary)] text-white"
+                          : "bg-white border border-[var(--theme-border)] hover:border-[var(--theme-primary)]"
                       }`}
                     >
                       {pageNumber}
@@ -367,7 +367,7 @@ function ProductPageContent() {
                   onClick={() =>
                     setPage((current) => Math.min(totalPages, current + 1))
                   }
-                  className="w-9 h-9 border border-[#E4DED2] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
+                  className="w-9 h-9 border border-[var(--theme-border)] rounded-md bg-white flex items-center justify-center disabled:opacity-40"
                 >
                   <LuChevronRight size={17} />
                 </button>
@@ -381,11 +381,11 @@ function ProductPageContent() {
       {mobileFilterOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-[#211F1D]/50"
+            className="absolute inset-0 bg-[var(--theme-text)]/50"
             onClick={() => setMobileFilterOpen(false)}
           />
 
-          <div className="absolute left-0 top-0 bottom-0 w-[310px] max-w-[85%] bg-[#F7F3EC] p-5 overflow-y-auto">
+          <div className="absolute left-0 top-0 bottom-0 w-[310px] max-w-[85%] bg-[var(--theme-background)] p-5 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-serif text-xl">Filters</h2>
 
@@ -396,7 +396,7 @@ function ProductPageContent() {
 
             <h3 className="font-medium mb-3">Categories</h3>
 
-            <div className="border-t border-[#E4DED2]">
+            <div className="border-t border-[var(--theme-border)]">
               {categoryOptions.map((category) => (
                 <button
                   key={category.id}
@@ -404,10 +404,10 @@ function ProductPageContent() {
                     changeCategory(category.id);
                     setMobileFilterOpen(false);
                   }}
-                  className={`w-full text-left py-3 border-b border-[#E4DED2] text-sm flex justify-between ${
+                  className={`w-full text-left py-3 border-b border-[var(--theme-border)] text-sm flex justify-between ${
                     activeCategory === category.id
-                      ? "text-[#1F3A2E] font-medium"
-                      : "text-[#5B564C]"
+                      ? "text-[var(--theme-primary)] font-medium"
+                      : "text-[var(--theme-muted)]"
                   }`}
                 >
                   {category.parentCategoryId ? `↳ ${category.parentCategoryName} / ${category.categoryName}` : category.categoryName}
@@ -415,14 +415,14 @@ function ProductPageContent() {
                   {activeCategory === category.id && <LuCheck size={15} />}
                 </button>
               ))}
-              {categoriesUnavailable && <p className="py-3 text-xs text-[#8A8378]" role="status">Categories are unavailable.</p>}
+              {categoriesUnavailable && <p className="py-3 text-xs text-[var(--theme-muted)]" role="status">Categories are unavailable.</p>}
             </div>
 
             <div className="mt-8">
               <h3 className="font-medium text-sm mb-4">Availability</h3>
 
-              <label className="flex items-center gap-2 text-sm text-[#5B564C]">
-                <input type="checkbox" className="accent-[#1F3A2E]" />
+              <label className="flex items-center gap-2 text-sm text-[var(--theme-muted)]">
+                <input type="checkbox" className="accent-[var(--theme-primary)]" />
                 In stock
               </label>
             </div>
@@ -435,7 +435,7 @@ function ProductPageContent() {
 
 export default function ProductPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#F7F3EC]" />}>
+    <Suspense fallback={<main className="min-h-screen bg-[var(--theme-background)]" />}>
       <ProductPageContent />
     </Suspense>
   );

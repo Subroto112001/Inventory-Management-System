@@ -34,7 +34,7 @@ export async function POST(request) {
     }
 
     await connectMongoDB();
-    const rows = await Product.find({ _id: { $in: [...quantities.keys()] }, isActive: true })
+    const rows = await Product.find({ _id: { $in: [...quantities.keys()] }, isActive: true, $or: [{ lifecycle: "live" }, { lifecycle: { $exists: false } }] })
       .populate("category", "categoryName")
       .lean();
     const byId = new Map(rows.map((product) => [product._id.toString(), product]));

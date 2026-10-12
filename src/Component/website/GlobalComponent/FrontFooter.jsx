@@ -19,18 +19,18 @@ export default function FrontFooter({ settings }) {
               {settings.storeName.charAt(0)}
             </span>
 
-            <span className="font-serif text-lg text-[#F7F3EC]">
+            <span className="font-serif text-lg text-[var(--theme-background)]">
               {settings.storeName}
             </span>
           </div>
 
-          <p className="text-sm text-[#9B9689] mb-4">{settings.tagline}</p>
+          <p className="text-sm text-[var(--theme-muted)] mb-4">{settings.tagline}</p>
 
           <div className="flex items-center gap-3">
             <a
               href="#"
               aria-label="Facebook"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <LuFacebook size={16} />
             </a>
@@ -38,7 +38,7 @@ export default function FrontFooter({ settings }) {
             <a
               href="#"
               aria-label="Instagram"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <LuInstagram size={16} />
             </a>
@@ -46,7 +46,7 @@ export default function FrontFooter({ settings }) {
             <a
               href="#"
               aria-label="Twitter"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <LuTwitter size={16} />
             </a>
@@ -54,7 +54,7 @@ export default function FrontFooter({ settings }) {
             <a
               href="#"
               aria-label="YouTube"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <LuYoutube size={16} />
             </a>
@@ -63,29 +63,29 @@ export default function FrontFooter({ settings }) {
 
         {/* Shop */}
         <div>
-          <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
+          <h4 className="text-sm text-[var(--theme-background)] mb-4">Shop</h4>
 
-          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+          <ul className="space-y-2.5 text-sm text-[var(--theme-muted)]">
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 All categories
               </a>
             </li>
 
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 New arrivals
               </a>
             </li>
 
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Best sellers
               </a>
             </li>
 
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Gift cards
               </a>
             </li>
@@ -94,29 +94,29 @@ export default function FrontFooter({ settings }) {
 
         {/* Help */}
         <div>
-          <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
+          <h4 className="text-sm text-[var(--theme-background)] mb-4">Help</h4>
 
-          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+          <ul className="space-y-2.5 text-sm text-[var(--theme-muted)]">
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Shipping & returns
               </a>
             </li>
 
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Track order
               </a>
             </li>
 
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 FAQs
               </a>
             </li>
 
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Contact us
               </a>
             </li>
@@ -125,9 +125,9 @@ export default function FrontFooter({ settings }) {
 
         {/* Contact */}
         <div>
-          <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
+          <h4 className="text-sm text-[var(--theme-background)] mb-4">Contact</h4>
 
-          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+          <ul className="space-y-2.5 text-sm text-[var(--theme-muted)]">
             <li className="flex items-center gap-2">
               <LuMapPin size={14} />
               Dhaka, Bangladesh
@@ -148,7 +148,7 @@ export default function FrontFooter({ settings }) {
 
       {/* Footer Bottom */}
       <div className="border-t border-white/10">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#9B9689]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--theme-muted)]">
           <p>
             © {new Date().getFullYear()} {settings.storeName}. All rights
             reserved.

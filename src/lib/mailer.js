@@ -28,15 +28,15 @@ export async function sendInvitationCode({ email, name, code }) {
   const html = `
   <!DOCTYPE html>
   <html>
-  <body style="margin:0; padding:0; background-color:#f4f5f7; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f5f7; padding: 40px 0;">
+  <body style="margin:0; padding:0; background-color:#f1f3f5; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f3f5; padding: 40px 0;">
       <tr>
         <td align="center">
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
             
             <!-- Header -->
             <tr>
-              <td style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 32px 40px; text-align:center;">
+              <td style="background: linear-gradient(135deg, #000000, #000000); padding: 32px 40px; text-align:center;">
                 <h1 style="margin:0; color:#ffffff; font-size: 20px; letter-spacing: 0.5px;">Inventory Management</h1>
               </td>
             </tr>
@@ -44,15 +44,15 @@ export async function sendInvitationCode({ email, name, code }) {
             <!-- Body -->
             <tr>
               <td style="padding: 40px;">
-                <p style="margin:0 0 8px; font-size: 16px; color:#111827;">Hello ${name},</p>
-                <p style="margin:0 0 24px; font-size: 15px; color:#4b5563; line-height:1.6;">
+                <p style="margin:0 0 8px; font-size: 16px; color:#111318;">Hello ${name},</p>
+                <p style="margin:0 0 24px; font-size: 15px; color:#6b7280; line-height:1.6;">
                   You've been invited to join Inventory Management. Use the verification code below to continue.
                 </p>
 
                 <!-- Code Box -->
-                <div style="background-color:#f4f5f7; border: 1px dashed #c7c9d9; border-radius: 10px; padding: 20px; text-align:center; margin-bottom: 24px;">
-                  <span style="font-size: 30px; font-weight:700; letter-spacing: 8px; color:#4f46e5;">${code}</span>
-                  <p style="margin: 10px 0 0; font-size: 13px; color:#9ca3af;">This code expires in 15 minutes</p>
+                <div style="background-color:#f1f3f5; border: 1px dashed #e3e6ea; border-radius: 10px; padding: 20px; text-align:center; margin-bottom: 24px;">
+                  <span style="font-size: 30px; font-weight:700; letter-spacing: 8px; color:#000000;">${code}</span>
+                  <p style="margin: 10px 0 0; font-size: 13px; color:#6b7280;">This code expires in 15 minutes</p>
                 </div>
 
                 ${
@@ -62,7 +62,7 @@ export async function sendInvitationCode({ email, name, code }) {
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td align="center">
-                      <a href="${invitationUrl}" style="display:inline-block; background-color:#4f46e5; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; padding: 14px 32px; border-radius: 8px;">
+                      <a href="${invitationUrl}" style="display:inline-block; background-color:#000000; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; padding: 14px 32px; border-radius: 8px;">
                         Set Your Password
                       </a>
                     </td>
@@ -72,7 +72,7 @@ export async function sendInvitationCode({ email, name, code }) {
                     : ""
                 }
 
-                <p style="margin: 28px 0 0; font-size: 13px; color:#9ca3af; line-height:1.6;">
+                <p style="margin: 28px 0 0; font-size: 13px; color:#6b7280; line-height:1.6;">
                   If you did not expect this invitation, you can safely ignore this email or contact your system administrator.
                 </p>
               </td>
@@ -80,8 +80,8 @@ export async function sendInvitationCode({ email, name, code }) {
 
             <!-- Footer -->
             <tr>
-              <td style="background-color:#f9fafb; padding: 20px 40px; text-align:center; border-top: 1px solid #eee;">
-                <p style="margin:0; font-size: 12px; color:#9ca3af;">
+              <td style="background-color:#f6f7f8; padding: 20px 40px; text-align:center; border-top: 1px solid #eee;">
+                <p style="margin:0; font-size: 12px; color:#6b7280;">
                   &copy; ${new Date().getFullYear()} Inventory Management. All rights reserved.
                 </p>
               </td>
@@ -122,25 +122,25 @@ export async function sendCustomerVerificationOtp({ email, name, otp }) {
   const html = `
     <!doctype html>
     <html lang="en">
-      <body style="margin:0;padding:0;background:#f7f3ec;font-family:Arial,Helvetica,sans-serif;color:#211f1d;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f7f3ec;padding:32px 12px;">
+      <body style="margin:0;padding:0;background:#f1f3f5;font-family:Arial,Helvetica,sans-serif;color:#111318;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f1f3f5;padding:32px 12px;">
           <tr><td align="center">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e4ded2;border-radius:12px;overflow:hidden;">
-              <tr><td style="background:#1f3a2e;padding:24px 32px;text-align:center;color:#ffffff;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e3e6ea;border-radius:12px;overflow:hidden;">
+              <tr><td style="background:#000000;padding:24px 32px;text-align:center;color:#ffffff;">
                 <div style="font-size:13px;font-weight:bold;letter-spacing:3px;">FIELDHOUSE</div>
               </td></tr>
               <tr><td style="padding:32px;">
-                <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;color:#211f1d;">Verify your email</h1>
+                <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;color:#111318;">Verify your email</h1>
                 <p style="margin:0 0 12px;font-size:16px;line-height:1.6;">Welcome to Fieldhouse, ${safeName}!</p>
-                <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6f685e;">Enter this verification code to finish creating your account:</p>
-                <div style="margin:0 0 22px;padding:20px 12px;border:1px solid #e4ded2;border-radius:10px;background:#f7f3ec;text-align:center;">
-                  <div style="font-size:34px;font-weight:bold;letter-spacing:10px;color:#1f3a2e;">${otp}</div>
-                  <p style="margin:10px 0 0;font-size:13px;color:#6f685e;">This code expires in 10 minutes.</p>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6b7280;">Enter this verification code to finish creating your account:</p>
+                <div style="margin:0 0 22px;padding:20px 12px;border:1px solid #e3e6ea;border-radius:10px;background:#f1f3f5;text-align:center;">
+                  <div style="font-size:34px;font-weight:bold;letter-spacing:10px;color:#000000;">${otp}</div>
+                  <p style="margin:10px 0 0;font-size:13px;color:#6b7280;">This code expires in 10 minutes.</p>
                 </div>
-                <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#6f685e;">For your security, never share this code with anyone. Fieldhouse will never ask you to send it to us.</p>
-                <p style="margin:0;font-size:13px;line-height:1.6;color:#6f685e;">If you did not create this account, you can safely ignore this email.</p>
+                <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#6b7280;">For your security, never share this code with anyone. Fieldhouse will never ask you to send it to us.</p>
+                <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">If you did not create this account, you can safely ignore this email.</p>
               </td></tr>
-              <tr><td style="border-top:1px solid #e4ded2;padding:18px 32px;text-align:center;font-size:12px;color:#6f685e;">Fieldhouse · Thank you for joining us.</td></tr>
+              <tr><td style="border-top:1px solid #e3e6ea;padding:18px 32px;text-align:center;font-size:12px;color:#6b7280;">Fieldhouse · Thank you for joining us.</td></tr>
             </table>
           </td></tr>
         </table>

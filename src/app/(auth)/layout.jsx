@@ -1,5 +1,5 @@
 import AuthLayout from "@/Component/Layout/AuthLayout";
-import { getStoreSettings } from "@/lib/storeSettings";
+import { getStoreSettings, normalizeTheme } from "@/lib/storeSettings";
 
 export const metadata = {
   title: "Authentication | Skripto",
@@ -8,11 +8,13 @@ export const metadata = {
 
 export default async function AuthenticationLayout({ children }) {
   const settings = await getStoreSettings();
+  const theme = normalizeTheme(settings);
   const branding = {
     storeName: settings.storeName,
     logoUrl: settings.logo?.url || null,
-    primaryColor: settings.primaryColor,
+    primaryColor: theme.primary,
     surfaceColor: settings.surfaceColor,
+    backgroundColor: settings.backgroundColor,
     textColor: settings.textColor,
     mutedTextColor: settings.mutedTextColor,
     borderColor: settings.borderColor,

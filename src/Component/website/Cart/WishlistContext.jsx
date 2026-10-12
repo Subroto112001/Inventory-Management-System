@@ -150,9 +150,9 @@ export function WishlistProvider({ children, branding = {} }) {
   const value = useMemo(() => ({ products, loaded, error, pendingIds, count: products.length, refresh, toggle, has }), [products, loaded, error, pendingIds, refresh, toggle, has]);
   const logoUrl = branding.logo?.url || branding.logoUrl || "";
   const storeName = branding.storeName || "Our Store";
-  const primaryColor = branding.primary || branding.primaryColor || "#1F3A2E";
-  const accentColor = branding.accent || branding.accentColor || "#B65C38";
-  const borderColor = branding.border || branding.borderColor || "#E4DED2";
+  const primaryColor = branding.primary || branding.primaryColor || "#000000";
+  const accentColor = branding.accent || branding.accentColor || "#F04427";
+  const borderColor = branding.border || branding.borderColor || "#E3E6EA";
 
   return (
     <WishlistContext.Provider value={value}>
@@ -175,14 +175,14 @@ export function WishlistProvider({ children, branding = {} }) {
               <span aria-hidden="true">&times;</span>
             </button>
             {logoUrl ? (
-              <img src={logoUrl} alt={`${storeName} logo`} className="mx-auto mb-4 h-12 w-12 rounded-full border bg-[#F7F3EC] p-2 object-contain" style={{ borderColor }} />
+              <img src={logoUrl} alt={`${storeName} logo`} className="mx-auto mb-4 h-12 w-12 rounded-full border bg-[var(--theme-background)] p-2 object-contain" style={{ borderColor }} />
             ) : (
-              <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border bg-[#F7F3EC] text-lg font-semibold" style={{ color: primaryColor, borderColor }} aria-label={storeName}>
+              <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border bg-[var(--theme-background)] text-lg font-semibold" style={{ color: primaryColor, borderColor }} aria-label={storeName}>
                 {storeName.trim().charAt(0).toUpperCase() || "S"}
               </span>
             )}
-            <h2 id="wishlist-login-title" className="text-xl font-semibold text-[#211F1D]">Login Required</h2>
-            <p id="wishlist-login-description" className="mt-2 text-sm leading-6 text-[#6F685E]">Please log in to your account to add products to your wishlist and save your favorite items.</p>
+            <h2 id="wishlist-login-title" className="text-xl font-semibold text-[var(--theme-text)]">Login Required</h2>
+            <p id="wishlist-login-description" className="mt-2 text-sm leading-6 text-[var(--theme-muted)]">Please log in to your account to add products to your wishlist and save your favorite items.</p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button type="button" onClick={closeLoginNotice} className="rounded-xl border px-4 py-3 text-sm font-semibold transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2" style={{ borderColor, color: primaryColor, "--tw-ring-color": primaryColor }}>Maybe Later</button>
               <a ref={loginButtonRef} href={`/login?next=${encodeURIComponent(loginReturn)}`} className="rounded-xl px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2" style={{ backgroundColor: primaryColor, "--tw-ring-color": accentColor }}>Log In</a>

@@ -67,7 +67,7 @@ export async function GET(request) {
     const items = assignments
       .map((assignment) => {
         const product = assignment.productId;
-        if (publicRead && (!product || !product.isActive)) return null;
+        if (publicRead && (!product || !product.isActive || (product.lifecycle && product.lifecycle !== "live"))) return null;
 
         return {
           id: assignment._id.toString(),

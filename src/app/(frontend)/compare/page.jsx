@@ -45,8 +45,8 @@ function Stars({ rating }) {
           size={13}
           className={
             i < Math.round(rating)
-              ? "fill-[#C9A659] text-[#C9A659]"
-              : "fill-[#E4DED2] text-[#E4DED2]"
+              ? "fill-[var(--theme-highlight)] text-[var(--theme-highlight)]"
+              : "fill-[var(--theme-border)] text-[var(--theme-border)]"
           }
         />
       ))}
@@ -56,17 +56,17 @@ function Stars({ rating }) {
 
 function EmptyCompare({ onBrowse }) {
   return (
-    <div className="bg-white border border-[#E4DED2] rounded-md py-20 px-6 text-center">
-      <LuScale size={36} className="mx-auto text-[#8A8378] mb-4" />
+    <div className="bg-white border border-[var(--theme-border)] rounded-md py-20 px-6 text-center">
+      <LuScale size={36} className="mx-auto text-[var(--theme-muted)] mb-4" />
       <p className="font-serif text-2xl mb-2">No products to compare</p>
-      <p className="text-sm text-[#8A8378] mb-6 max-w-sm mx-auto">
+      <p className="text-sm text-[var(--theme-muted)] mb-6 max-w-sm mx-auto">
         Add products from the shop using the compare icon, then return here to
         see them side by side.
       </p>
       <button
         type="button"
         onClick={onBrowse}
-        className="bg-[#1F3A2E] text-[#F7F3EC] text-sm px-5 py-2.5 rounded-sm hover:bg-[#16281F] transition-colors"
+        className="bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm px-5 py-2.5 rounded-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
       >
         Browse products
       </button>
@@ -164,7 +164,7 @@ export default function ComparePage() {
   const colCount = products.length;
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] font-sans text-[#211F1D]">
+    <div className="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)]">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
@@ -183,35 +183,35 @@ export default function ComparePage() {
       {toast && (
         <div
           role="status"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#211F1D] text-[#F7F3EC] text-sm px-5 py-3 rounded-md shadow-lg flex items-center gap-2"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[var(--theme-text)] text-[var(--theme-background)] text-sm px-5 py-3 rounded-md shadow-lg flex items-center gap-2"
         >
-          <LuCheck size={16} className="text-[#C9A659]" />
+          <LuCheck size={16} className="text-[var(--theme-highlight)]" />
           {toast}
         </div>
       )}
 
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
         {/* Breadcrumb */}
-        <div className="py-6 text-sm text-[#8A8378] flex items-center gap-2">
-          <a href="#" className="hover:text-[#B65C38] transition-colors">
+        <div className="py-6 text-sm text-[var(--theme-muted)] flex items-center gap-2">
+          <a href="#" className="hover:text-[var(--theme-secondary)] transition-colors">
             Home
           </a>
           <LuChevronRight size={13} />
-          <a href="#" className="hover:text-[#B65C38] transition-colors">
+          <a href="#" className="hover:text-[var(--theme-secondary)] transition-colors">
             Shop
           </a>
           <LuChevronRight size={13} />
-          <span className="text-[#211F1D]">Compare</span>
+          <span className="text-[var(--theme-text)]">Compare</span>
         </div>
 
         {/* Title */}
         <section className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <p className="text-sm text-[#B65C38] mb-1">Side by side</p>
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#211F1D]">
+            <p className="text-sm text-[var(--theme-secondary)] mb-1">Side by side</p>
+            <h1 className="font-serif text-3xl sm:text-4xl text-[var(--theme-text)]">
               Product comparison
             </h1>
-            <p className="text-sm text-[#8A8378] mt-2 max-w-lg">
+            <p className="text-sm text-[var(--theme-muted)] mt-2 max-w-lg">
               Compare up to 4 products at a glance — price, materials, size and
               more.
             </p>
@@ -221,7 +221,7 @@ export default function ComparePage() {
             <button
               type="button"
               onClick={clearAll}
-              className="text-sm text-[#B65C38] border-b border-[#B65C38] pb-0.5 hover:text-[#9E4D2E] hover:border-[#9E4D2E] transition-colors self-start sm:self-auto"
+              className="text-sm text-[var(--theme-secondary)] border-b border-[var(--theme-secondary)] pb-0.5 hover:text-[var(--theme-secondary-hover)] hover:border-[var(--theme-secondary-hover)] transition-colors self-start sm:self-auto"
             >
               Clear all
             </button>
@@ -229,12 +229,12 @@ export default function ComparePage() {
         </section>
 
         {/* Empty state */}
-        {catalogLoading || !compareLoaded ? <p className="py-16 text-center text-sm text-[#8A8378]" role="status">Loading comparison...</p> : catalogError ? <p className="py-16 text-center text-sm text-red-700" role="alert">{catalogError}</p> : products.length === 0 ? (
+        {catalogLoading || !compareLoaded ? <p className="py-16 text-center text-sm text-[var(--theme-muted)]" role="status">Loading comparison...</p> : catalogError ? <p className="py-16 text-center text-sm text-red-700" role="alert">{catalogError}</p> : products.length === 0 ? (
           <EmptyCompare onBrowse={() => {}} />
         ) : (
           <>
             {/* ── COMPARISON TABLE ── */}
-            <div className="bg-white border border-[#E4DED2] rounded-md overflow-hidden">
+            <div className="bg-white border border-[var(--theme-border)] rounded-md overflow-hidden">
               {/* Horizontal scroll on mobile */}
               <div className="overflow-x-auto">
                 <div
@@ -245,8 +245,8 @@ export default function ComparePage() {
                   }}
                 >
                   {/* ── Header row: product cards ── */}
-                  <div className="border-b border-[#E4DED2] bg-[#F7F3EC] p-4 sticky left-0 z-10">
-                    <p className="text-xs text-[#8A8378] mt-16">
+                  <div className="border-b border-[var(--theme-border)] bg-[var(--theme-background)] p-4 sticky left-0 z-10">
+                    <p className="text-xs text-[var(--theme-muted)] mt-16">
                       Comparing {products.length} product
                       {products.length > 1 ? "s" : ""}
                     </p>
@@ -255,18 +255,18 @@ export default function ComparePage() {
                   {products.map((p) => (
                     <div
                       key={p.id}
-                      className="border-b border-l border-[#E4DED2] p-4 text-center relative group"
+                      className="border-b border-l border-[var(--theme-border)] p-4 text-center relative group"
                     >
                       <button
                         type="button"
                         onClick={() => removeProduct(p.id)}
                         aria-label={`Remove ${p.name}`}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-[#E4DED2] flex items-center justify-center text-[#8A8378] hover:text-[#B65C38] hover:border-[#B65C38] transition-colors opacity-0 group-hover:opacity-100"
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-[var(--theme-border)] flex items-center justify-center text-[var(--theme-muted)] hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <LuX size={15} />
                       </button>
 
-                      <div className="aspect-square max-w-[140px] mx-auto rounded-sm overflow-hidden bg-[#F7F3EC] mb-3">
+                      <div className="aspect-square max-w-[140px] mx-auto rounded-sm overflow-hidden bg-[var(--theme-background)] mb-3">
                         <img
                           src={p.image}
                           alt={p.name}
@@ -275,12 +275,12 @@ export default function ComparePage() {
                       </div>
 
                       {p.badge && (
-                        <span className="inline-block text-[10px] px-2 py-0.5 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] mb-2">
+                        <span className="inline-block text-[10px] px-2 py-0.5 rounded-sm bg-[var(--theme-primary)] text-[var(--theme-background)] mb-2">
                           {p.badge}
                         </span>
                       )}
 
-                      <h3 className="text-sm text-[#211F1D] leading-snug line-clamp-2 min-h-[40px]">
+                      <h3 className="text-sm text-[var(--theme-text)] leading-snug line-clamp-2 min-h-[40px]">
                         {p.name}
                       </h3>
                     </div>
@@ -290,7 +290,7 @@ export default function ComparePage() {
                   {COMPARE_ROWS.map((row) => (
                     <div key={row.key} className="contents">
                       {/* Label */}
-                      <div className="border-b border-[#E4DED2] px-4 py-3.5 text-sm text-[#5B564C] bg-[#F7F3EC] sticky left-0 z-10 flex items-center">
+                      <div className="border-b border-[var(--theme-border)] px-4 py-3.5 text-sm text-[var(--theme-muted)] bg-[var(--theme-background)] sticky left-0 z-10 flex items-center">
                         {row.label}
                       </div>
 
@@ -301,11 +301,11 @@ export default function ComparePage() {
                         if (row.key === "price") {
                           content = (
                             <div className="flex flex-col items-center gap-0.5">
-                              <span className="text-[#1F3A2E] font-medium text-base">
+                              <span className="text-[var(--theme-primary)] font-medium text-base">
                                 ${p.price}
                               </span>
                               {p.oldPrice && (
-                                <span className="text-xs text-[#8A8378] line-through">
+                                <span className="text-xs text-[var(--theme-muted)] line-through">
                                   ${p.oldPrice}
                                 </span>
                               )}
@@ -315,24 +315,24 @@ export default function ComparePage() {
                           content = (
                             <div className="flex flex-col items-center gap-1">
                               <Stars rating={p.rating} />
-                              <span className="text-xs text-[#8A8378]">
+                              <span className="text-xs text-[var(--theme-muted)]">
                                 {p.rating} ({p.reviews})
                               </span>
                             </div>
                           );
                         } else if (row.key === "stock") {
                           content = p.inStock ? (
-                            <span className="text-sm text-[#1F3A2E]">
+                            <span className="text-sm text-[var(--theme-primary)]">
                               In stock
                             </span>
                           ) : (
-                            <span className="text-sm text-[#B65C38]">
+                            <span className="text-sm text-[var(--theme-secondary)]">
                               Out of stock
                             </span>
                           );
                         } else {
                           content = (
-                            <span className="text-sm text-[#211F1D]">
+                            <span className="text-sm text-[var(--theme-text)]">
                               {p[row.key]}
                             </span>
                           );
@@ -341,7 +341,7 @@ export default function ComparePage() {
                         return (
                           <div
                             key={`${p.id}-${row.key}`}
-                            className="border-b border-l border-[#E4DED2] px-4 py-3.5 text-center flex items-center justify-center"
+                            className="border-b border-l border-[var(--theme-border)] px-4 py-3.5 text-center flex items-center justify-center"
                           >
                             {content}
                           </div>
@@ -351,18 +351,18 @@ export default function ComparePage() {
                   ))}
 
                   {/* ── Action row ── */}
-                  <div className="px-4 py-4 bg-[#F7F3EC] sticky left-0 z-10" />
+                  <div className="px-4 py-4 bg-[var(--theme-background)] sticky left-0 z-10" />
 
                   {products.map((p) => (
                     <div
                       key={`action-${p.id}`}
-                      className="border-l border-[#E4DED2] p-4 flex flex-col gap-2"
+                      className="border-l border-[var(--theme-border)] p-4 flex flex-col gap-2"
                     >
                       <button
                         type="button"
                         disabled={!p.inStock}
                         onClick={() => addToCart(p)}
-                        className="w-full flex items-center justify-center gap-2 bg-[#211F1D] text-[#F7F3EC] text-sm py-2.5 rounded-sm hover:bg-[#1F3A2E] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-2 bg-[var(--theme-text)] text-[var(--theme-background)] text-sm py-2.5 rounded-sm hover:bg-[var(--theme-primary)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <LuShoppingCart size={14} />
                         Add to cart
@@ -370,7 +370,7 @@ export default function ComparePage() {
                       <button
                         type="button"
                         onClick={() => removeProduct(p.id)}
-                        className="w-full flex items-center justify-center gap-2 text-sm py-2 rounded-sm border border-[#E4DED2] text-[#5B564C] hover:border-[#B65C38] hover:text-[#B65C38] transition-colors"
+                        className="w-full flex items-center justify-center gap-2 text-sm py-2 rounded-sm border border-[var(--theme-border)] text-[var(--theme-muted)] hover:border-[var(--theme-secondary)] hover:text-[var(--theme-secondary)] transition-colors"
                       >
                         <LuTrash2 size={14} />
                         Remove
@@ -386,14 +386,14 @@ export default function ComparePage() {
               <section className="mt-10">
                 <div className="flex items-end justify-between gap-4 mb-5">
                   <div>
-                    <p className="text-sm text-[#B65C38] mb-1">
+                    <p className="text-sm text-[var(--theme-secondary)] mb-1">
                       Still deciding?
                     </p>
-                    <h2 className="font-serif text-2xl text-[#211F1D]">
+                    <h2 className="font-serif text-2xl text-[var(--theme-text)]">
                       Add another product
                     </h2>
                   </div>
-                  <p className="text-xs text-[#8A8378]">
+                  <p className="text-xs text-[var(--theme-muted)]">
                     {4 - compareIds.length} slot
                     {4 - compareIds.length > 1 ? "s" : ""} left
                   </p>
@@ -403,9 +403,9 @@ export default function ComparePage() {
                   {availableToAdd.slice(0, 4).map((p) => (
                     <div
                       key={p.id}
-                      className="bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:border-[#C9A659] transition-colors group"
+                      className="bg-white border border-[var(--theme-border)] rounded-md overflow-hidden hover:border-[var(--theme-highlight)] transition-colors group"
                     >
-                      <div className="aspect-square bg-[#F7F3EC] overflow-hidden">
+                      <div className="aspect-square bg-[var(--theme-background)] overflow-hidden">
                         <img
                           src={p.image}
                           alt={p.name}
@@ -413,19 +413,19 @@ export default function ComparePage() {
                         />
                       </div>
                       <div className="p-3">
-                        <p className="text-xs text-[#8A8378] mb-0.5">
+                        <p className="text-xs text-[var(--theme-muted)] mb-0.5">
                           {p.category}
                         </p>
-                        <h3 className="text-sm text-[#211F1D] leading-snug line-clamp-2 min-h-[40px]">
+                        <h3 className="text-sm text-[var(--theme-text)] leading-snug line-clamp-2 min-h-[40px]">
                           {p.name}
                         </h3>
-                        <p className="text-sm text-[#1F3A2E] mt-1 mb-3">
+                        <p className="text-sm text-[var(--theme-primary)] mt-1 mb-3">
                           ${p.price}
                         </p>
                         <button
                           type="button"
                           onClick={() => addProduct(p.id)}
-                          className="w-full flex items-center justify-center gap-1.5 text-sm py-2 rounded-sm border border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E] hover:bg-[#1F3A2E] hover:text-[#F7F3EC] transition-colors"
+                          className="w-full flex items-center justify-center gap-1.5 text-sm py-2 rounded-sm border border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)] hover:bg-[var(--theme-primary)] hover:text-[var(--theme-background)] transition-colors"
                         >
                           <LuPlus size={14} />
                           Compare

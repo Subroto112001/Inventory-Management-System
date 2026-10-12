@@ -59,7 +59,7 @@ export default function CartSidebar() {
       {/* Overlay */}
       <div
         onClick={closeCart}
-        className={`absolute inset-0 bg-[#211F1D]/50 transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-[var(--theme-text)]/50 transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -69,15 +69,15 @@ export default function CartSidebar() {
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className={`absolute right-0 top-0 bottom-0 w-full max-w-[420px] bg-[#F7F3EC] flex flex-col transition-transform duration-300 ease-out ${
+        className={`absolute right-0 top-0 bottom-0 w-full max-w-[420px] bg-[var(--theme-background)] flex flex-col transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-5 border-b border-[#E4DED2]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-5 border-b border-[var(--theme-border)]">
           <div>
-            <h2 className="font-serif text-xl text-[#211F1D]">Your cart</h2>
-            <p className="text-xs text-[#8A8378] mt-0.5">
+            <h2 className="font-serif text-xl text-[var(--theme-text)]">Your cart</h2>
+            <p className="text-xs text-[var(--theme-muted)] mt-0.5">
               {itemCount} {itemCount === 1 ? "item" : "items"}
             </p>
           </div>
@@ -86,7 +86,7 @@ export default function CartSidebar() {
             type="button"
             onClick={closeCart}
             aria-label="Close cart"
-            className="text-[#211F1D] hover:text-[#B65C38] transition-colors"
+            className="text-[var(--theme-text)] hover:text-[var(--theme-secondary)] transition-colors"
           >
             <LuX size={20} />
           </button>
@@ -95,21 +95,21 @@ export default function CartSidebar() {
         {items.length === 0 ? (
           /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-            <span className="w-14 h-14 rounded-full bg-[#EFE9DC] text-[#1F3A2E] flex items-center justify-center">
+            <span className="w-14 h-14 rounded-full bg-[var(--theme-surface-alt)] text-[var(--theme-primary)] flex items-center justify-center">
               <LuShoppingBag size={22} />
             </span>
 
-            <p className="font-serif text-lg text-[#211F1D] mt-4">
+            <p className="font-serif text-lg text-[var(--theme-text)] mt-4">
               Your cart is empty
             </p>
-            <p className="text-sm text-[#5B564C] mt-1 leading-relaxed">
+            <p className="text-sm text-[var(--theme-muted)] mt-1 leading-relaxed">
               Add something you like and it will show up here.
             </p>
 
             <Link
               href="/product"
               onClick={closeCart}
-              className="mt-6 bg-[#1F3A2E] text-[#F7F3EC] px-6 py-3 rounded-sm text-sm hover:bg-[#16281F] transition-colors"
+              className="mt-6 bg-[var(--theme-primary)] text-[var(--theme-background)] px-6 py-3 rounded-sm text-sm hover:bg-[var(--theme-primary-hover)] transition-colors"
             >
               Continue shopping
             </Link>
@@ -117,44 +117,44 @@ export default function CartSidebar() {
         ) : (
           <>
             {/* Free shipping progress */}
-            <div className="px-5 sm:px-6 py-4 border-b border-[#E4DED2]">
-              <div className="flex items-center gap-2 text-xs text-[#211F1D]">
-                <LuTruck size={15} className="text-[#1F3A2E] shrink-0" />
+            <div className="px-5 sm:px-6 py-4 border-b border-[var(--theme-border)]">
+              <div className="flex items-center gap-2 text-xs text-[var(--theme-text)]">
+                <LuTruck size={15} className="text-[var(--theme-primary)] shrink-0" />
                 {remaining > 0 ? (
                   <span>
                     Add ${remaining.toFixed(2)} more for free shipping
                   </span>
                 ) : (
-                  <span>You've unlocked free shipping</span>
+                  <span>You&apos;ve unlocked free shipping</span>
                 )}
               </div>
 
-              <div className="mt-2.5 h-1 bg-[#E4DED2] rounded-full overflow-hidden">
+              <div className="mt-2.5 h-1 bg-[var(--theme-border)] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#C9A659] transition-[width] duration-300"
+                  className="h-full bg-[var(--theme-highlight)] transition-[width] duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
 
             {/* Items */}
-            <ul className="flex-1 overflow-y-auto px-5 sm:px-6 divide-y divide-[#E4DED2]">
+            <ul className="flex-1 overflow-y-auto px-5 sm:px-6 divide-y divide-[var(--theme-border)]">
               {items.map((item) => (
                 <li key={item.id} className="flex gap-4 py-5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="w-20 h-24 object-cover rounded-sm bg-[#EFE9DC] shrink-0"
+                    className="w-20 h-24 object-cover rounded-sm bg-[var(--theme-surface-alt)] shrink-0"
                   />
 
                   <div className="flex-1 min-w-0 flex flex-col">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-xs text-[#8A8378]">
+                        <p className="text-xs text-[var(--theme-muted)]">
                           {item.category}
                         </p>
-                        <h3 className="font-serif text-base text-[#211F1D] leading-snug">
+                        <h3 className="font-serif text-base text-[var(--theme-text)] leading-snug">
                           {item.name}
                         </h3>
                       </div>
@@ -163,7 +163,7 @@ export default function CartSidebar() {
                         type="button"
                         onClick={() => removeItem(item.id)}
                         aria-label={`Remove ${item.name}`}
-                        className="text-[#8A8378] hover:text-[#B65C38] transition-colors shrink-0"
+                        className="text-[var(--theme-muted)] hover:text-[var(--theme-secondary)] transition-colors shrink-0"
                       >
                         <LuTrash2 size={15} />
                       </button>
@@ -171,19 +171,19 @@ export default function CartSidebar() {
 
                     <div className="mt-auto flex items-center justify-between pt-3">
                       {/* Quantity stepper */}
-                      <div className="flex items-center border border-[#E4DED2] bg-white rounded-sm">
+                      <div className="flex items-center border border-[var(--theme-border)] bg-white rounded-sm">
                         <button
                           type="button"
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
                           aria-label="Decrease quantity"
-                          className="w-8 h-8 flex items-center justify-center text-[#211F1D] hover:text-[#B65C38] transition-colors"
+                          className="w-8 h-8 flex items-center justify-center text-[var(--theme-text)] hover:text-[var(--theme-secondary)] transition-colors"
                         >
                           <LuMinus size={13} />
                         </button>
 
-                        <span className="w-7 text-center text-sm text-[#211F1D]">
+                        <span className="w-7 text-center text-sm text-[var(--theme-text)]">
                           {item.quantity}
                         </span>
 
@@ -194,13 +194,13 @@ export default function CartSidebar() {
                           }
                           disabled={item.quantity >= maxQty}
                           aria-label="Increase quantity"
-                          className="w-8 h-8 flex items-center justify-center text-[#211F1D] hover:text-[#B65C38] transition-colors disabled:text-[#C9C2B3] disabled:hover:text-[#C9C2B3]"
+                          className="w-8 h-8 flex items-center justify-center text-[var(--theme-text)] hover:text-[var(--theme-secondary)] transition-colors disabled:text-[var(--theme-border)] disabled:hover:text-[var(--theme-border)]"
                         >
                           <LuPlus size={13} />
                         </button>
                       </div>
 
-                      <span className="font-serif text-base text-[#1F3A2E]">
+                      <span className="font-serif text-base text-[var(--theme-primary)]">
                         ${(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
@@ -210,18 +210,18 @@ export default function CartSidebar() {
             </ul>
 
             {/* Footer */}
-            <div className="border-t border-[#E4DED2] bg-white px-5 sm:px-6 py-5">
+            <div className="border-t border-[var(--theme-border)] bg-white px-5 sm:px-6 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-serif text-lg text-[#211F1D]">
+                  <span className="font-serif text-lg text-[var(--theme-text)]">
                     Subtotal
                   </span>
-                  <p className="text-[11px] text-[#8A8378] mt-0.5">
+                  <p className="text-[11px] text-[var(--theme-muted)] mt-0.5">
                     Shipping and taxes are calculated at checkout
                   </p>
                 </div>
 
-                <span className="font-serif text-2xl text-[#1F3A2E]">
+                <span className="font-serif text-2xl text-[var(--theme-primary)]">
                   ${subtotal.toFixed(2)}
                 </span>
               </div>
@@ -229,7 +229,7 @@ export default function CartSidebar() {
               <Link
                 href="/checkout"
                 onClick={closeCart}
-                className="w-full mt-4 bg-[#1F3A2E] text-[#F7F3EC] py-3.5 rounded-sm text-sm hover:bg-[#16281F] transition-colors flex items-center justify-center gap-2"
+                className="w-full mt-4 bg-[var(--theme-primary)] text-[var(--theme-background)] py-3.5 rounded-sm text-sm hover:bg-[var(--theme-primary-hover)] transition-colors flex items-center justify-center gap-2"
               >
                 <LuLock size={15} />
                 Checkout · ${subtotal.toFixed(2)}
@@ -238,7 +238,7 @@ export default function CartSidebar() {
               <button
                 type="button"
                 onClick={closeCart}
-                className="w-full mt-2 py-3 text-sm text-[#211F1D] border border-[#E4DED2] rounded-sm hover:border-[#1F3A2E] transition-colors"
+                className="w-full mt-2 py-3 text-sm text-[var(--theme-text)] border border-[var(--theme-border)] rounded-sm hover:border-[var(--theme-primary)] transition-colors"
               >
                 Continue shopping
               </button>

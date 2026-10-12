@@ -706,7 +706,7 @@ const Page = () => {
                     <Line
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#1D4ED8"
+                      stroke="var(--theme-primary)"
                       strokeWidth={3}
                       activeDot={{ r: 8 }}
                     />

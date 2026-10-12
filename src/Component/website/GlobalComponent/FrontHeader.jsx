@@ -61,13 +61,13 @@ function CustomerAccountMenu({ account, onLogout }) {
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-[#E4DED2] bg-white p-2 shadow-lg"
+          className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-[var(--theme-border)] bg-white p-2 shadow-lg"
           role="menu"
         >
-          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=dashboard">My account</Link>
-          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=orders">My orders</Link>
-          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=wishlist">Wishlist</Link>
-          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[#F7F3EC]" href="/order?view=addresses">Addresses</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[var(--theme-background)]" href="/order?view=dashboard">My account</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[var(--theme-background)]" href="/order?view=orders">My orders</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[var(--theme-background)]" href="/order?view=wishlist">Wishlist</Link>
+          <Link onClick={() => setOpen(false)} role="menuitem" className="block rounded px-3 py-2 text-sm hover:bg-[var(--theme-background)]" href="/order?view=addresses">Addresses</Link>
           <button onClick={() => { setOpen(false); onLogout(); }} role="menuitem" className="block w-full rounded px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50">Log out</button>
         </div>
       )}
@@ -242,7 +242,7 @@ export default function FrontHeader({ settings }) {
         </Link>
 
         <div className="relative hidden flex-1 max-w-xl md:block">
-          <div className="flex items-center overflow-hidden rounded-md border border-[#E4DED2] bg-white">
+          <div className="flex items-center overflow-hidden rounded-md border border-[var(--theme-border)] bg-white">
             <input
               type="text"
               value={query}
@@ -254,7 +254,7 @@ export default function FrontHeader({ settings }) {
                 }
               }}
               placeholder="Search furniture, lighting, decor…"
-              className="flex-1 bg-transparent px-4 py-2.5 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none"
+              className="flex-1 bg-transparent px-4 py-2.5 text-sm text-[var(--theme-text)] placeholder:text-[var(--theme-muted)] outline-none"
             />
 
             <button
@@ -268,9 +268,9 @@ export default function FrontHeader({ settings }) {
           </div>
 
           {query.trim().length > 0 && (results.length > 0 || loading) ? (
-            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-md border border-[#E4DED2] bg-white shadow-lg">
+            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-md border border-[var(--theme-border)] bg-white shadow-lg">
               {loading ? (
-                <div className="px-4 py-3 text-sm text-[#8A8378]">
+                <div className="px-4 py-3 text-sm text-[var(--theme-muted)]">
                   Searching products...
                 </div>
               ) : (
@@ -283,7 +283,7 @@ export default function FrontHeader({ settings }) {
                         setQuery("");
                         setResults([]);
                       }}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-[#F7F3EC]"
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-[var(--theme-background)]"
                     >
                       <img
                         src={product.image || "/placeholder-product.svg"}
@@ -292,10 +292,10 @@ export default function FrontHeader({ settings }) {
                       />
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[#211F1D]">
+                        <p className="truncate text-sm font-medium text-[var(--theme-text)]">
                           {product.name}
                         </p>
-                        <p className="text-xs text-[#8A8378]">
+                        <p className="text-xs text-[var(--theme-muted)]">
                           {product.category || "Product"}
                         </p>
                       </div>
@@ -303,7 +303,7 @@ export default function FrontHeader({ settings }) {
                   ))}
 
                   {results.length === 0 && !loading ? (
-                    <div className="px-4 py-3 text-sm text-[#8A8378]">
+                    <div className="px-4 py-3 text-sm text-[var(--theme-muted)]">
                       No products found.
                     </div>
                   ) : null}
@@ -344,7 +344,7 @@ export default function FrontHeader({ settings }) {
       </div>
 
       <div className="px-4 pb-3 md:hidden">
-        <div className="relative flex items-center overflow-hidden rounded-md border border-[#E4DED2] bg-white">
+        <div className="relative flex items-center overflow-hidden rounded-md border border-[var(--theme-border)] bg-white">
           <input
             type="text"
             value={query}
@@ -356,7 +356,7 @@ export default function FrontHeader({ settings }) {
               }
             }}
             placeholder="Search products…"
-            className="flex-1 bg-transparent px-3 py-2 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none"
+            className="flex-1 bg-transparent px-3 py-2 text-sm text-[var(--theme-text)] placeholder:text-[var(--theme-muted)] outline-none"
           />
 
           <button
@@ -370,7 +370,7 @@ export default function FrontHeader({ settings }) {
         </div>
 
         {query.trim().length > 0 && results.length > 0 && (
-          <div className="mt-2 rounded-md border border-[#E4DED2] bg-white shadow-lg">
+          <div className="mt-2 rounded-md border border-[var(--theme-border)] bg-white shadow-lg">
             {results.map((product) => (
               <Link
                 key={product.id}
@@ -379,7 +379,7 @@ export default function FrontHeader({ settings }) {
                   setQuery("");
                   setResults([]);
                 }}
-                className="flex items-center gap-3 px-3 py-2 text-left hover:bg-[#F7F3EC]"
+                className="flex items-center gap-3 px-3 py-2 text-left hover:bg-[var(--theme-background)]"
               >
                 <img
                   src={product.image || "/placeholder-product.svg"}
@@ -387,10 +387,10 @@ export default function FrontHeader({ settings }) {
                   className="h-10 w-10 rounded-md object-cover"
                 />
                 <div className="min-w-0">
-                  <p className="truncate text-sm text-[#211F1D]">
+                  <p className="truncate text-sm text-[var(--theme-text)]">
                     {product.name}
                   </p>
-                  <p className="text-xs text-[#8A8378]">
+                  <p className="text-xs text-[var(--theme-muted)]">
                     {product.category || "Product"}
                   </p>
                 </div>
@@ -400,7 +400,7 @@ export default function FrontHeader({ settings }) {
         )}
       </div>
 
-      <nav className="hidden border-t border-[#E4DED2] bg-[var(--store-surface)] lg:block">
+      <nav className="hidden border-t border-[var(--theme-border)] bg-[var(--store-surface)] lg:block">
         <div className="relative mx-auto flex max-w-[1280px] items-center px-4 sm:px-6">
           <button
             type="button"
@@ -420,8 +420,8 @@ export default function FrontHeader({ settings }) {
                 <Link href={link.href} className={`whitespace-nowrap text-sm transition-colors ${isActiveLink(link.href) ? "text-[var(--store-accent)]" : "text-[var(--store-text)] hover:text-[var(--store-accent)]"}`}>
                   {link.label}
                 </Link>
-                {link.subcategories?.length > 0 && <div className="invisible absolute left-0 top-full z-50 min-w-48 translate-y-1 rounded-lg border border-[#E4DED2] bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
-                  {link.subcategories.map((subcategory) => <Link key={subcategory.id} href={`/product?category=${encodeURIComponent(subcategory.id)}`} className="block rounded-md px-3 py-2 text-sm text-[var(--store-text)] hover:bg-[#F7F3EC] hover:text-[var(--store-accent)]">{subcategory.categoryName}</Link>)}
+                {link.subcategories?.length > 0 && <div className="invisible absolute left-0 top-full z-50 min-w-48 translate-y-1 rounded-lg border border-[var(--theme-border)] bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  {link.subcategories.map((subcategory) => <Link key={subcategory.id} href={`/product?category=${encodeURIComponent(subcategory.id)}`} className="block rounded-md px-3 py-2 text-sm text-[var(--store-text)] hover:bg-[var(--theme-background)] hover:text-[var(--store-accent)]">{subcategory.categoryName}</Link>)}
                 </div>}
               </div>
             ))}
@@ -442,11 +442,11 @@ export default function FrontHeader({ settings }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-[#211F1D]/50"
+            className="absolute inset-0 bg-[var(--theme-text)]/50"
             onClick={() => setMobileOpen(false)}
           />
 
-          <div className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-[#F7F3EC] p-5">
+          <div className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-[var(--theme-background)] p-5">
             <div className="mb-6 flex items-center justify-between">
               <span className="font-serif text-lg text-[var(--theme-text)]">
                 {settings.storeName}
@@ -456,18 +456,18 @@ export default function FrontHeader({ settings }) {
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close menu"
               >
-                <LuX size={20} className="text-[#211F1D]" />
+                <LuX size={20} className="text-[var(--theme-text)]" />
               </button>
             </div>
 
             <div className="flex flex-col gap-1">
               {navigationLinks.map((link) => (
-                <div key={link.label} className="border-b border-[#E4DED2] py-2">
-                  <Link href={link.href} onClick={() => setMobileOpen(false)} className={`block py-1 text-sm ${isActiveLink(link.href) ? "text-[var(--store-accent)]" : "text-[#211F1D]"}`}>{link.label}</Link>
-                  {link.subcategories?.map((subcategory) => <Link key={subcategory.id} href={`/product?category=${encodeURIComponent(subcategory.id)}`} onClick={() => setMobileOpen(false)} className="block py-1.5 pl-4 text-sm text-[#5B564C] hover:text-[var(--store-accent)]">{subcategory.categoryName}</Link>)}
+                <div key={link.label} className="border-b border-[var(--theme-border)] py-2">
+                  <Link href={link.href} onClick={() => setMobileOpen(false)} className={`block py-1 text-sm ${isActiveLink(link.href) ? "text-[var(--store-accent)]" : "text-[var(--theme-text)]"}`}>{link.label}</Link>
+                  {link.subcategories?.map((subcategory) => <Link key={subcategory.id} href={`/product?category=${encodeURIComponent(subcategory.id)}`} onClick={() => setMobileOpen(false)} className="block py-1.5 pl-4 text-sm text-[var(--theme-muted)] hover:text-[var(--store-accent)]">{subcategory.categoryName}</Link>)}
                 </div>
               ))}
-              {!categoriesLoading && categories.length === 0 && <p className="py-2 text-xs text-[#8A8378]" role="status">{categoriesError ? "Categories unavailable" : "No categories available"}</p>}
+              {!categoriesLoading && categories.length === 0 && <p className="py-2 text-xs text-[var(--theme-muted)]" role="status">{categoriesError ? "Categories unavailable" : "No categories available"}</p>}
             </div>
           </div>
         </div>

@@ -8,14 +8,14 @@
  * earthy palette instead of the usual blue.
  *
  * Palette (as Tailwind arbitrary values, no config changes required):
- *   forest      #1F3A2E   primary dark / header / footer
- *   forest-dark #16281F   hover states on forest
- *   gold        #C9A659   accent, CTAs, prices
+ *   primary     #000000   primary / header / footer
+ *   primary-hover #000000 hover states on primary
+ *   gold        #FFC943   accent, CTAs, prices
  *   gold-dark   #B08D3E   hover states on gold
- *   cream       #F7F3EC   page background
- *   charcoal    #211F1D   body text
- *   rust        #B65C38   sale / new badges, second accent
- *   line        #E4DED2   hairline borders on cream
+ *   cream       #F1F3F5   page background
+ *   charcoal    #111318   body text
+ *   rust        #F04427   sale / new badges, second accent
+ *   line        #E3E6EA   hairline borders on cream
  *
  * Type: "Fraunces" (display serif, headings) + "Inter" (UI/body).
  * In production, load both with next/font/google in your root layout
@@ -461,8 +461,8 @@ export function Stars({ rating }) {
           size={13}
           className={
             i < full
-              ? "fill-[#C9A659] text-[#C9A659]"
-              : "fill-[#E4DED2] text-[#E4DED2]"
+              ? "fill-[var(--theme-highlight)] text-[var(--theme-highlight)]"
+              : "fill-[var(--theme-border)] text-[var(--theme-border)]"
           }
         />
       ))}
@@ -475,16 +475,16 @@ export function SectionHeading({ eyebrow, title, action }) {
     <div className="flex items-end justify-between gap-6 mb-8">
       <div>
         {eyebrow ? (
-          <p className="text-sm text-[#B65C38] mb-1">{eyebrow}</p>
+          <p className="text-sm text-[var(--theme-secondary)] mb-1">{eyebrow}</p>
         ) : null}
-        <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">
+        <h2 className="font-serif text-3xl md:text-[2.15rem] text-[var(--theme-text)] leading-tight">
           {title}
         </h2>
       </div>
       {action ? (
         <a
           href="#"
-          className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
+          className="hidden sm:inline-block text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors whitespace-nowrap"
         >
           {action}
         </a>
@@ -497,46 +497,46 @@ export function ProductCard({ product }) {
   const { image, category, name, price, oldPrice, rating, reviews, badge } =
     product;
   return (
-    <div className="group bg-white border border-[#E4DED2] rounded-md overflow-hidden hover:shadow-md hover:border-[#C9A659] transition-all duration-200">
-      <div className="relative aspect-square overflow-hidden bg-[#F7F3EC]">
+    <div className="group bg-white border border-[var(--theme-border)] rounded-md overflow-hidden hover:shadow-md hover:border-[var(--theme-highlight)] transition-all duration-200">
+      <div className="relative aspect-square overflow-hidden bg-[var(--theme-background)]">
         <img
           src={image}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
         />
         {badge ? (
-          <span className="absolute top-3 left-3 bg-[#1F3A2E] text-[#F7F3EC] text-xs px-2 py-1 rounded-sm">
+          <span className="absolute top-3 left-3 bg-[var(--theme-primary)] text-[var(--theme-background)] text-xs px-2 py-1 rounded-sm">
             {badge}
           </span>
         ) : null}
         <button
           type="button"
           aria-label="Add to wishlist"
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[#211F1D] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#B65C38]"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-[var(--theme-text)] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--theme-secondary)]"
         >
           <Heart size={15} />
         </button>
         <button
           type="button"
-          className="absolute inset-x-3 bottom-3 bg-[#211F1D] text-[#F7F3EC] text-sm py-2 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2"
+          className="absolute inset-x-3 bottom-3 bg-[var(--theme-text)] text-[var(--theme-background)] text-sm py-2 rounded-sm translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2"
         >
           <ShoppingCart size={14} />
           Add to cart
         </button>
       </div>
       <div className="p-4">
-        <p className="text-xs text-[#8A8378] mb-1">{category}</p>
-        <h3 className="text-sm text-[#211F1D] leading-snug mb-1.5 line-clamp-2">
+        <p className="text-xs text-[var(--theme-muted)] mb-1">{category}</p>
+        <h3 className="text-sm text-[var(--theme-text)] leading-snug mb-1.5 line-clamp-2">
           {name}
         </h3>
         <div className="flex items-center gap-1.5 mb-2">
           <Stars rating={rating} />
-          <span className="text-xs text-[#8A8378]">({reviews})</span>
+          <span className="text-xs text-[var(--theme-muted)]">({reviews})</span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-[#1F3A2E] text-base">${price}</span>
+          <span className="text-[var(--theme-primary)] text-base">${price}</span>
           {oldPrice ? (
-            <span className="text-xs text-[#8A8378] line-through">
+            <span className="text-xs text-[var(--theme-muted)] line-through">
               ${oldPrice}
             </span>
           ) : null}
@@ -561,16 +561,16 @@ export function Header() {
   };
 
   return (
-    <header className="bg-[#F7F3EC] sticky top-0 z-40">
+    <header className="bg-[var(--theme-background)] sticky top-0 z-40">
       {/* Top strip */}
-      <div className="bg-[#1F3A2E] text-[#F7F3EC] text-xs">
+      <div className="bg-[var(--theme-primary)] text-[var(--theme-background)] text-xs">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <p>Free shipping on orders over $75 · Handmade in small batches</p>
           <div className="hidden sm:flex items-center gap-4">
-            <a href="#" className="hover:text-[#C9A659] transition-colors">
+            <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
               Track order
             </a>
-            <a href="#" className="hover:text-[#C9A659] transition-colors">
+            <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
               Help
             </a>
           </div>
@@ -581,7 +581,7 @@ export function Header() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex items-center gap-4 sm:gap-8">
         <button
           type="button"
-          className="lg:hidden text-[#211F1D]"
+          className="lg:hidden text-[var(--theme-text)]"
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
         >
@@ -590,35 +590,35 @@ export function Header() {
 
         {/* Dummy logo */}
         <a href="#" className="flex items-center gap-2 shrink-0">
-          <span className="w-9 h-9 rounded-sm bg-[#1F3A2E] text-[#F7F3EC] flex items-center justify-center font-serif text-lg">
+          <span className="w-9 h-9 rounded-sm bg-[var(--theme-primary)] text-[var(--theme-background)] flex items-center justify-center font-serif text-lg">
             F
           </span>
-          <span className="font-serif text-xl text-[#211F1D] tracking-tight hidden xs:inline">
+          <span className="font-serif text-xl text-[var(--theme-text)] tracking-tight hidden xs:inline">
             FIELDHOUSE
           </span>
         </a>
 
         {/* Search bar */}
-        <div className="flex-1 max-w-xl hidden md:flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+        <div className="flex-1 max-w-xl hidden md:flex items-center border border-[var(--theme-border)] rounded-md bg-white overflow-hidden">
           <input
             type="text"
             placeholder="Search for furniture, lighting, decor…"
-            className="flex-1 px-4 py-2.5 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
+            className="flex-1 px-4 py-2.5 text-sm text-[var(--theme-text)] placeholder:text-[var(--theme-muted)] outline-none bg-transparent"
           />
           <button
             type="button"
             aria-label="Search"
-            className="px-4 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] hover:bg-[#16281F] transition-colors"
+            className="px-4 py-2.5 bg-[var(--theme-primary)] text-[var(--theme-background)] hover:bg-[var(--theme-primary-hover)] transition-colors"
           >
             <Search size={17} />
           </button>
         </div>
 
         {/* Icons: user, compare, cart */}
-        <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[#211F1D]">
+        <div className="flex items-center gap-4 sm:gap-6 ml-auto text-[var(--theme-text)]">
           <button
             type="button"
-            className="flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            className="flex flex-col items-center gap-0.5 hover:text-[var(--theme-secondary)] transition-colors"
             aria-label="Account"
           >
             <User size={20} />
@@ -626,23 +626,23 @@ export function Header() {
           </button>
           <button
             type="button"
-            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[var(--theme-secondary)] transition-colors"
             aria-label="Compare"
           >
             <GitCompare size={20} />
             <span className="text-[10px] hidden sm:inline">Compare</span>
-            <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1.5 bg-[var(--theme-secondary)] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
               2
             </span>
           </button>
           <button
             type="button"
-            className="relative flex flex-col items-center gap-0.5 hover:text-[#B65C38] transition-colors"
+            className="relative flex flex-col items-center gap-0.5 hover:text-[var(--theme-secondary)] transition-colors"
             aria-label="Cart"
           >
             <ShoppingCart size={20} />
             <span className="text-[10px] hidden sm:inline">Cart</span>
-            <span className="absolute -top-1 -right-1.5 bg-[#B65C38] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1.5 bg-[var(--theme-secondary)] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
               3
             </span>
           </button>
@@ -651,16 +651,16 @@ export function Header() {
 
       {/* Mobile search */}
       <div className="md:hidden px-4 pb-3">
-        <div className="flex items-center border border-[#E4DED2] rounded-md bg-white overflow-hidden">
+        <div className="flex items-center border border-[var(--theme-border)] rounded-md bg-white overflow-hidden">
           <input
             type="text"
             placeholder="Search products…"
-            className="flex-1 px-3 py-2 text-sm text-[#211F1D] placeholder:text-[#8A8378] outline-none bg-transparent"
+            className="flex-1 px-3 py-2 text-sm text-[var(--theme-text)] placeholder:text-[var(--theme-muted)] outline-none bg-transparent"
           />
           <button
             type="button"
             aria-label="Search"
-            className="px-3 py-2 bg-[#1F3A2E] text-[#F7F3EC]"
+            className="px-3 py-2 bg-[var(--theme-primary)] text-[var(--theme-background)]"
           >
             <Search size={16} />
           </button>
@@ -668,13 +668,13 @@ export function Header() {
       </div>
 
       {/* Category / brand / product nav slider */}
-      <nav className="hidden lg:block border-t border-[#E4DED2] bg-[#F7F3EC]">
+      <nav className="hidden lg:block border-t border-[var(--theme-border)] bg-[var(--theme-background)]">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 relative flex items-center">
           <button
             type="button"
             aria-label="Scroll navigation left"
             onClick={() => scrollNav(-1)}
-            className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pr-2"
+            className="shrink-0 text-[var(--theme-muted)] hover:text-[var(--theme-primary)] pr-2"
           >
             <ChevronLeft size={16} />
           </button>
@@ -686,7 +686,7 @@ export function Header() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-[#211F1D] hover:text-[#B65C38] whitespace-nowrap transition-colors"
+                className="text-sm text-[var(--theme-text)] hover:text-[var(--theme-secondary)] whitespace-nowrap transition-colors"
               >
                 {link.label}
               </a>
@@ -696,7 +696,7 @@ export function Header() {
             type="button"
             aria-label="Scroll navigation right"
             onClick={() => scrollNav(1)}
-            className="shrink-0 text-[#8A8378] hover:text-[#1F3A2E] pl-2"
+            className="shrink-0 text-[var(--theme-muted)] hover:text-[var(--theme-primary)] pl-2"
           >
             <ChevronRight size={16} />
           </button>
@@ -707,12 +707,12 @@ export function Header() {
       {mobileOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-[#211F1D]/50"
+            className="absolute inset-0 bg-[var(--theme-text)]/50"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#F7F3EC] p-5 overflow-y-auto">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[var(--theme-background)] p-5 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <span className="font-serif text-lg text-[#211F1D]">
+              <span className="font-serif text-lg text-[var(--theme-text)]">
                 FIELDHOUSE
               </span>
               <button
@@ -720,7 +720,7 @@ export function Header() {
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close menu"
               >
-                <X size={20} className="text-[#211F1D]" />
+                <X size={20} className="text-[var(--theme-text)]" />
               </button>
             </div>
             <div className="flex flex-col gap-1">
@@ -728,7 +728,7 @@ export function Header() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="py-2.5 border-b border-[#E4DED2] text-sm text-[#211F1D]"
+                  className="py-2.5 border-b border-[var(--theme-border)] text-sm text-[var(--theme-text)]"
                 >
                   {link.label}
                 </a>
@@ -772,19 +772,19 @@ export function Hero() {
                 alt={slide.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#211F1D]/60 via-[#211F1D]/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[var(--theme-text)]/60 via-[var(--theme-text)]/20 to-transparent" />
               <div className="absolute inset-0 flex items-center">
                 <div className="px-6 sm:px-10 max-w-md">
-                  <p className="text-[#C9A659] text-sm mb-2">{slide.eyebrow}</p>
-                  <h1 className="font-serif text-2xl sm:text-4xl text-[#F7F3EC] leading-tight mb-3">
+                  <p className="text-[var(--theme-highlight)] text-sm mb-2">{slide.eyebrow}</p>
+                  <h1 className="font-serif text-2xl sm:text-4xl text-[var(--theme-background)] leading-tight mb-3">
                     {slide.title}
                   </h1>
-                  <p className="text-[#F7F3EC]/85 text-sm sm:text-base mb-5">
+                  <p className="text-[var(--theme-background)]/85 text-sm sm:text-base mb-5">
                     {slide.subtitle}
                   </p>
                   <button
                     type="button"
-                    className="bg-[#C9A659] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors"
+                    className="bg-[var(--theme-highlight)] text-[var(--theme-text)] text-sm px-5 py-2.5 rounded-sm hover:bg-[#B08D3E] transition-colors"
                   >
                     {slide.cta}
                   </button>
@@ -801,7 +801,7 @@ export function Hero() {
                 (a) => (a - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
               )
             }
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[var(--theme-background)]/85 text-[var(--theme-text)] flex items-center justify-center hover:bg-[var(--theme-background)] transition-colors"
           >
             <ChevronLeft size={18} />
           </button>
@@ -809,7 +809,7 @@ export function Hero() {
             type="button"
             aria-label="Next slide"
             onClick={() => setActive((a) => (a + 1) % HERO_SLIDES.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#F7F3EC]/85 text-[#211F1D] flex items-center justify-center hover:bg-[#F7F3EC] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[var(--theme-background)]/85 text-[var(--theme-text)] flex items-center justify-center hover:bg-[var(--theme-background)] transition-colors"
           >
             <ChevronRight size={18} />
           </button>
@@ -822,7 +822,7 @@ export function Hero() {
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => setActive(i)}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === active ? "w-6 bg-[#F7F3EC]" : "w-1.5 bg-[#F7F3EC]/50"
+                  i === active ? "w-6 bg-[var(--theme-background)]" : "w-1.5 bg-[var(--theme-background)]/50"
                 }`}
               />
             ))}
@@ -842,12 +842,12 @@ export function Hero() {
                 alt={banner.title}
                 className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-[#211F1D]/35" />
+              <div className="absolute inset-0 bg-[var(--theme-text)]/35" />
               <div className="absolute inset-0 flex flex-col justify-end p-4">
-                <h3 className="text-[#F7F3EC] text-base mb-0.5">
+                <h3 className="text-[var(--theme-background)] text-base mb-0.5">
                   {banner.title}
                 </h3>
-                <p className="text-[#F7F3EC]/85 text-xs">{banner.subtitle}</p>
+                <p className="text-[var(--theme-background)]/85 text-xs">{banner.subtitle}</p>
               </div>
             </a>
           ))}
@@ -864,13 +864,13 @@ export function Hero() {
 export function PerksStrip() {
   return (
     <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-10">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-[#E4DED2] py-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-[var(--theme-border)] py-6">
         {PERKS.map(({ icon: Icon, title, text }) => (
           <div key={title} className="flex items-center gap-3">
-            <Icon size={22} className="text-[#1F3A2E] shrink-0" />
+            <Icon size={22} className="text-[var(--theme-primary)] shrink-0" />
             <div>
-              <p className="text-sm text-[#211F1D]">{title}</p>
-              <p className="text-xs text-[#8A8378]">{text}</p>
+              <p className="text-sm text-[var(--theme-text)]">{title}</p>
+              <p className="text-xs text-[var(--theme-muted)]">{text}</p>
             </div>
           </div>
         ))}
@@ -893,14 +893,14 @@ export function Categories() {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 sm:gap-5">
         {CATEGORIES.map((cat) => (
           <a key={cat.name} href="#" className="group text-center">
-            <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[#F7F3EC]">
+            <div className="aspect-square rounded-md overflow-hidden mb-2.5 bg-[var(--theme-background)]">
               <img
                 src={cat.image}
                 alt={cat.name}
                 className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-300"
               />
             </div>
-            <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
+            <p className="text-sm text-[var(--theme-text)] group-hover:text-[var(--theme-secondary)] transition-colors">
               {cat.name}
             </p>
           </a>
@@ -946,12 +946,12 @@ export  function OfferSlider() {
   }, []);
 
   return (
-    <section className="bg-[#1F3A2E] mt-16 py-14">
+    <section className="bg-[var(--theme-primary)] mt-16 py-14">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
         <div className="flex items-end justify-between gap-6 mb-8">
           <div>
-            <p className="text-sm text-[#C9A659] mb-1">Limited time</p>
-            <h2 className="font-serif text-3xl text-[#F7F3EC]">
+            <p className="text-sm text-[var(--theme-highlight)] mb-1">Limited time</p>
+            <h2 className="font-serif text-3xl text-[var(--theme-background)]">
               Current offers
             </h2>
           </div>
@@ -964,7 +964,7 @@ export  function OfferSlider() {
                   (a) => (a - 1 + OFFER_SLIDES.length) % OFFER_SLIDES.length,
                 )
               }
-              className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
+              className="w-9 h-9 rounded-full border border-[var(--theme-background)]/30 text-[var(--theme-background)] flex items-center justify-center hover:bg-[var(--theme-background)]/10 transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
@@ -972,7 +972,7 @@ export  function OfferSlider() {
               type="button"
               aria-label="Next offer"
               onClick={() => setActive((a) => (a + 1) % OFFER_SLIDES.length)}
-              className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
+              className="w-9 h-9 rounded-full border border-[var(--theme-background)]/30 text-[var(--theme-background)] flex items-center justify-center hover:bg-[var(--theme-background)]/10 transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -992,17 +992,17 @@ export  function OfferSlider() {
                 alt={slide.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-[#211F1D]/40" />
+              <div className="absolute inset-0 bg-[var(--theme-text)]/40" />
               <div className="absolute inset-0 flex flex-col items-start justify-center px-8 sm:px-14">
-                <h3 className="font-serif text-2xl sm:text-3xl text-[#F7F3EC] mb-2">
+                <h3 className="font-serif text-2xl sm:text-3xl text-[var(--theme-background)] mb-2">
                   {slide.title}
                 </h3>
-                <p className="text-[#F7F3EC]/90 text-sm sm:text-base mb-5">
+                <p className="text-[var(--theme-background)]/90 text-sm sm:text-base mb-5">
                   {slide.subtitle}
                 </p>
                 <button
                   type="button"
-                  className="bg-[#F7F3EC] text-[#211F1D] text-sm px-5 py-2.5 rounded-sm hover:bg-[#C9A659] transition-colors"
+                  className="bg-[var(--theme-background)] text-[var(--theme-text)] text-sm px-5 py-2.5 rounded-sm hover:bg-[var(--theme-highlight)] transition-colors"
                 >
                   {slide.cta}
                 </button>
@@ -1017,7 +1017,7 @@ export  function OfferSlider() {
                 aria-label={`Go to offer ${i + 1}`}
                 onClick={() => setActive(i)}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === active ? "w-6 bg-[#F7F3EC]" : "w-1.5 bg-[#F7F3EC]/50"
+                  i === active ? "w-6 bg-[var(--theme-background)]" : "w-1.5 bg-[var(--theme-background)]/50"
                 }`}
               />
             ))}
@@ -1039,8 +1039,8 @@ export function FeaturedProducts() {
     <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
-          <p className="text-sm text-[#B65C38] mb-1">Hand-picked</p>
-          <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D]">
+          <p className="text-sm text-[var(--theme-secondary)] mb-1">Hand-picked</p>
+          <h2 className="font-serif text-3xl md:text-[2.15rem] text-[var(--theme-text)]">
             Featured products
           </h2>
         </div>
@@ -1052,8 +1052,8 @@ export function FeaturedProducts() {
               onClick={() => setActiveTab(tab)}
               className={`text-sm px-4 py-1.5 rounded-sm border transition-colors ${
                 activeTab === tab
-                  ? "bg-[#1F3A2E] border-[#1F3A2E] text-[#F7F3EC]"
-                  : "border-[#E4DED2] text-[#211F1D] hover:border-[#1F3A2E]"
+                  ? "bg-[var(--theme-primary)] border-[var(--theme-primary)] text-[var(--theme-background)]"
+                  : "border-[var(--theme-border)] text-[var(--theme-text)] hover:border-[var(--theme-primary)]"
               }`}
             >
               {tab}
@@ -1098,12 +1098,12 @@ export function NewArrivals() {
 export function Newsletter() {
   return (
     <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
-      <div className="bg-[#EFE9DC] rounded-md px-6 sm:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+      <div className="bg-[var(--theme-surface-alt)] rounded-md px-6 sm:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-6">
         <div className="text-center lg:text-left">
-          <h3 className="font-serif text-2xl text-[#211F1D] mb-1">
+          <h3 className="font-serif text-2xl text-[var(--theme-text)] mb-1">
             Get first access to restocks
           </h3>
-          <p className="text-sm text-[#5B564C]">
+          <p className="text-sm text-[var(--theme-muted)]">
             One email a week. No spam, unsubscribe anytime.
           </p>
         </div>
@@ -1111,11 +1111,11 @@ export function Newsletter() {
           <input
             type="email"
             placeholder="you@email.com"
-            className="flex-1 px-4 py-2.5 text-sm rounded-l-sm border border-[#E4DED2] outline-none bg-white text-[#211F1D] placeholder:text-[#8A8378]"
+            className="flex-1 px-4 py-2.5 text-sm rounded-l-sm border border-[var(--theme-border)] outline-none bg-white text-[var(--theme-text)] placeholder:text-[var(--theme-muted)]"
           />
           <button
             type="button"
-            className="px-5 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] text-sm rounded-r-sm hover:bg-[#16281F] transition-colors whitespace-nowrap"
+            className="px-5 py-2.5 bg-[var(--theme-primary)] text-[var(--theme-background)] text-sm rounded-r-sm hover:bg-[var(--theme-primary-hover)] transition-colors whitespace-nowrap"
           >
             Subscribe
           </button>
@@ -1131,18 +1131,18 @@ export function Newsletter() {
 
 export function Footer() {
   return (
-    <footer className="bg-[#211F1D] text-[#D8D3C8] mt-16">
+    <footer className="bg-[var(--theme-text)] text-[#D8D3C8] mt-16">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8">
         <div className="col-span-2 sm:col-span-1">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-sm bg-[#C9A659] text-[#211F1D] flex items-center justify-center font-serif text-base">
+            <span className="w-8 h-8 rounded-sm bg-[var(--theme-highlight)] text-[var(--theme-text)] flex items-center justify-center font-serif text-base">
               F
             </span>
-            <span className="font-serif text-lg text-[#F7F3EC]">
+            <span className="font-serif text-lg text-[var(--theme-background)]">
               FIELDHOUSE
             </span>
           </div>
-          <p className="text-sm text-[#9B9689] mb-4">
+          <p className="text-sm text-[var(--theme-muted)] mb-4">
             Everyday goods for the home, made in small batches with natural
             materials.
           </p>
@@ -1150,28 +1150,28 @@ export function Footer() {
             <a
               href="#"
               aria-label="Facebook"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <Facebook size={16} />
             </a>
             <a
               href="#"
               aria-label="Instagram"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <Instagram size={16} />
             </a>
             <a
               href="#"
               aria-label="Twitter"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <Twitter size={16} />
             </a>
             <a
               href="#"
               aria-label="YouTube"
-              className="hover:text-[#C9A659] transition-colors"
+              className="hover:text-[var(--theme-highlight)] transition-colors"
             >
               <Youtube size={16} />
             </a>
@@ -1179,25 +1179,25 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm text-[#F7F3EC] mb-4">Shop</h4>
-          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+          <h4 className="text-sm text-[var(--theme-background)] mb-4">Shop</h4>
+          <ul className="space-y-2.5 text-sm text-[var(--theme-muted)]">
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 All categories
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 New arrivals
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Best sellers
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Gift cards
               </a>
             </li>
@@ -1205,25 +1205,25 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm text-[#F7F3EC] mb-4">Help</h4>
-          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+          <h4 className="text-sm text-[var(--theme-background)] mb-4">Help</h4>
+          <ul className="space-y-2.5 text-sm text-[var(--theme-muted)]">
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Shipping & returns
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Track order
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 FAQs
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#C9A659] transition-colors">
+              <a href="#" className="hover:text-[var(--theme-highlight)] transition-colors">
                 Contact us
               </a>
             </li>
@@ -1231,8 +1231,8 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm text-[#F7F3EC] mb-4">Contact</h4>
-          <ul className="space-y-2.5 text-sm text-[#9B9689]">
+          <h4 className="text-sm text-[var(--theme-background)] mb-4">Contact</h4>
+          <ul className="space-y-2.5 text-sm text-[var(--theme-muted)]">
             <li className="flex items-center gap-2">
               <MapPin size={14} /> Dhaka, Bangladesh
             </li>
@@ -1247,7 +1247,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#9B9689]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--theme-muted)]">
           <p>© {new Date().getFullYear()} Fieldhouse. All rights reserved.</p>
           <div className="flex items-center gap-3">
             <span className="border border-white/15 rounded-sm px-2 py-1">
@@ -1272,7 +1272,7 @@ export function Footer() {
 
 export default function EcommerceHomePage() {
   return (
-    <div className="min-h-screen bg-[#F7F3EC] font-sans">
+    <div className="min-h-screen bg-[var(--theme-background)] font-sans">
       {/* Optional: move to next/font/google in production instead of this link */}
       <link
         rel="stylesheet"

@@ -18,17 +18,17 @@ const DEFAULTS = {
   tagline: "Thoughtful living, beautifully made.",
   logo: null,
   favicon: null,
-  primaryColor: "#1F3A2E",
-  secondaryColor: "#B65C38",
-  accentColor: "#B65C38",
-  surfaceColor: "#F7F3EC",
-  backgroundColor: "#F7F3EC",
-  textColor: "#211F1D",
-  mutedTextColor: "#8A8378",
-  borderColor: "#E4DED2",
-  successColor: "#1F3A2E",
-  warningColor: "#C9A659",
-  errorColor: "#B65C38",
+  primaryColor: "#000000",
+  secondaryColor: "#F04427",
+  accentColor: "#F04427",
+  surfaceColor: "#FFFFFF",
+  backgroundColor: "#F1F3F5",
+  textColor: "#111318",
+  mutedTextColor: "#6B7280",
+  borderColor: "#E3E6EA",
+  successColor: "#16A779",
+  warningColor: "#E5A11A",
+  errorColor: "#DC3545",
   fontFamily: "League Spartan",
 };
 
@@ -48,7 +48,13 @@ export default function SettingsPage() {
           );
         return response.json();
       })
-      .then((data) => setSettings({ ...DEFAULTS, ...data.settings }))
+      .then((data) => {
+        const savedSettings = { ...DEFAULTS, ...data.settings };
+        if (["#724BFF", "#7048FF"].includes(savedSettings.primaryColor?.toUpperCase())) {
+          savedSettings.primaryColor = "#000000";
+        }
+        setSettings(savedSettings);
+      })
       .catch((error) => setStatus(error.message))
       .finally(() => setLoading(false));
   }, []);
@@ -282,7 +288,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-[#1F3A2E] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-lg bg-[var(--theme-primary)] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save branding"}
           </button>

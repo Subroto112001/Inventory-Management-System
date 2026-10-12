@@ -2,6 +2,7 @@
 
 import { PERKS } from "@/frontEndDataProvider/HomepageDataProvider";
 import { ProductCard } from "@/frontEndDataProvider/ProductpageDataProvider";
+import { SpecialOfferBannerView } from "@/Component/website/Homepage/SpecialOfferBanner";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -34,7 +35,10 @@ export default function EcommerceHomePage() {
   const [heroActive, setHeroActive] = useState(0);
   const [offerActive, setOfferActive] = useState(0);
   const [products, setProducts] = useState([]);
+  const [upcomingProducts, setUpcomingProducts] = useState([]);
+  const [upcomingLoading, setUpcomingLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState("");
   const [slides, setSlides] = useState([]);
   const [slidesLoading, setSlidesLoading] = useState(true);
   const [exclusiveProducts, setExclusiveProducts] = useState([]);
@@ -42,10 +46,16 @@ export default function EcommerceHomePage() {
     useState(true);
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [specialOfferBanner, setSpecialOfferBanner] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/product?public=1&page=1&limit=48&sort=newest", {
+    fetch("/api/upcoming-products?public=1", { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Upcoming products unavailable")))
+      .then((data) => setUpcomingProducts(data.products || []))
+      .catch((error) => { if (error.name !== "AbortError") setUpcomingProducts([]); })
+      .finally(() => setUpcomingLoading(false));
+    fetch("/api/product?public=1&page=1&limit=10&sort=newest", {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -56,7 +66,10 @@ export default function EcommerceHomePage() {
       })
       .then((data) => setProducts(data.products || []))
       .catch((error) => {
-        if (error.name !== "AbortError") setProducts([]);
+        if (error.name !== "AbortError") {
+          setProducts([]);
+          setProductsError("Shop products are unavailable right now. Please try again later.");
+        }
       })
       .finally(() => setProductsLoading(false));
 
@@ -101,12 +114,22 @@ export default function EcommerceHomePage() {
       })
       .finally(() => setCategoriesLoading(false));
 
+    fetch("/api/homepage/special-offer?public=1", { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Unable to load the special offer");
+        return data;
+      })
+      .then((data) => setSpecialOfferBanner(data.banner || null))
+      .catch((error) => {
+        if (error.name !== "AbortError") setSpecialOfferBanner(null);
+      });
+
     return () => controller.abort();
   }, []);
 
   const heroSlides = slides.filter((slide) => slide.isActive);
   const offerSlides = heroSlides.length ? heroSlides : [];
-  const newArrivals = products.slice(0, 4);
 
   /* Hero autoplay */
   useEffect(() => {
@@ -139,7 +162,7 @@ export default function EcommerceHomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] font-sans">
+    <div className="min-h-screen bg-[var(--theme-background)] font-sans">
       {/* =====================================================
           GOOGLE FONTS
       ===================================================== */}
@@ -169,11 +192,11 @@ export default function EcommerceHomePage() {
         <section className="mx-auto max-w-[1280px] px-4 pt-4 sm:px-6 sm:pt-8">
             <div className="group relative isolate min-h-[560px] overflow-hidden rounded-[26px] bg-[#d9dedf] text-[#182126] sm:min-h-[600px] lg:min-h-[620px]">
               {slidesLoading ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[#5B564C]">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[var(--theme-muted)]">
                   Loading homepage slides...
                 </div>
               ) : heroSlides.length === 0 ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[#5B564C]">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#d9dedf] text-sm text-[var(--theme-muted)]">
                   No active homepage slides available.
                 </div>
               ) : (
@@ -221,7 +244,7 @@ export default function EcommerceHomePage() {
                       Math.max(heroSlides.length, 1),
                   )
                 }
-                className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 text-[#211F1D] transition-colors hover:bg-white sm:left-4 sm:h-9 sm:w-9"
+                className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 text-[var(--theme-text)] transition-colors hover:bg-white sm:left-4 sm:h-9 sm:w-9"
                 disabled={heroSlides.length < 2}
               >
                 <LuChevronLeft size={18} />
@@ -234,7 +257,7 @@ export default function EcommerceHomePage() {
                 onClick={() =>
                   setHeroActive((a) => (a + 1) % Math.max(heroSlides.length, 1))
                 }
-                className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 text-[#211F1D] transition-colors hover:bg-white sm:right-4 sm:h-9 sm:w-9"
+                className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 text-[var(--theme-text)] transition-colors hover:bg-white sm:right-4 sm:h-9 sm:w-9"
                 disabled={heroSlides.length < 2}
               >
                 <LuChevronRight size={18} />
@@ -264,15 +287,15 @@ export default function EcommerceHomePage() {
         =================================================== */}
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-[#E4DED2] py-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-[var(--theme-border)] py-6">
             {PERKS.map(({ icon: Icon, title, text }) => (
               <div key={title} className="flex items-center gap-3">
-                <Icon size={22} className="text-[#1F3A2E] shrink-0" />
+                <Icon size={22} className="text-[var(--theme-primary)] shrink-0" />
 
                 <div>
-                  <p className="text-sm text-[#211F1D]">{title}</p>
+                  <p className="text-sm text-[var(--theme-text)]">{title}</p>
 
-                  <p className="text-xs text-[#8A8378]">{text}</p>
+                  <p className="text-xs text-[var(--theme-muted)]">{text}</p>
                 </div>
               </div>
             ))}
@@ -286,16 +309,16 @@ export default function EcommerceHomePage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-14">
           <div className="flex items-end justify-between gap-6 mb-8">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">Browse</p>
+              <p className="text-sm text-[var(--theme-secondary)] mb-1">Browse</p>
 
-              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[var(--theme-text)] leading-tight">
                 Shop by category
               </h2>
             </div>
 
             <Link
               href="/product"
-              className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
+              className="hidden sm:inline-block text-sm text-[var(--theme-primary)] border-b border-[var(--theme-primary)] pb-0.5 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)] transition-colors whitespace-nowrap"
             >
               View all categories
             </Link>
@@ -303,11 +326,11 @@ export default function EcommerceHomePage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 sm:gap-5">
             {categoriesLoading ? (
-              <p className="col-span-full text-sm text-[#8A8378]">
+              <p className="col-span-full text-sm text-[var(--theme-muted)]">
                 Loading categories...
               </p>
             ) : categories.length === 0 ? (
-              <p className="col-span-full text-sm text-[#8A8378]">
+              <p className="col-span-full text-sm text-[var(--theme-muted)]">
                 No categories available right now.
               </p>
             ) : (
@@ -326,7 +349,7 @@ export default function EcommerceHomePage() {
     />
   </div>
 
-  <p className="text-sm text-[#211F1D] group-hover:text-[#B65C38] transition-colors">
+  <p className="text-sm text-[var(--theme-text)] group-hover:text-[var(--theme-secondary)] transition-colors">
     {cat.categoryName || cat.name}
   </p>
 </Link>
@@ -344,13 +367,13 @@ export default function EcommerceHomePage() {
             OFFER SLIDER
         =================================================== */}
 
-        <section className="bg-[#1F3A2E] mt-16 py-14">
+        <section className="bg-[var(--theme-primary)] mt-16 py-14">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
             <div className="flex items-end justify-between gap-6 mb-8">
               <div>
-                <p className="text-sm text-[#C9A659] mb-1">Limited time</p>
+                <p className="text-sm text-[var(--theme-highlight)] mb-1">Limited time</p>
 
-                <h2 className="font-serif text-3xl text-[#F7F3EC]">
+                <h2 className="font-serif text-3xl text-[var(--theme-background)]">
                   Current offers
                 </h2>
               </div>
@@ -366,7 +389,7 @@ export default function EcommerceHomePage() {
                         Math.max(offerSlides.length, 1),
                     )
                   }
-                  className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
+                  className="w-9 h-9 rounded-full border border-[var(--theme-background)]/30 text-[var(--theme-background)] flex items-center justify-center hover:bg-[var(--theme-background)]/10 transition-colors"
                 >
                   <LuChevronLeft size={16} />
                 </button>
@@ -379,7 +402,7 @@ export default function EcommerceHomePage() {
                       (a) => (a + 1) % Math.max(offerSlides.length, 1),
                     )
                   }
-                  className="w-9 h-9 rounded-full border border-[#F7F3EC]/30 text-[#F7F3EC] flex items-center justify-center hover:bg-[#F7F3EC]/10 transition-colors"
+                  className="w-9 h-9 rounded-full border border-[var(--theme-background)]/30 text-[var(--theme-background)] flex items-center justify-center hover:bg-[var(--theme-background)]/10 transition-colors"
                 >
                   <LuChevronRight size={16} />
                 </button>
@@ -388,7 +411,7 @@ export default function EcommerceHomePage() {
 
             <div className="relative h-[300px] sm:h-[360px] rounded-md overflow-hidden">
               {offerSlides.length === 0 ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#1F3A2E] text-sm text-[#F7F3EC]/80">
+                <div className="absolute inset-0 flex items-center justify-center bg-[var(--theme-primary)] text-sm text-[var(--theme-background)]/80">
                   No active offers available.
                 </div>
               ) : (
@@ -407,20 +430,20 @@ export default function EcommerceHomePage() {
                       className="h-full w-full object-cover"
                     />
 
-                    <div className="absolute inset-0 bg-[#211F1D]/40" />
+                    <div className="absolute inset-0 bg-[var(--theme-text)]/40" />
 
                     <div className="absolute inset-0 flex flex-col items-start justify-center px-8 sm:px-14">
-                      <h3 className="mb-2 font-serif text-2xl text-[#F7F3EC] sm:text-3xl">
+                      <h3 className="mb-2 font-serif text-2xl text-[var(--theme-background)] sm:text-3xl">
                         {slide.title}
                       </h3>
 
-                      <p className="mb-5 text-sm text-[#F7F3EC]/90 sm:text-base">
+                      <p className="mb-5 text-sm text-[var(--theme-background)]/90 sm:text-base">
                         {slide.subtitle}
                       </p>
 
                       <Link
                         href={slide.buttonUrl || "/product"}
-                        className="bg-[#F7F3EC] px-5 py-2.5 text-sm text-[#211F1D] transition-colors hover:bg-[#C9A659]"
+                        className="bg-[var(--theme-background)] px-5 py-2.5 text-sm text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-highlight)]"
                       >
                         {slide.buttonText || "Shop now"}
                       </Link>
@@ -439,8 +462,8 @@ export default function EcommerceHomePage() {
                       onClick={() => setOfferActive(i)}
                       className={`h-1.5 rounded-full transition-all ${
                         i === offerActive
-                          ? "w-6 bg-[#F7F3EC]"
-                          : "w-1.5 bg-[#F7F3EC]/50"
+                          ? "w-6 bg-[var(--theme-background)]"
+                          : "w-1.5 bg-[var(--theme-background)]/50"
                       }`}
                     />
                   ))}
@@ -457,9 +480,9 @@ export default function EcommerceHomePage() {
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
           <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <p className="mb-1 text-sm text-[#B65C38]">Hand-picked</p>
+              <p className="mb-1 text-sm text-[var(--theme-secondary)]">Hand-picked</p>
 
-              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D]">
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[var(--theme-text)]">
                 Featured products
               </h2>
             </div>
@@ -467,9 +490,9 @@ export default function EcommerceHomePage() {
 
           <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
             {exclusiveProductsLoading ? (
-              <p className="text-sm text-[#8A8378]" role="status">Loading featured products...</p>
+              <p className="text-sm text-[var(--theme-muted)]" role="status">Loading featured products...</p>
             ) : exclusiveProducts.length === 0 ? (
-              <p className="text-sm text-[#8A8378]">No featured products are available right now.</p>
+              <p className="text-sm text-[var(--theme-muted)]">No featured products are available right now.</p>
             ) : (
               exclusiveProducts.map((item) => (
                 <ProductCard key={item.productId} product={item.product} />
@@ -479,66 +502,53 @@ export default function EcommerceHomePage() {
         </section>
 
         {/* ===================================================
-            NEW ARRIVALS
+            SHOP
         =================================================== */}
+
+        <section className="mx-auto mt-16 max-w-[1280px] px-4 sm:px-6">
+          <div className="mb-6"><p className="mb-1 text-sm text-[var(--theme-secondary)]">Coming soon</p><h2 className="font-serif text-3xl text-[var(--theme-text)]">Upcoming products</h2></div>
+          {upcomingLoading ? <p className="text-sm text-[var(--theme-muted)]" role="status">Loading upcoming products...</p> : upcomingProducts.length === 0 ? <p className="rounded-xl border border-[var(--theme-border)] bg-white px-5 py-8 text-sm text-[var(--theme-muted)]">No upcoming products are available right now.</p> : <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">{upcomingProducts.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-white"><Link href={`/product/product_details?id=${encodeURIComponent(item.id)}`} className="block aspect-square bg-gray-50 p-4"><img src={item.image || "/placeholder-product.svg"} alt={item.name} className="h-full w-full object-contain" /></Link><div className="space-y-2 p-4"><Link href={`/product/product_details?id=${encodeURIComponent(item.id)}`} className="font-medium hover:text-[var(--theme-primary)]">{item.name}</Link><p className="text-xs text-[var(--theme-muted)]">Launches {new Date(item.launchAt).toLocaleString()}</p><p className="font-semibold">৳{Number(item.price).toFixed(2)}</p>{item.preorderAvailable && <span className="inline-block rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">Pre-orders available</span>}</div></article>)}</div>}
+        </section>
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
           <div className="flex items-end justify-between gap-6 mb-8">
             <div>
-              <p className="text-sm text-[#B65C38] mb-1">Just landed</p>
+              <p className="text-sm text-[var(--theme-secondary)] mb-1">Just landed</p>
 
-              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[#211F1D] leading-tight">
-                New arrivals
+              <h2 className="font-serif text-3xl md:text-[2.15rem] text-[var(--theme-text)] leading-tight">
+                Shop
               </h2>
             </div>
 
-            <a
-              href="#"
-              className="hidden sm:inline-block text-sm text-[#1F3A2E] border-b border-[#1F3A2E] pb-0.5 hover:text-[#B65C38] hover:border-[#B65C38] transition-colors whitespace-nowrap"
+            <Link
+              href="/product"
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--theme-primary)] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--theme-primary-hover)] sm:px-5 sm:text-sm"
             >
-              View all new arrivals
-            </a>
+              View All Products
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-            {newArrivals.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
-
-        {/* ===================================================
-            NEWSLETTER
-        =================================================== */}
-
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-16">
-          <div className="bg-[#EFE9DC] rounded-md px-6 sm:px-12 py-10 flex flex-col lg:flex-row items-center justify-between gap-6">
-            <div className="text-center lg:text-left">
-              <h3 className="font-serif text-2xl text-[#211F1D] mb-1">
-                Get first access to restocks
-              </h3>
-
-              <p className="text-sm text-[#5B564C]">
-                One email a week. No spam, unsubscribe anytime.
-              </p>
-            </div>
-
-            <div className="flex w-full lg:w-auto max-w-md">
-              <input
-                type="email"
-                placeholder="you@email.com"
-                className="flex-1 px-4 py-2.5 text-sm rounded-l-sm border border-[#E4DED2] outline-none bg-white text-[#211F1D] placeholder:text-[#8A8378]"
-              />
-
-              <button
-                type="button"
-                className="px-5 py-2.5 bg-[#1F3A2E] text-[#F7F3EC] text-sm rounded-r-sm hover:bg-[#16281F] transition-colors whitespace-nowrap"
-              >
-                Subscribe
-              </button>
-            </div>
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-5 md:grid-cols-3 xl:grid-cols-5">
+            {productsLoading ? (
+              Array.from({ length: 10 }, (_, index) => (
+                <div key={index} className="animate-pulse overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-white p-3" role="status" aria-label="Loading shop products">
+                  <div className="aspect-square rounded-xl bg-[var(--theme-surface-alt)]" />
+                  <div className="mt-4 h-4 w-3/4 rounded bg-[var(--theme-surface-alt)]" />
+                  <div className="mt-3 h-4 w-1/3 rounded bg-[var(--theme-surface-alt)]" />
+                  <div className="mt-4 h-11 rounded-xl bg-[var(--theme-surface-alt)]" />
+                </div>
+              ))
+            ) : productsError ? (
+              <p className="col-span-full rounded-xl border border-[var(--theme-border)] bg-white px-5 py-10 text-center text-sm text-[var(--theme-muted)]" role="status">{productsError}</p>
+            ) : products.length === 0 ? (
+              <p className="col-span-full rounded-xl border border-[var(--theme-border)] bg-white px-5 py-10 text-center text-sm text-[var(--theme-muted)]">No products are available right now.</p>
+            ) : (
+              products.map((product) => <ProductCard key={product.id} product={product} />)
+            )}
           </div>
         </section>
+
+        {specialOfferBanner && <SpecialOfferBannerView banner={specialOfferBanner} />}
       </main>
     </div>
   );

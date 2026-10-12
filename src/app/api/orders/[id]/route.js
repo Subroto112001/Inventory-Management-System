@@ -43,6 +43,19 @@ export async function PATCH(request, { params }) {
   if (access.response) return access.response;
 
   const body = await request.json();
+  if (access.order.orderClass === "preorder" && body.preorderStatus) {
+    if (isCustomer(access.user) || !hasPermission(access.user, PERMISSIONS.ORDERS_UPDATE)) return denied(403, "You do not have permission to update pre-orders");
+    const allowed = ["Pending confirmation", "Confirmed", "Awaiting launch", "Ready for fulfillment", "Fulfilled", "Cancelled"];
+    if (!allowed.includes(body.preorderStatus)) return denied(400, "Invalid pre-order status");
+    await connectMongoDB();
+    const OrderProduct = (await import("@/lib/models/Product")).default;
+    const update = { preorderStatus: body.preorderStatus };
+    if (body.preorderStatus === "Cancelled") update.status = "Cancelled";
+    const saved = await Order.findOneAndUpdate({ _id: id, orderClass: "preorder" }, { $set: update }, { new: true });
+    if (!saved) return denied(404, "Pre-order not found");
+    if (body.preorderStatus === "Cancelled" && access.order.preorderStatus !== "Cancelled") await OrderProduct.updateOne({ _id: access.order.preorderProduct }, { $inc: { "preorder.reserved": -access.order.items.reduce((n, item) => n + item.quantity, 0) } });
+    return NextResponse.json({ success: true, order: saved });
+  }
   const requestedStatus = String(body.status || "").trim();
   const isCancellation = requestedStatus === "Cancelled";
   if (
@@ -75,7 +88,7 @@ export async function PATCH(request, { params }) {
       );
       if (!updated) throw new Error("Order changed before it could be updated");
       updatedOrder = updated;
-      if (isCancellation) {
+      if (isCancellation && access.order.orderClass !== "preorder") {
         for (const item of access.order.items) {
           await increaseStock({
             productId: item.product,

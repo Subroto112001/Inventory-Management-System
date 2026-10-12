@@ -49,17 +49,17 @@ export default function ProductFaq({ product }) {
     <section className="mx-auto mt-16 max-w-[1280px] px-4 sm:px-6" aria-labelledby="product-faq-title">
       <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
         <div>
-          <p className="mb-1 text-sm text-[#B65C38]">Need to know</p>
-          <h2 id="product-faq-title" className="font-serif text-3xl text-[#211F1D]">Frequently asked questions</h2>
+          <p className="mb-1 text-sm text-[var(--theme-secondary)]">Need to know</p>
+          <h2 id="product-faq-title" className="font-serif text-3xl text-[var(--theme-text)]">Frequently asked questions</h2>
         </div>
-        <div className="divide-y divide-[#E4DED2] border-y border-[#E4DED2]">
+        <div className="divide-y divide-[var(--theme-border)] border-y border-[var(--theme-border)]">
           {FAQ_TOPICS.map((topic) => (
             <details key={topic.id} className="group py-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-[#211F1D] marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3A2E]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-[var(--theme-text)] marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)]">
                 {topic.question}
-                <span aria-hidden="true" className="text-xl leading-none text-[#1F3A2E] transition-transform group-open:rotate-45">+</span>
+                <span aria-hidden="true" className="text-xl leading-none text-[var(--theme-primary)] transition-transform group-open:rotate-45">+</span>
               </summary>
-              <p className="max-w-2xl pt-3 text-sm leading-6 text-[#6F685E]">{answerFor(topic.id, product)}</p>
+              <p className="max-w-2xl pt-3 text-sm leading-6 text-[var(--theme-muted)]">{answerFor(topic.id, product)}</p>
             </details>
           ))}
         </div>

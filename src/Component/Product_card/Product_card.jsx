@@ -41,22 +41,22 @@ const ProductCard = ({
   }, []);
 
   return (
-    <article className="group relative w-full min-w-0 overflow-hidden rounded-2xl border border-[#E4DED2] bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#C9A659] hover:shadow-lg">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#F7F3EC]">
+    <article className="group relative w-full min-w-0 overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--theme-highlight)] hover:shadow-lg">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[var(--theme-background)]">
         <Link href={`/dash/product_details/${id}`} className="absolute inset-0 flex items-center justify-center p-5" aria-label={`View ${name}`}>
           <Image src={image} alt={name} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" loading="lazy" width={400} height={300} />
         </Link>
         <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${!inStock ? "bg-red-100 text-red-800" : lowStock ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-800"}`}>
           {!inStock ? "Out of stock" : lowStock ? "Low stock" : "In stock"}
         </span>
-        {hasDiscount && <span className="absolute right-3 top-3 rounded-full bg-[#1F3A2E] px-2.5 py-1 text-[11px] font-semibold text-white">-{discountPercent}%</span>}
+        {hasDiscount && <span className="absolute right-3 top-3 rounded-full bg-[var(--theme-primary)] px-2.5 py-1 text-[11px] font-semibold text-white">-{discountPercent}%</span>}
       </div>
 
       <div className="px-1 pb-1 pt-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            {brandName && <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8A8378]">{brandName}</p>}
-            <Link href={`/dash/product_details/${id}`} className="line-clamp-2 text-base font-semibold leading-5 text-[#211F1D] transition-colors hover:text-[var(--theme-primary)]">
+            {brandName && <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--theme-muted)]">{brandName}</p>}
+            <Link href={`/dash/product_details/${id}`} className="line-clamp-2 text-base font-semibold leading-5 text-[var(--theme-text)] transition-colors hover:text-[var(--theme-primary)]">
               {name}
             </Link>
           </div>
@@ -107,16 +107,16 @@ const ProductCard = ({
         </div>
 
         <div className="mt-2 flex items-center justify-between gap-3">
-          {categoryName && <p className="min-w-0 truncate text-xs text-[#8A8378]">{categoryName}</p>}
-          <p className="shrink-0 text-xs text-[#6F685E]">SKU: {SKU}</p>
+          {categoryName && <p className="min-w-0 truncate text-xs text-[var(--theme-muted)]">{categoryName}</p>}
+          <p className="shrink-0 text-xs text-[var(--theme-muted)]">SKU: {SKU}</p>
         </div>
-        <div className="mt-3 flex items-end justify-between gap-3 border-t border-[#F0EDE7] pt-3">
+        <div className="mt-3 flex items-end justify-between gap-3 border-t border-[var(--theme-surface-alt)] pt-3">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#8A8378]">Price</p>
-            <p className="text-base font-semibold text-[#1F3A2E]">${currentPrice.toFixed(2)}</p>
-            {hasDiscount && <p className="text-xs text-[#8A8378] line-through">${basePrice.toFixed(2)}</p>}
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--theme-muted)]">Price</p>
+            <p className="text-base font-semibold text-[var(--theme-primary)]">${currentPrice.toFixed(2)}</p>
+            {hasDiscount && <p className="text-xs text-[var(--theme-muted)] line-through">${basePrice.toFixed(2)}</p>}
           </div>
-          <p className="text-right text-xs text-[#6F685E]">Stock <span className="font-semibold text-[#211F1D]">{stock}</span></p>
+          <p className="text-right text-xs text-[var(--theme-muted)]">Stock <span className="font-semibold text-[var(--theme-text)]">{stock}</span></p>
         </div>
         {offers.length > 0 && (
           <div className="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">

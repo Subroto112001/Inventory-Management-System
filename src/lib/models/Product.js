@@ -118,6 +118,23 @@ const productSchema = new Schema(
     // --- Relations & Status ---
     createdBy: { type: Types.ObjectId, ref: "User" },
     isActive: { type: Boolean, default: true },
+    lifecycle: {
+      type: String,
+      enum: ["live", "scheduled", "inactive"],
+      default: "live",
+      index: true,
+    },
+    launchAt: { type: Date, default: null },
+    preorder: {
+      enabled: { type: Boolean, default: false },
+      startsAt: { type: Date, default: null },
+      endsAt: { type: Date, default: null },
+      limit: { type: Number, min: 1, default: null },
+      reserved: { type: Number, min: 0, default: 0 },
+      expectedShipAt: { type: Date, default: null },
+      terms: { type: String, trim: true, maxlength: 2000 },
+    },
+    featuredOnLaunch: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
@@ -133,6 +150,7 @@ productSchema.index(
   },
 );
 productSchema.index({ category: 1, subcategory: 1, isActive: 1 });
+productSchema.index({ lifecycle: 1, launchAt: 1, isActive: 1 });
 
 // During development Mongoose keeps models across Next.js module reloads. If
 // Product was first compiled before subcategory was added, the module source

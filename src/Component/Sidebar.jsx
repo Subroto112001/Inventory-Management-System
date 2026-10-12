@@ -18,6 +18,7 @@ import {
   LuSettings2,
   LuMenu,
   LuSearch,
+  LuSparkles,
   LuX,
 } from "react-icons/lu";
 import {
@@ -57,6 +58,7 @@ const MENU_GROUPS = [
         link: "/dash/products",
         allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"],
       },
+      { name: "Upcoming products", icon: <LuSparkles />, link: "/dash/upcoming-products", allowedRoles: ["System Admin", "Admin", "Manager"] },
       { name: "Stock", icon: <CgShutterstock />, link: "/dash/stock", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"] },
       { name: "Warehouses", icon: <PiWarehouse />, link: "/dash/warehouse", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Forklift Operator", "Auditor"] },
       { name: "Brands", icon: <TbBrandBumble />, link: "/dash/brands", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
@@ -68,6 +70,7 @@ const MENU_GROUPS = [
     title: "Sales and purchasing",
     items: [
       { name: "Orders", icon: <BiPurchaseTagAlt />, link: "/dash/order", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
+      { name: "Pre-orders", icon: <BiPurchaseTagAlt />, link: "/dash/preorders", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
       { name: "Create order", icon: <VscGraph />, link: "/dash/create_neworder", allowedRoles: ["System Admin", "Admin", "Manager", "Inventory Clerk"] },
       { name: "Procurement (PO)", icon: <LuCar />, link: "/dash/procurement", allowedRoles: ["System Admin", "Admin", "Manager"] },
       { name: "Promotions", icon: <BiSolidOffer />, link: "/dash/promotions", allowedRoles: ["System Admin", "Admin", "Warehouse Manager", "Manager", "Inventory Clerk", "Auditor"] },
@@ -83,6 +86,12 @@ const MENU_GROUPS = [
         name: "Exclusive products",
         icon: <MdLocalOffer />,
         link: "/dash/exclusive-products",
+        allowedRoles: ["Admin", "System Admin", "Manager"],
+      },
+      {
+        name: "Special offer banner",
+        icon: <LuSparkles />,
+        link: "/dash/special-offer-banner",
         allowedRoles: ["Admin", "System Admin", "Manager"],
       },
     ],
