@@ -37,6 +37,8 @@ import {
   MdInfoOutline,
 } from "react-icons/md";
 import TransparentButton from "@/Component/Button/TransparentButton";
+import ConfirmationModal from "@/Component/Modal/ConfirmationModal";
+import ToastNotification from "@/Component/ToastNotification";
 
 /* ========================================================= */
 /* Helpers */
@@ -146,103 +148,6 @@ const BrandTableSkeleton = () => (
     ))}
   </tbody>
 );
-
-/* ========================================================= */
-/* Toast */
-/* ========================================================= */
-
-const Toast = ({ toast, onClose }) => {
-  useEffect(() => {
-    if (!toast) return undefined;
-    const timer = setTimeout(onClose, 3200);
-    return () => clearTimeout(timer);
-  }, [toast, onClose]);
-
-  if (!toast) return null;
-
-  const isError = toast.type === "error";
-
-  return (
-    <div
-      role="status"
-      className={`fixed right-5 top-5 z-[100] flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium shadow-lg transition ${
-        isError
-          ? "border-red-200 bg-white text-red-700"
-          : "border-emerald-200 bg-white text-emerald-700"
-      }`}
-    >
-      {isError ? <MdErrorOutline size={18} /> : <MdCheckCircle size={18} />}
-      {toast.message}
-      <button
-        type="button"
-        onClick={onClose}
-        className="ml-2 text-gray-400 hover:text-gray-600"
-        aria-label="Dismiss notification"
-      >
-        <MdClose size={16} />
-      </button>
-    </div>
-  );
-};
-
-/* ========================================================= */
-/* Delete confirmation modal */
-/* ========================================================= */
-
-const DeleteConfirmModal = ({ brand, onCancel, onConfirm, deleting }) => {
-  if (!brand) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-gray-900/40 px-4"
-      onClick={onCancel}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="delete-brand-heading"
-        onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
-      >
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-500">
-          <MdDeleteOutline size={22} />
-        </div>
-
-        <h3
-          id="delete-brand-heading"
-          className="mt-4 text-base font-semibold text-gray-900"
-        >
-          Delete {brand.brandName || "this brand"}?
-        </h3>
-
-        <p className="mt-1.5 text-sm text-gray-500">
-          This will permanently remove the brand. Brands assigned to products
-          cannot be deleted.
-        </p>
-
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={deleting}
-            className="rounded-lg border border-gray-200 px-3.5 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onConfirm(brand)}
-            disabled={deleting}
-            className="rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-          >
-            {deleting ? "Deleting…" : "Delete brand"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /* ========================================================= */
 /* Row action menu (closes on outside click / Escape) */
@@ -673,13 +578,16 @@ const Page = () => {
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gray-50/50">
-      <Toast toast={toast} onClose={() => setToast(null)} />
-
-      <DeleteConfirmModal
-        brand={pendingDelete}
+      <ToastNotification toast={toast} onClose={() => setToast(null)} />
+      <ConfirmationModal
+        open={Boolean(pendingDelete)}
+        title={`Delete ${pendingDelete?.brandName || "this brand"}?`}
+        description="This will permanently remove the brand. Brands assigned to products cannot be deleted."
+        confirmLabel="Delete brand"
+        loadingLabel="Deleting…"
+        loading={deleting}
         onCancel={() => setPendingDelete(null)}
-        onConfirm={handleConfirmDelete}
-        deleting={deleting}
+        onConfirm={() => handleConfirmDelete(pendingDelete)}
       />
 
       <main className="h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MdAdd, MdCategory, MdDeleteOutline, MdEdit, MdSearch } from "react-icons/md";
+import ConfirmationModal from "@/Component/Modal/ConfirmationModal";
+import ToastNotification from "@/Component/ToastNotification";
 
 export default function SubcategoryManagementPage() {
   const [subcategories, setSubcategories] = useState([]);
@@ -12,8 +14,9 @@ export default function SubcategoryManagementPage() {
   const pageSize = 10;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const loadSubcategories = useCallback(async () => {
     setLoading(true);
@@ -45,19 +48,20 @@ export default function SubcategoryManagementPage() {
   const currentPage = Math.min(page, pageCount);
   const pageRows = visibleSubcategories.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const handleDelete = async (subcategory) => {
-    if (!window.confirm(`Delete subcategory “${subcategory.categoryName}”? Products will remain in Category ${subcategory.parentCategoryName} and will lose only their subcategory assignment.`)) return;
+  const handleDelete = async () => {
+    const subcategory = pendingDelete;
+    if (!subcategory) return;
     setDeleting(subcategory.id);
-    setMessage("");
-    setError("");
+    setToast(null);
     try {
       const response = await fetch(`/api/subcategory/${subcategory.id}`, { method: "DELETE" });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.message || "Unable to delete subcategory.");
-      setMessage(data.message || "Subcategory deleted.");
+      setPendingDelete(null);
+      setToast({ type: "success", message: data.message || "Subcategory deleted." });
       setSubcategories((items) => items.filter((item) => item.id !== subcategory.id));
     } catch (deleteError) {
-      setError(deleteError.message || "Unable to delete subcategory.");
+      setToast({ type: "error", message: deleteError.message || "Unable to delete subcategory." });
     } finally {
       setDeleting(null);
     }
@@ -65,6 +69,17 @@ export default function SubcategoryManagementPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] p-4 sm:p-6">
+      <ToastNotification toast={toast} onClose={() => setToast(null)} />
+      <ConfirmationModal
+        open={Boolean(pendingDelete)}
+        title={`Delete ${pendingDelete?.categoryName || "subcategory"}?`}
+        description={`Products will remain in Category ${pendingDelete?.parentCategoryName || ""} and lose only their subcategory assignment.`}
+        confirmLabel="Delete subcategory"
+        loadingLabel="Deleting..."
+        loading={Boolean(deleting)}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={handleDelete}
+      />
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]"><MdCategory size={24} /></span>
@@ -76,7 +91,6 @@ export default function SubcategoryManagementPage() {
         </div>
       </header>
 
-      {message && <p role="status" className="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-800">{message}</p>}
       {error && <div role="alert" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"><span>{error}</span><button type="button" onClick={loadSubcategories} className="font-semibold underline">Retry</button></div>}
 
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -96,7 +110,7 @@ export default function SubcategoryManagementPage() {
                 <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="h-8 w-8 overflow-hidden rounded-md bg-gray-100">{subcategory.parentCategoryImage && <img src={subcategory.parentCategoryImage} alt="" className="h-full w-full object-cover" />}</div><span className="font-medium text-gray-700">{subcategory.parentCategoryName || "Category unavailable"}</span></div></td>
                 <td className="px-4 py-3 text-center">{subcategory.productCount || 0}</td>
                 <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${subcategory.isActive === false ? "bg-gray-100 text-gray-600" : "bg-green-50 text-green-700"}`}>{subcategory.isActive === false ? "Inactive" : "Active"}</span></td>
-                <td className="px-4 py-3"><div className="flex justify-end gap-2"><Link aria-label={`Edit ${subcategory.categoryName}`} href={`/dash/subcategory/${subcategory.id}/edit`} className="rounded-md p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-700"><MdEdit size={18} /></Link><button type="button" aria-label={`Delete ${subcategory.categoryName}`} disabled={deleting === subcategory.id} onClick={() => handleDelete(subcategory)} className="rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"><MdDeleteOutline size={18} /></button></div></td>
+                <td className="px-4 py-3"><div className="flex justify-end gap-2"><Link aria-label={`Edit ${subcategory.categoryName}`} href={`/dash/subcategory/${subcategory.id}/edit`} className="rounded-md p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-700"><MdEdit size={18} /></Link><button type="button" aria-label={`Delete ${subcategory.categoryName}`} disabled={Boolean(deleting)} onClick={() => setPendingDelete(subcategory)} className="rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"><MdDeleteOutline size={18} /></button></div></td>
               </tr>)}
               {!loading && !error && visibleSubcategories.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-sm text-gray-500">{subcategories.length ? "No subcategories match these filters." : <>No subcategories yet. <Link href="/dash/subcategory/create" className="font-semibold text-[var(--theme-primary)] hover:underline">Create one</Link> after adding a Category.</>}</td></tr>}
             </tbody>

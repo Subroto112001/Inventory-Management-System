@@ -3,6 +3,7 @@
 import ColorButton from "@/Component/Button/ColorButton";
 import TransparentButton from "@/Component/Button/TransparentButton";
 import RichTextEditor from "@/Component/RichTextEditor";
+import ToastNotification from "@/Component/ToastNotification";
 import { IconProvider } from "@/Provider/IconProvider";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
@@ -207,6 +208,7 @@ const EditProductPage = () => {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [publishError, setPublishError] = useState("");
+  const [toast, setToast] = useState(null);
 
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -353,19 +355,27 @@ const EditProductPage = () => {
     setPublishError("");
 
     if (!formData.productName || !formData.productSKU) {
-      setPublishError("Please fill in the required fields (Name & SKU).");
+      const message = "Please fill in the required fields (Name & SKU).";
+      setPublishError(message);
+      setToast({ type: "error", message });
       return;
     }
     if (!formData.price) {
-      setPublishError("Price is required.");
+      const message = "Price is required.";
+      setPublishError(message);
+      setToast({ type: "error", message });
       return;
     }
     if (formData.subcategory && !availableSubcategories.some((item) => item.id === formData.subcategory) && formData.subcategory !== currentSubcategory?.id) {
-      setPublishError("Select a subcategory that belongs to the selected Category.");
+      const message = "Select a subcategory that belongs to the selected Category.";
+      setPublishError(message);
+      setToast({ type: "error", message });
       return;
     }
     if (categoriesLoading || categoriesError) {
-      setPublishError(categoriesError || "Categories are still loading. Please try again.");
+      const message = categoriesError || "Categories are still loading. Please try again.";
+      setPublishError(message);
+      setToast({ type: "error", message });
       return;
     }
 
@@ -384,14 +394,16 @@ const EditProductPage = () => {
       const data = await res.json();
 
       if (!res.ok) {
+        setToast({ type: "error", message: data.message || "Update failed. Please try again." });
         setPublishError(data.message || "কিছু একটা সমস্যা হয়েছে");
         return;
       }
 
-      alert("Product updated successfully!");
+      window.sessionStorage.setItem("ims:toast", JSON.stringify({ type: "success", message: "Product updated successfully." }));
       router.push("/dash/products");
     } catch (err) {
       console.error("Update Product Error:", err);
+      setToast({ type: "error", message: "Unable to update the product. Please try again." });
       setPublishError("সার্ভারে সমস্যা হয়েছে, আবার চেষ্টা করুন");
     } finally {
       setSubmitting(false);
@@ -426,6 +438,7 @@ const EditProductPage = () => {
 
   return (
     <main className="p-5" id="main-content">
+      <ToastNotification toast={toast} onClose={() => setToast(null)} />
       <CameraScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}

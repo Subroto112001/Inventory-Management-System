@@ -2,6 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import ConfirmationModal from "@/Component/Modal/ConfirmationModal";
+import ToastNotification from "@/Component/ToastNotification";
 import {
   MdAdd,
   MdCategory,
@@ -26,7 +28,7 @@ const Page = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [error, setError] = useState("");
-  const [actionMessage, setActionMessage] = useState("");
+  const [toast, setToast] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -293,16 +295,16 @@ const Page = () => {
 
     try {
       setIsDeleting(true);
-      setActionMessage("");
+      setToast(null);
       const response = await fetch(`/api/category/${categoryId}`, { method: "DELETE" });
       const result = await response.json();
       if (!response.ok) throw new Error(result?.message || "Unable to delete category.");
-      setActionMessage(result.message || "Category deleted successfully.");
+      setToast({ type: "success", message: result.message || "Category deleted successfully." });
       setDeleteCategory(null);
       await fetchCategories(true);
     } catch (error) {
       console.error("Delete Category Error:", error);
-      setActionMessage(error.message || "Unable to delete category.");
+      setToast({ type: "error", message: error.message || "Unable to delete category." });
     } finally {
       setIsDeleting(false);
     }
@@ -442,7 +444,7 @@ const Page = () => {
               </button>
             </div>
           )}
-        {actionMessage && <div role="status" className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">{actionMessage}</div>}
+        <ToastNotification toast={toast} onClose={() => setToast(null)} />
 
           {/* ================================================= */}
           {/* STATISTICS */}
@@ -817,7 +819,7 @@ const Page = () => {
                                     type="button"
                                     onClick={() => {
                                       setOpenMenu(null);
-                                      setActionMessage("");
+                                      setToast(null);
 
                                       setDeleteCategory(category);
                                     }}
@@ -871,90 +873,16 @@ const Page = () => {
       {/* DELETE MODAL */}
       {/* ========================================================= */}
 
-      {deleteCategory && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
-            {/* Header */}
-
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                  <MdDeleteOutline size={22} />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Delete Category
-                  </h3>
-
-                  <p className="text-xs text-gray-500">
-                    This action requires confirmation.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setDeleteCategory(null)}
-                disabled={isDeleting}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-              >
-                <MdClose size={22} />
-              </button>
-            </div>
-
-            {/* Body */}
-
-            <div className="px-5 py-5">
-              {actionMessage && <p role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{actionMessage}</p>}
-              <p className="text-sm leading-6 text-gray-600">
-                Are you sure you want to delete{" "}
-                <strong className="font-semibold text-gray-900">
-                  {getCategoryName(deleteCategory)}
-                </strong>
-                ?
-              </p>
-
-              <div className="mt-4 rounded-lg border border-yellow-100 bg-yellow-50 p-3">
-                <div className="flex gap-2">
-                  <MdWarning
-                    size={19}
-                    className="mt-0.5 shrink-0 text-yellow-600"
-                  />
-
-                  <p className="text-xs leading-5 text-yellow-800">
-                    This Category and its Subcategories will be deleted. Products will remain intact and become uncategorized so you can assign them later.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-
-            <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-5 py-4">
-              <button
-                type="button"
-                onClick={() => setDeleteCategory(null)}
-                disabled={isDeleting}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
-              >
-                <MdDeleteOutline size={18} />
-
-                {isDeleting ? "Deleting..." : "Delete Category"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        open={Boolean(deleteCategory)}
+        title="Delete Category?"
+        description={`Are you sure you want to delete ${getCategoryName(deleteCategory)}? This Category and its Subcategories will be deleted. Products will remain intact and become uncategorized so you can assign them later.`}
+        confirmLabel="Delete Category"
+        loadingLabel="Deleting..."
+        loading={isDeleting}
+        onCancel={() => setDeleteCategory(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

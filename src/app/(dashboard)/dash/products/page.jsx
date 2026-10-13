@@ -6,15 +6,16 @@ import React, { useEffect, useState } from "react";
 import { GoPlusCircle } from "react-icons/go";
 import { IoSearchOutline } from "react-icons/io5";
 import placeholder from "../../../../assets/image/Camera.png";
-import DeleteModal from "@/Component/Modal/DeleteModal";
+import ConfirmationModal from "@/Component/Modal/ConfirmationModal";
+import ToastNotification from "@/Component/ToastNotification";
 
 const Page = () => {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [deleteModal, setDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toast, setToast] = useState(null);
   const [categories, setCategories] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
 
@@ -27,7 +28,6 @@ const Page = () => {
 
   const handleDeleteClick = (id, name) => {
     setSelectedProduct({ id, name });
-    setDeleteModal(true);
   };
 
   const fetchProducts = async () => {
@@ -63,20 +63,25 @@ const Page = () => {
       if (res.ok) {
         await fetchProducts();
         router.refresh();
-        setDeleteModal(false);
+        setToast({ type: "success", message: `${selectedProduct.name || "Product"} deleted successfully.` });
         setSelectedProduct(null);
       } else {
-        alert(data.message || "Could not delete product.");
+        setToast({ type: "error", message: data.message || "Could not delete product." });
       }
     } catch (err) {
       console.error("Delete product error:", err);
-      alert("Something went wrong while deleting the product.");
+      setToast({ type: "error", message: "Something went wrong while deleting the product." });
     } finally {
       setDeleteLoading(false);
     }
   };
 
   useEffect(() => {
+    const pendingToast = window.sessionStorage.getItem("ims:toast");
+    if (pendingToast) {
+      window.sessionStorage.removeItem("ims:toast");
+      try { setToast(JSON.parse(pendingToast)); } catch { /* Ignore malformed one-time notification state. */ }
+    }
     const timer = window.setTimeout(() => fetchProducts(), 0);
     fetch("/api/category?list=1&includeSubcategories=1", { cache: "no-store" })
       .then((response) => response.json())
@@ -87,6 +92,7 @@ const Page = () => {
 
   return (
     <div className="p-5">
+      <ToastNotification toast={toast} onClose={() => setToast(null)} />
       <div className="flex  flex-col gap-5">
         {/* heading of this page */}
 
@@ -190,11 +196,14 @@ const Page = () => {
         </div>
         {/* Product Section*/}
       </div>
-      <DeleteModal
-        isOpen={deleteModal}
-        onClose={() => setDeleteModal(false)}
-        onDelete={handleDelete}
-        productName={selectedProduct?.name}
+      <ConfirmationModal
+        open={Boolean(selectedProduct)}
+        title="Delete Product?"
+        description={`Are you sure you want to delete ${selectedProduct?.name || "this product"}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        loadingLabel="Deleting..."
+        onCancel={() => setSelectedProduct(null)}
+        onConfirm={handleDelete}
         loading={deleteLoading}
       />
     </div>
