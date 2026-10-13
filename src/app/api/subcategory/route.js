@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -20,7 +22,7 @@ const serialize = (doc) => ({
   isActive: doc.isActive, createdAt: doc.createdAt, updatedAt: doc.updatedAt,
 });
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const publicRead = new URL(request.url).searchParams.get("public") === "1";
     if (!publicRead) {
@@ -35,12 +37,12 @@ export async function GET(request) {
     const countById = new Map(counts.map((item) => [item._id.toString(), item.count]));
     return NextResponse.json({ success: true, subcategories: docs.map((doc) => ({ ...serialize(doc), productCount: countById.get(doc._id.toString()) || 0 })) });
   } catch (error) {
-    console.error("Fetch Subcategories API Error:", error);
+    logger.error("Fetch Subcategories API Error:", error);
     return NextResponse.json({ success: false, message: "Unable to load Subcategories." }, { status: 500 });
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.CATEGORIES_MANAGE);
     if (!access.ok) return access.response;
@@ -65,9 +67,12 @@ export async function POST(request) {
     const [doc] = await Subcategory.create([{ subcategoryName, subcategoryCode, category: category._id, description, image: uploaded ? { public_id: uploaded.publicId, url: uploaded.url } : { public_id: null, url: null }, products: [], createdBy: access.user._id, isActive: true }]);
     return NextResponse.json({ success: true, message: "Subcategory created successfully.", subcategory: { ...serialize({ ...doc.toObject(), category }), productCount: 0 } }, { status: 201 });
   } catch (error) {
-    console.error("Create Subcategory API Error:", error);
+    logger.error("Create Subcategory API Error:", error);
     if (error.code === 11000) return NextResponse.json({ success: false, message: "A Subcategory with this name already exists in that Category." }, { status: 409 });
     if (error.name === "ValidationError") return NextResponse.json({ success: false, message: Object.values(error.errors).map((item) => item.message).join(" ") }, { status: 400 });
     return NextResponse.json({ success: false, message: error.message || "Unable to create Subcategory." }, { status: 500 });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/subcategory");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/subcategory");

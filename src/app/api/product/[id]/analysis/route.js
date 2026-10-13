@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -31,7 +33,7 @@ async function getProduct(id, publicRead = false) {
     .lean();
 }
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   try {
     const publicRead = new URL(request.url).searchParams.get("public") === "1";
     if (!publicRead) {
@@ -57,12 +59,12 @@ export async function GET(request, { params }) {
     }
     return NextResponse.json({ success: true, analysis: responseAnalysis(analysis) });
   } catch (error) {
-    console.error("Product analysis fetch error:", error);
+    logger.error("Product analysis fetch error:", error);
     return NextResponse.json({ success: false, message: "Unable to load product analysis" }, { status: 500 });
   }
 }
 
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.PRODUCTS_UPDATE);
     if (!access.ok) return access.response;
@@ -95,7 +97,7 @@ export async function PUT(request, { params }) {
     );
     return NextResponse.json({ success: true, analysis: responseAnalysis(analysis) });
   } catch (error) {
-    console.error("Product analysis draft save error:", error);
+    logger.error("Product analysis draft save error:", error);
     if (error.code === 11000) {
       return NextResponse.json({ success: false, message: "An analysis already exists for this product. Reload and try again." }, { status: 409 });
     }
@@ -103,7 +105,7 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function POST(request, { params }) {
+async function POSTHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.PRODUCTS_UPDATE);
     if (!access.ok) return access.response;
@@ -136,12 +138,12 @@ export async function POST(request, { params }) {
     await analysis.save();
     return NextResponse.json({ success: true, analysis: responseAnalysis(analysis) });
   } catch (error) {
-    console.error("Product infographic generation error:", error);
+    logger.error("Product infographic generation error:", error);
     return NextResponse.json({ success: false, message: error.message || "Unable to generate infographic" }, { status: 500 });
   }
 }
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.PRODUCTS_UPDATE);
     if (!access.ok) return access.response;
@@ -173,12 +175,12 @@ export async function PATCH(request, { params }) {
     await analysis.save();
     return NextResponse.json({ success: true, analysis: responseAnalysis(analysis) });
   } catch (error) {
-    console.error("Product analysis publication error:", error);
+    logger.error("Product analysis publication error:", error);
     return NextResponse.json({ success: false, message: "Unable to update product analysis status" }, { status: 500 });
   }
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.PRODUCTS_UPDATE);
     if (!access.ok) return access.response;
@@ -190,7 +192,13 @@ export async function DELETE(request, { params }) {
     const deleted = await ProductAnalysis.findOneAndDelete({ product: id });
     return NextResponse.json({ success: true, removed: Boolean(deleted) });
   } catch (error) {
-    console.error("Product analysis removal error:", error);
+    logger.error("Product analysis removal error:", error);
     return NextResponse.json({ success: false, message: "Unable to remove product analysis" }, { status: 500 });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/product/[id]/analysis");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/product/[id]/analysis");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/product/[id]/analysis");
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/product/[id]/analysis");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/product/[id]/analysis");

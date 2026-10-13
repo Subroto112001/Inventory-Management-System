@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Order from "@/lib/models/Order";
@@ -17,7 +18,7 @@ function dateBoundary(value, end = false) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.REPORTS_READ);
   if (!access.ok) return access.response;
   try {
@@ -142,3 +143,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/reports");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Customer from "@/lib/models/Customer";
@@ -7,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // GET: Fetch all customers
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.CUSTOMERS_READ);
     if (!access.ok) return access.response;
@@ -42,7 +44,7 @@ export async function GET(request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Fetch Customers API Error:", error);
+    logger.error("Fetch Customers API Error:", error);
 
     return NextResponse.json(
       {
@@ -55,7 +57,7 @@ export async function GET(request) {
 }
 
 // POST: Create customer
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -137,7 +139,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Create Customer API Error:", error);
+    logger.error("Create Customer API Error:", error);
 
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((err) => err.message);
@@ -160,3 +162,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/customer");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/customer");

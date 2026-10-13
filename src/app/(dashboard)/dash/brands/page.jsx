@@ -189,7 +189,7 @@ const Toast = ({ toast, onClose }) => {
 /* Delete confirmation modal */
 /* ========================================================= */
 
-const DeleteConfirmModal = ({ brand, onCancel, onConfirm }) => {
+const DeleteConfirmModal = ({ brand, onCancel, onConfirm, deleting }) => {
   if (!brand) return null;
 
   return (
@@ -216,14 +216,15 @@ const DeleteConfirmModal = ({ brand, onCancel, onConfirm }) => {
         </h3>
 
         <p className="mt-1.5 text-sm text-gray-500">
-          This can't be undone. Any products linked to this brand will keep
-          their existing brand reference.
+          This will permanently remove the brand. Brands assigned to products
+          cannot be deleted.
         </p>
 
         <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
+            disabled={deleting}
             className="rounded-lg border border-gray-200 px-3.5 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
           >
             Cancel
@@ -232,9 +233,10 @@ const DeleteConfirmModal = ({ brand, onCancel, onConfirm }) => {
           <button
             type="button"
             onClick={() => onConfirm(brand)}
+            disabled={deleting}
             className="rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
           >
-            Delete brand
+            {deleting ? "Deleting…" : "Delete brand"}
           </button>
         </div>
       </div>
@@ -299,7 +301,7 @@ const RowActionMenu = ({ brand, onRequestDelete }) => {
           </Link>
 
           <Link
-            href={`/brand/${brand._id}/edit`}
+            href={`/dash/brands/${brand._id}/edit`}
             onClick={() => setOpen(false)}
             className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50"
           >
@@ -458,6 +460,7 @@ const Page = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState(null);
 
   const [pagination, setPagination] = useState({
@@ -638,12 +641,30 @@ const Page = () => {
   };
 
   const handleConfirmDelete = async (brand) => {
-    setPendingDelete(null);
-    // Wire this up once DELETE /api/brand/:id exists.
-    setToast({
-      type: "error",
-      message: `Delete isn't wired up to the API yet for "${brand.brandName}".`,
-    });
+    if (!brand?._id || deleting) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/brand/${encodeURIComponent(brand._id)}`, {
+        method: "DELETE",
+        credentials: "include",
+        cache: "no-store",
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.message || "Failed to delete brand.");
+      setPendingDelete(null);
+      setBrands((current) => current.filter((item) => item._id !== brand._id));
+      setPagination((current) => ({ ...current, total: Math.max(0, current.total - 1) }));
+      setToast({ type: "success", message: data?.message || "Brand deleted successfully." });
+      if (brands.length === 1 && pagination.page > 1) {
+        setPagination((current) => ({ ...current, page: current.page - 1 }));
+      } else {
+        await fetchBrands({ showLoader: false });
+      }
+    } catch (err) {
+      setToast({ type: "error", message: err?.message || "Failed to delete brand." });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   /* ========================================================= */
@@ -658,6 +679,7 @@ const Page = () => {
         brand={pendingDelete}
         onCancel={() => setPendingDelete(null)}
         onConfirm={handleConfirmDelete}
+        deleting={deleting}
       />
 
       <main className="h-full w-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">

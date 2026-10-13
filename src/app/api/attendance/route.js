@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -12,7 +13,7 @@ function dayStart(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.ATTENDANCE_READ);
   if (!access.ok) return access.response;
   try {
@@ -64,7 +65,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const access = await requirePermission(
     request,
     PERMISSIONS.ATTENDANCE_MANAGE,
@@ -131,3 +132,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/attendance");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/attendance");

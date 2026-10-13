@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -6,7 +8,7 @@ import { hashSecret } from "@/lib/auth";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { sendInvitationCode } from "@/lib/mailer";
 
-export async function POST(request, { params }) {
+async function POSTHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
     if (!access.ok) return access.response;
@@ -48,10 +50,12 @@ export async function POST(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Resend invitation API Error:", error);
+    logger.error("Resend invitation API Error:", error);
     return NextResponse.json(
       { message: "Unable to send invitation" },
       { status: 500 },
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/adduser/[id]/resend-invitation");

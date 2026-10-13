@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import HomepageSlider from "@/lib/models/HomepageSlider";
@@ -57,7 +59,7 @@ const mapImageUpload = async (file) => {
   };
 };
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const { searchParams } = new URL(request.url);
     const adminRequest = searchParams.get("admin") === "1";
@@ -86,7 +88,7 @@ export async function GET(request) {
       total: sliders.length,
     });
   } catch (error) {
-    console.error("Homepage slider fetch error:", error);
+    logger.error("Homepage slider fetch error:", error);
     return NextResponse.json(
       { success: false, message: "Unable to load homepage sliders" },
       { status: 500 },
@@ -94,7 +96,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -158,7 +160,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Create homepage slider error:", error);
+    logger.error("Create homepage slider error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -169,7 +171,7 @@ export async function POST(request) {
   }
 }
 
-export async function PUT(request) {
+async function PUTHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -261,7 +263,7 @@ export async function PUT(request) {
       slider: serializeSlider(slider.toObject()),
     });
   } catch (error) {
-    console.error("Update homepage slider error:", error);
+    logger.error("Update homepage slider error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -272,7 +274,7 @@ export async function PUT(request) {
   }
 }
 
-export async function DELETE(request) {
+async function DELETEHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -304,10 +306,15 @@ export async function DELETE(request) {
       message: deleted ? "Slider deleted" : "Slider not found",
     });
   } catch (error) {
-    console.error("Delete homepage slider error:", error);
+    logger.error("Delete homepage slider error:", error);
     return NextResponse.json(
       { success: false, message: "Unable to delete homepage slider" },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/homepage/sliders");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/homepage/sliders");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/homepage/sliders");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/homepage/sliders");

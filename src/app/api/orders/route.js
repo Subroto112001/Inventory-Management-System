@@ -1,5 +1,7 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
-import connectMongoDB from "@/lib/databse/mongodb"; // আপনার ডিরেক্টরি অনুযায়ী
+import connectMongoDB from "@/lib/databse/mongodb"; // à¦†à¦ªà¦¨à¦¾à¦° à¦¡à¦¿à¦°à§‡à¦•à§à¦Ÿà¦°à¦¿ à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€
 import Order from "@/lib/models/Order";
 import Product from "@/lib/models/Product";
 import mongoose from "mongoose";
@@ -12,7 +14,7 @@ import { calculateTax, getTaxSettings } from "@/lib/tax";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.ORDERS_READ);
     if (!access.ok) return access.response;
@@ -122,7 +124,7 @@ export async function GET(request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Fetch Orders API Error:", error);
+    logger.error("Fetch Orders API Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
@@ -130,7 +132,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.ORDERS_CREATE);
     if (!access.ok) return access.response;
@@ -452,7 +454,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Create Order API Error:", error);
+    logger.error("Create Order API Error:", error);
 
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((val) => val.message);
@@ -482,3 +484,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/orders");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/orders");

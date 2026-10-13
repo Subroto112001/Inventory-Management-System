@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -15,7 +16,7 @@ function validate(body) {
   return null;
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.SUPPLIERS_READ);
   if (!access.ok) return access.response;
   try {
@@ -49,7 +50,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.SUPPLIERS_CREATE);
   if (!access.ok) return access.response;
   try {
@@ -85,3 +86,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/suppliers");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/suppliers");

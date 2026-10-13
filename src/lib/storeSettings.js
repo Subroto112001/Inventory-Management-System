@@ -1,3 +1,4 @@
+﻿import { logger } from "@/lib/serverLogger";
 import connectMongoDB from "@/lib/databse/mongodb";
 import StoreSettings, {
   DEFAULT_STORE_SETTINGS,
@@ -122,7 +123,7 @@ export async function getStoreSettings() {
     const settings = await StoreSettings.findOne({ key: "default" }).lean();
     return { ...DEFAULT_STORE_SETTINGS, ...(settings || {}) };
   } catch (error) {
-    console.error("Failed to load store settings:", error?.message);
+    logger.error("Failed to load store settings:", error);
     return { ...DEFAULT_STORE_SETTINGS };
   }
 }

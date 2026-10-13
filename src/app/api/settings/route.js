@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -87,7 +88,7 @@ function sanitize(settings) {
   };
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.SETTINGS_READ);
   if (!access.ok) return access.response;
 
@@ -99,7 +100,7 @@ export async function GET(request) {
   });
 }
 
-export async function PUT(request) {
+async function PUTHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.SETTINGS_MANAGE);
   if (!access.ok) return access.response;
 
@@ -165,3 +166,6 @@ export async function PUT(request) {
     warnings,
   });
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/settings");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/settings");

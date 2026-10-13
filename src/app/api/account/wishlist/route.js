@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { getAuthenticatedUser, isCustomer } from "@/lib/auth";
@@ -13,7 +15,7 @@ async function getCustomer(request) {
   return { user };
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await getCustomer(request);
   if (access.response) return access.response;
   try {
@@ -34,12 +36,12 @@ export async function GET(request) {
       inStock: product.currentStock > 0,
     })) });
   } catch (error) {
-    console.error("Wishlist fetch error:", error?.message);
+    logger.error("Wishlist fetch error:", error);
     return NextResponse.json({ success: false, message: "Unable to load wishlist" }, { status: 500 });
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const access = await getCustomer(request);
   if (access.response) return access.response;
   try {
@@ -50,7 +52,10 @@ export async function POST(request) {
     await access.user.updateOne({ $addToSet: { wishlist: new mongoose.Types.ObjectId(body.productId) } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Wishlist add error:", error?.message);
+    logger.error("Wishlist add error:", error);
     return NextResponse.json({ success: false, message: "Unable to update wishlist" }, { status: 500 });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/account/wishlist");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/account/wishlist");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -20,7 +22,7 @@ const serialize = (doc) => ({
   description: doc.description || "", image: doc.image || null, isActive: doc.isActive,
 });
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.CATEGORIES_READ);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -32,12 +34,12 @@ export async function GET(request, { params }) {
     if (!doc.category) return NextResponse.json({ success: false, message: "This Subcategory has no valid Category. Repair its relationship before editing." }, { status: 409 });
     return NextResponse.json({ success: true, subcategory: serialize(doc) });
   } catch (error) {
-    console.error("Fetch Subcategory API Error:", error);
+    logger.error("Fetch Subcategory API Error:", error);
     return NextResponse.json({ success: false, message: "Unable to load Subcategory." }, { status: 500 });
   }
 }
 
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.CATEGORIES_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -94,14 +96,14 @@ export async function PUT(request, { params }) {
     }
     return NextResponse.json({ success: true, message: "Subcategory updated successfully.", subcategory: serialize({ ...doc.toObject(), category }) });
   } catch (error) {
-    console.error("Update Subcategory API Error:", error);
+    logger.error("Update Subcategory API Error:", error);
     if (error.code === 11000) return NextResponse.json({ success: false, message: "A Subcategory with this name already exists in that Category." }, { status: 409 });
     if (error.name === "ValidationError") return NextResponse.json({ success: false, message: Object.values(error.errors).map((item) => item.message).join(" ") }, { status: 400 });
     return NextResponse.json({ success: false, message: "Unable to update Subcategory." }, { status: 500 });
   }
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.CATEGORIES_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -115,7 +117,7 @@ export async function DELETE(request, { params }) {
     await session.withTransaction(async () => {
       doc = await Subcategory.findById(id).session(session);
       if (!doc) throw Object.assign(new Error("Subcategory not found."), { statusCode: 404 });
-      if (!await Category.exists({ _id: doc.category }).session(session)) throw Object.assign(new Error("The Subcategory’s Category is missing; repair that relationship before deleting."), { statusCode: 409 });
+      if (!await Category.exists({ _id: doc.category }).session(session)) throw Object.assign(new Error("The Subcategoryâ€™s Category is missing; repair that relationship before deleting."), { statusCode: 409 });
       count = await Product.countDocuments({ subcategory: doc._id }).session(session);
       await Product.updateMany({ subcategory: doc._id }, { $unset: { subcategory: "" } }, { session });
       await Subcategory.deleteOne({ _id: doc._id }, { session });
@@ -123,20 +125,20 @@ export async function DELETE(request, { params }) {
     });
     return NextResponse.json({ success: true, message: `Subcategory deleted. ${count} product(s) remain assigned to their Category.`, affectedProductCount: count });
   } catch (error) {
-    console.error("Delete Subcategory API Error:", error);
+    logger.error("Delete Subcategory API Error:", error);
     if (error.statusCode) return NextResponse.json({ success: false, message: error.message }, { status: error.statusCode });
     if (error.code === 20 || error.codeName === "IllegalOperation" || /transactions are not supported|replica set/i.test(error.message || "")) {
       try {
         const doc = await Subcategory.findById(id).lean();
         if (!doc) return NextResponse.json({ success: false, message: "Subcategory not found." }, { status: 404 });
-        if (!await Category.exists({ _id: doc.category })) return NextResponse.json({ success: false, message: "The Subcategory’s Category is missing; repair that relationship before deleting." }, { status: 409 });
+        if (!await Category.exists({ _id: doc.category })) return NextResponse.json({ success: false, message: "The Subcategoryâ€™s Category is missing; repair that relationship before deleting." }, { status: 409 });
         const count = await Product.countDocuments({ subcategory: doc._id });
         await Product.updateMany({ subcategory: doc._id }, { $unset: { subcategory: "" } });
         await Subcategory.deleteOne({ _id: doc._id });
-        try { await recordAuditLog({ actor: access.user._id, action: "SUBCATEGORY_DELETED", resource: "Subcategory", resourceId: doc._id, metadata: { subcategoryName: doc.subcategoryName, affectedProductCount: count, mode: "ordered-fallback" } }); } catch (auditError) { console.error("Subcategory deletion audit failed:", auditError); }
+        try { await recordAuditLog({ actor: access.user._id, action: "SUBCATEGORY_DELETED", resource: "Subcategory", resourceId: doc._id, metadata: { subcategoryName: doc.subcategoryName, affectedProductCount: count, mode: "ordered-fallback" } }); } catch (auditError) { logger.error("Subcategory deletion audit failed:", auditError); }
         return NextResponse.json({ success: true, message: `Subcategory deleted. ${count} product(s) remain assigned to their Category.`, affectedProductCount: count });
       } catch (fallbackError) {
-        console.error("Ordered Subcategory deletion failed:", fallbackError);
+        logger.error("Ordered Subcategory deletion failed:", fallbackError);
         return NextResponse.json({ success: false, message: "Subcategory deletion is incomplete. Products were not deleted; review the records before retrying." }, { status: 503 });
       }
     }
@@ -145,3 +147,7 @@ export async function DELETE(request, { params }) {
     await session?.endSession();
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/subcategory/[id]");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/subcategory/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/subcategory/[id]");

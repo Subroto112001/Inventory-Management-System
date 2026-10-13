@@ -1,10 +1,12 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
 import { sendCustomerVerificationOtp } from "@/lib/mailer";
 import { createEmailOtp } from "@/lib/emailOtp";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const body = await request.json();
     const firstName = String(body.firstName || "").trim();
@@ -85,7 +87,7 @@ export async function POST(request) {
       user.emailVerificationOtpExpiresAt = undefined;
       user.emailVerificationOtpAttempts = 0;
       await user.save({ validateBeforeSave: false });
-      console.error("Customer verification email could not be sent:", mailError?.message);
+      logger.error("Customer verification email could not be sent:", mailError);
       return NextResponse.json({ success: true, emailSent: false, message: "Your account was created, but we could not send the verification code. You can request a new code on the verification page." }, { status: 201 });
     }
     return NextResponse.json({ success: true, emailSent: true, message: "Your account has been created. Enter the verification code sent to your email." }, { status: 201 });
@@ -100,7 +102,7 @@ export async function POST(request) {
         { status: 400 },
       );
     }
-    console.error("Customer registration error:", error);
+    logger.error("Customer registration error:", error);
     if (error.code === 11000) {
       return NextResponse.json({ success: true, message: "If this address can be registered, a verification email will be sent." }, { status: 202 });
     }
@@ -110,3 +112,5 @@ export async function POST(request) {
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/auth/register");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
@@ -6,7 +8,7 @@ import { emailOtpMatches } from "@/lib/emailOtp";
 const MAX_ATTEMPTS = 5;
 const OTP_FIELDS = "+emailVerificationOtpHash +emailVerificationOtpExpiresAt +emailVerificationOtpAttempts +verificationExpiresAt";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const body = await request.json();
     const email = String(body.email || "").trim().toLowerCase();
@@ -114,7 +116,9 @@ export async function POST(request) {
     }
     return NextResponse.json({ status: "invalid", attemptsRemaining: MAX_ATTEMPTS - updated.emailVerificationOtpAttempts }, { status: 400 });
   } catch (error) {
-    console.error("Email OTP verification error:", error?.message);
+    logger.error("Email OTP verification error:", error);
     return NextResponse.json({ status: "error" }, { status: 500 });
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/auth/verify-email");

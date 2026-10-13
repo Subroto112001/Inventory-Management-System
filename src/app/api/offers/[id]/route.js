@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import Offer from "@/lib/models/Offer";
 import {
@@ -10,8 +12,8 @@ import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/offers/:id — fetch a single offer
-export async function GET(request, { params }) {
+// GET /api/offers/:id â€” fetch a single offer
+async function GETHandler(request, { params }) {
   const { id } = params;
 
   if (!isValidObjectId(id)) {
@@ -39,7 +41,7 @@ export async function GET(request, { params }) {
       { status: 200 },
     );
   } catch (err) {
-    console.error(`GET /api/offers/${id} error:`, err);
+    logger.error(`GET /api/offers/${id} error:`, err);
     return NextResponse.json(
       { success: false, message: "Failed to fetch offer." },
       { status: 500 },
@@ -47,9 +49,9 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT /api/offers/:id — update an existing offer (also used for the
+// PUT /api/offers/:id â€” update an existing offer (also used for the
 // active/inactive toggle, which sends the full offer with isActive flipped)
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   const { id } = params;
 
   if (!isValidObjectId(id)) {
@@ -100,7 +102,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    console.error(`PUT /api/offers/${id} error:`, err);
+    logger.error(`PUT /api/offers/${id} error:`, err);
     return NextResponse.json(
       { success: false, message: "Failed to update offer." },
       { status: 500 },
@@ -109,7 +111,7 @@ export async function PUT(request, { params }) {
 }
 
 // DELETE /api/offers/:id
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   const { id } = params;
 
   if (!isValidObjectId(id)) {
@@ -137,10 +139,14 @@ export async function DELETE(request, { params }) {
       { status: 200 },
     );
   } catch (err) {
-    console.error(`DELETE /api/offers/${id} error:`, err);
+    logger.error(`DELETE /api/offers/${id} error:`, err);
     return NextResponse.json(
       { success: false, message: "Failed to delete offer." },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/offers/[id]");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/offers/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/offers/[id]");

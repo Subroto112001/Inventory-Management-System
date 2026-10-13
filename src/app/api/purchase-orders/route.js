@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -9,7 +10,7 @@ import { calculateTax, getTaxSettings } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.PROCUREMENT_READ);
   if (!access.ok) return access.response;
   try {
@@ -42,7 +43,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const access = await requirePermission(
     request,
     PERMISSIONS.PROCUREMENT_MANAGE,
@@ -137,3 +138,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/purchase-orders");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/purchase-orders");

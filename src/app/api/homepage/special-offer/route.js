@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import SpecialOfferBanner from "@/lib/models/SpecialOfferBanner";
@@ -104,7 +106,7 @@ async function getPayload(request) {
   return Object.fromEntries(formData.entries());
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const { searchParams } = new URL(request.url);
     const publicRequest = searchParams.get("public") === "1";
@@ -122,12 +124,12 @@ export async function GET(request) {
     }
     return NextResponse.json({ success: true, banner: serializeAdmin(banner) });
   } catch (error) {
-    console.error("Special offer banner fetch error:", error);
+    logger.error("Special offer banner fetch error:", error);
     return NextResponse.json({ success: false, message: "Unable to load special offer banner" }, { status: 500 });
   }
 }
 
-export async function PUT(request) {
+async function PUTHandler(request) {
   const uploads = [];
   try {
     const access = await requirePermission(request, PERMISSIONS.HOMEPAGE_MANAGE);
@@ -187,17 +189,20 @@ export async function PUT(request) {
     const retainedIds = new Set([banner.leftImage?.public_id, banner.rightImage?.public_id]);
     for (const oldImage of oldImages) {
       if (oldImage?.public_id && !retainedIds.has(oldImage.public_id)) {
-        try { await deleteCloudinaryFile(oldImage.public_id); } catch (deleteError) { console.error("Could not remove replaced offer image:", deleteError); }
+        try { await deleteCloudinaryFile(oldImage.public_id); } catch (deleteError) { logger.error("Could not remove replaced offer image:", deleteError); }
       }
     }
 
     return NextResponse.json({ success: true, banner: serializeAdmin(banner.toObject()) });
   } catch (error) {
-    console.error("Special offer banner save error:", error);
+    logger.error("Special offer banner save error:", error);
     for (const publicId of uploads) {
-      try { await deleteCloudinaryFile(publicId); } catch (cleanupError) { console.error("Could not clean up an unsaved offer image:", cleanupError); }
+      try { await deleteCloudinaryFile(publicId); } catch (cleanupError) { logger.error("Could not clean up an unsaved offer image:", cleanupError); }
     }
     const status = error.statusCode && error.statusCode >= 400 && error.statusCode < 600 ? error.statusCode : 500;
     return NextResponse.json({ success: false, message: error.message || "Unable to save special offer banner" }, { status });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/homepage/special-offer");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/homepage/special-offer");

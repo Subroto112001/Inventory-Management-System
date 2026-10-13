@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -5,7 +6,7 @@ import PurchaseOrder from "@/lib/models/PurchaseOrder";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { increaseStock } from "@/lib/inventory/stockService";
 
-export async function POST(request, { params }) {
+async function POSTHandler(request, { params }) {
   const access = await requirePermission(
     request,
     PERMISSIONS.PROCUREMENT_MANAGE,
@@ -91,3 +92,5 @@ export async function POST(request, { params }) {
   }
   return NextResponse.json({ success: true, purchaseOrder: updatedOrder });
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/purchase-orders/[id]/receive");

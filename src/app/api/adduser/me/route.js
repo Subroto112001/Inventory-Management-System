@@ -1,7 +1,9 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const user = await getAuthenticatedUser(request);
 
@@ -26,7 +28,7 @@ export async function GET(request) {
       },
     );
   } catch (error) {
-    console.error("Get User API Error:", error);
+    logger.error("Get User API Error:", error);
 
     return NextResponse.json(
       { message: "Internal server error", error },
@@ -34,3 +36,5 @@ export async function GET(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/adduser/me");

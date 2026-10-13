@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -8,7 +10,7 @@ import User, {
 } from "@/lib/models/User";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
     if (!access.ok) return access.response;
@@ -79,7 +81,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // ইমেইল পরিবর্তন হলে, অন্য কোনো ইউজারের সাথে duplicate কিনা চেক
+    // à¦‡à¦®à§‡à¦‡à¦² à¦ªà¦°à¦¿à¦¬à¦°à§à¦¤à¦¨ à¦¹à¦²à§‡, à¦…à¦¨à§à¦¯ à¦•à§‹à¦¨à§‹ à¦‡à¦‰à¦œà¦¾à¦°à§‡à¦° à¦¸à¦¾à¦¥à§‡ duplicate à¦•à¦¿à¦¨à¦¾ à¦šà§‡à¦•
     const normalizedEmail = email.toLowerCase();
     if (normalizedEmail !== existingUser.email) {
       const emailTaken = await User.findOne({
@@ -135,7 +137,7 @@ export async function PUT(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Update User API Error:", error);
+    logger.error("Update User API Error:", error);
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((val) => val.message);
       return NextResponse.json(
@@ -156,7 +158,7 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   try {
     const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
     if (!access.ok) return access.response;
@@ -178,10 +180,13 @@ export async function DELETE(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Delete User API Error:", error);
+    logger.error("Delete User API Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
     );
   }
 }
+
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/adduser/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/adduser/[id]");

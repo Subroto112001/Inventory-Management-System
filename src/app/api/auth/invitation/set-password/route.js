@@ -1,9 +1,11 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
 import { hashSecret } from "@/lib/auth";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const { email, setupToken, password } = await request.json();
     if (!email || !setupToken || !password) {
@@ -52,10 +54,12 @@ export async function POST(request) {
         { status: 400 },
       );
     }
-    console.error("Password setup error:", error);
+    logger.error("Password setup error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/auth/invitation/set-password");

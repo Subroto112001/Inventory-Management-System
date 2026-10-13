@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Brand from "@/lib/models/Brand";
@@ -10,7 +12,7 @@ export const dynamic = "force-dynamic";
  * GET /api/brand
  * Fetch all brands
  */
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     await connectMongoDB();
 
@@ -74,7 +76,7 @@ export async function GET(request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("GET /api/brand error:", error);
+    logger.error("GET /api/brand error:", error);
 
     return NextResponse.json(
       {
@@ -90,7 +92,7 @@ export async function GET(request) {
  * POST /api/brand
  * Create a new brand
  */
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     await connectMongoDB();
 
@@ -257,7 +259,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("POST /api/brand error:", error);
+    logger.error("POST /api/brand error:", error);
 
     // ---------------------------------------------------------
     // Mongoose validation error
@@ -310,3 +312,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/brand");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/brand");

@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -15,7 +16,7 @@ const transitions = {
   Cancelled: [],
 };
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.PROCUREMENT_READ);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -36,7 +37,7 @@ export async function GET(request, { params }) {
   return NextResponse.json({ success: true, purchaseOrder });
 }
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   const access = await requirePermission(
     request,
     PERMISSIONS.PROCUREMENT_MANAGE,
@@ -73,3 +74,6 @@ export async function PATCH(request, { params }) {
   });
   return NextResponse.json({ success: true, purchaseOrder });
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/purchase-orders/[id]");
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/purchase-orders/[id]");

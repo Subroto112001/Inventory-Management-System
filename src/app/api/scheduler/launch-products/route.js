@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -6,8 +8,8 @@ import ExclusiveProduct from "@/lib/models/ExclusiveProduct";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) { return run(request); }
-export async function POST(request) { return run(request); }
+async function GETHandler(request) { return run(request); }
+async function POSTHandler(request) { return run(request); }
 
 async function run(request) {
   const secret = process.env.SCHEDULER_SECRET;
@@ -37,7 +39,10 @@ async function run(request) {
     }
     return NextResponse.json({ success: true, processed: due.length, checkedAt: now.toISOString() });
   } catch (error) {
-    console.error("Scheduled product launch failed", error);
+    logger.error("Scheduled product launch failed", error);
     return NextResponse.json({ success: false, message: "Scheduled launch processing failed." }, { status: 500 });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/scheduler/launch-products");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/scheduler/launch-products");

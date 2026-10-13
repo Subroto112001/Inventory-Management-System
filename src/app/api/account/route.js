@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import User from "@/lib/models/User";
@@ -43,13 +45,13 @@ async function getSelf(request) {
   return { user };
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await getSelf(request);
   if (access.response) return access.response;
   return NextResponse.json({ success: true, user: serializeUser(access.user) });
 }
 
-export async function PATCH(request) {
+async function PATCHHandler(request) {
   const access = await getSelf(request);
   if (access.response) return access.response;
 
@@ -111,7 +113,7 @@ export async function PATCH(request) {
     if (uploadedImage) user.image = { public_id: uploadedImage.publicId, url: uploadedImage.url };
     await user.save();
     if (uploadedImage && previousImageId) {
-      deleteCloudinaryFile(previousImageId).catch((error) => console.error("Unable to remove replaced profile image:", error?.message));
+      deleteCloudinaryFile(previousImageId).catch((error) => logger.error("Unable to remove replaced profile image:", error));
     }
 
     return NextResponse.json({ success: true, user: serializeUser(user) });
@@ -137,7 +139,7 @@ export async function PATCH(request) {
   }
 }
 
-export async function PUT(request) {
+async function PUTHandler(request) {
   const access = await getSelf(request);
   if (access.response) return access.response;
 
@@ -187,3 +189,7 @@ export async function PUT(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/account");
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/account");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/account");

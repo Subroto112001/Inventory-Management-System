@@ -1,10 +1,12 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
 import { hashSecret } from "@/lib/auth";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const { email, code } = await request.json();
     const normalizedEmail = email?.trim().toLowerCase();
@@ -65,10 +67,12 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, setupToken }, { status: 200 });
   } catch (error) {
-    console.error("Invitation verification error:", error);
+    logger.error("Invitation verification error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/auth/invitation/verify");

@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { getAuthenticatedUser, isCustomer } from "@/lib/auth";
@@ -18,7 +19,7 @@ function denied(user) {
   return null;
 }
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   const user = await getAuthenticatedUser(request);
   const response = denied(user);
   if (response) return response;
@@ -55,7 +56,7 @@ export async function PATCH(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   const user = await getAuthenticatedUser(request);
   const response = denied(user);
   if (response) return response;
@@ -78,3 +79,6 @@ export async function DELETE(request, { params }) {
   await user.save();
   return NextResponse.json({ success: true, addresses: user.addresses });
 }
+
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/account/addresses/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/account/addresses/[id]");

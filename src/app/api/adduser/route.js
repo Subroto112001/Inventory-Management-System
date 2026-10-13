@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import mongoose from "mongoose";
@@ -13,7 +15,7 @@ import { sendInvitationCode } from "@/lib/mailer";
 // import { getServerSession } from "next-auth";
 // import { authOptions } from "@/lib/auth";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.USERS_MANAGE);
     if (!access.ok) return access.response;
@@ -136,7 +138,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Add User API Error:", error);
+    logger.error("Add User API Error:", error);
 
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((val) => val.message);
@@ -160,7 +162,7 @@ export async function POST(request) {
   }
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.USERS_READ);
     if (!access.ok) return access.response;
@@ -186,10 +188,13 @@ export async function GET(request) {
 
     return NextResponse.json({ success: true, users: result }, { status: 200 });
   } catch (error) {
-    console.error("Fetch Users API Error:", error);
+    logger.error("Fetch Users API Error:", error);
     return NextResponse.json(
       { message: "Internal server error", error: error.message },
       { status: 500 },
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/adduser");
+export const GET = withApiErrorHandling(GETHandler, "GET /api/adduser");

@@ -1,24 +1,28 @@
-// lib/mongodb.js
+﻿// lib/mongodb.js
 import mongoose from "mongoose";
 import { validateServerEnv } from "@/lib/env";
+import { logger } from "@/lib/serverLogger";
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || "ims";
+let connectionPromise = null;
 
 const connectMongoDB = async () => {
-  try {
-    validateServerEnv(["MONGODB_URI"]);
-    // if already connected, return the existing connection
-    if (mongoose.connection.readyState === 1) {
-      return mongoose.connection.asPromise();
-    }
-    await mongoose.connect(MONGODB_URI, {
-      dbName: MONGODB_DB,
-    });
-    console.log("Connected to MongoDB successfully.");
-  } catch (error) {
-    console.error("Error connecting to MongoDB: ", error);
-    throw new Error("Failed to connect to MongoDB");
+  validateServerEnv(["MONGODB_URI"]);
+  if (mongoose.connection.readyState === 1) return mongoose.connection;
+
+  if (mongoose.connection.readyState === 0 || !connectionPromise) {
+    connectionPromise = mongoose.connect(MONGODB_URI, { dbName: MONGODB_DB })
+      .then(() => {
+        logger.info("Connected to MongoDB successfully.");
+        return mongoose.connection;
+      })
+      .catch((error) => {
+        connectionPromise = null;
+        throw error;
+      });
   }
+
+  return connectionPromise;
 };
 
 export default connectMongoDB;

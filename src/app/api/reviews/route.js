@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -10,7 +12,7 @@ import Review from "../../../lib/models/Review.js";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const productId = new URL(request.url).searchParams.get("productId");
     if (!mongoose.isValidObjectId(productId))
@@ -45,14 +47,14 @@ export async function GET(request) {
       hasReviewed,
     });
   } catch (e) {
-    console.error("Reviews GET error", e);
+    logger.error("Reviews GET error", e);
     return NextResponse.json(
       { message: "Unable to load reviews" },
       { status: 500 },
     );
   }
 }
-export async function POST(request) {
+async function POSTHandler(request) {
   const user = await requireAuth(request);
   if (!user || user.role !== "Customer")
     return NextResponse.json(
@@ -110,14 +112,14 @@ export async function POST(request) {
         { message: "You have already reviewed this product" },
         { status: 409 },
       );
-    console.error("Reviews POST error", e);
+    logger.error("Reviews POST error", e);
     return NextResponse.json(
       { message: "Unable to submit review" },
       { status: 500 },
     );
   }
 }
-export async function DELETE(request) {
+async function DELETEHandler(request) {
   const access = await requireStaff(request);
   if (!access.ok) return access.response;
   if (!["Admin", "System Admin", "Manager"].includes(access.user.role))
@@ -138,10 +140,14 @@ export async function DELETE(request) {
       ? NextResponse.json({ success: true })
       : NextResponse.json({ message: "Review not found" }, { status: 404 });
   } catch (e) {
-    console.error("Reviews DELETE error", e);
+    logger.error("Reviews DELETE error", e);
     return NextResponse.json(
       { message: "Unable to moderate review" },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/reviews");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/reviews");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/reviews");

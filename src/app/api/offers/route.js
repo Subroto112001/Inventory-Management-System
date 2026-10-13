@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import Offer from "@/lib/models/Offer";
 import { normalizeOfferInput, serializeOffer } from "@/lib/offerHelpers";
@@ -6,8 +8,8 @@ import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/offers  — list all offers, newest first
-export async function GET(request) {
+// GET /api/offers  â€” list all offers, newest first
+async function GETHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.OFFERS_READ);
     if (!access.ok) return access.response;
@@ -41,7 +43,7 @@ export async function GET(request) {
       { status: 200 },
     );
   } catch (err) {
-    console.error("GET /api/offers error:", err);
+    logger.error("GET /api/offers error:", err);
     return NextResponse.json(
       { success: false, message: "Failed to fetch offers." },
       { status: 500 },
@@ -49,8 +51,8 @@ export async function GET(request) {
   }
 }
 
-// POST /api/offers — create a new offer
-export async function POST(request) {
+// POST /api/offers â€” create a new offer
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.OFFERS_MANAGE);
     if (!access.ok) return access.response;
@@ -97,10 +99,13 @@ export async function POST(request) {
       );
     }
 
-    console.error("POST /api/offers error:", err);
+    logger.error("POST /api/offers error:", err);
     return NextResponse.json(
       { success: false, message: "Failed to create offer." },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/offers");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/offers");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -6,7 +8,7 @@ import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+async function GETHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.INVENTORY_READ);
   if (!access.ok) return access.response;
 
@@ -101,10 +103,12 @@ export async function GET(request) {
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    console.error("Fetch inventory movements error:", error);
+    logger.error("Fetch inventory movements error:", error);
     return NextResponse.json(
       { success: false, message: "Unable to fetch inventory history" },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/inventory/movements");

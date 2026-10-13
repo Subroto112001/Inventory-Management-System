@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Category from "@/lib/models/Category";
@@ -12,7 +14,7 @@ export const revalidate = 0;
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const recordType = (url) => new URL(url).searchParams.get("type");
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const { searchParams } = new URL(request.url);
     const publicRead = searchParams.get("public") === "1";
@@ -50,7 +52,10 @@ export async function GET(request) {
       ...(activeOnly ? { isActive: true } : {}),
     };
     const [rawCategories, subcategories] = await Promise.all([
-      Category.collection.find(rootFilter).sort({ categoryName: 1, _id: 1 }).toArray(),
+      Category.aggregate([
+        { $match: rootFilter },
+        { $sort: { categoryName: 1, _id: 1 } },
+      ]).exec(),
       Subcategory.find(activeOnly ? { isActive: true } : {}).sort({ subcategoryName: 1, _id: 1 }).lean(),
     ]);
     const categoryIds = rawCategories.map((doc) => doc._id);
@@ -93,12 +98,12 @@ export async function GET(request) {
     }
     return NextResponse.json({ success: true, categories: mapped });
   } catch (error) {
-    console.error("Fetch Categories API Error:", error);
+    logger.error("Fetch Categories API Error:", error);
     return NextResponse.json({ success: false, message: "Unable to load Categories." }, { status: 500 });
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(request, PERMISSIONS.CATEGORIES_MANAGE);
     if (!access.ok) return access.response;
@@ -119,9 +124,12 @@ export async function POST(request) {
     const category = await Category.create({ categoryName, categoryCode, description, image: uploaded ? { public_id: uploaded.publicId, url: uploaded.url } : { public_id: null, url: null }, products: [], createdBy: access.user._id, isActive: true });
     return NextResponse.json({ success: true, message: "Category created successfully.", category: { id: category._id.toString(), categoryName: category.categoryName, categoryCode: category.categoryCode, description: category.description, image: category.image, productCount: 0, subcategoryCount: 0, isActive: category.isActive, createdAt: category.createdAt, updatedAt: category.updatedAt } }, { status: 201 });
   } catch (error) {
-    console.error("Create Category API Error:", error);
+    logger.error("Create Category API Error:", error);
     if (error.code === 11000) return NextResponse.json({ success: false, message: "A Category with this name or code already exists." }, { status: 409 });
     if (error.name === "ValidationError") return NextResponse.json({ success: false, message: Object.values(error.errors).map((item) => item.message).join(" ") }, { status: 400 });
     return NextResponse.json({ success: false, message: error.message || "Unable to create Category." }, { status: error.statusCode === 403 ? 502 : 500 });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/category");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/category");

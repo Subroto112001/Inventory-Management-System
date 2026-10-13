@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser, isCustomer } from "@/lib/auth";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -18,14 +19,14 @@ function accessResponse(user) {
   return null;
 }
 
-export async function GET(request) {
+async function GETHandler(request) {
   const user = await getAuthenticatedUser(request);
   const denied = accessResponse(user);
   if (denied) return denied;
   return NextResponse.json({ success: true, addresses: user.addresses || [] });
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const user = await getAuthenticatedUser(request);
   const denied = accessResponse(user);
   if (denied) return denied;
@@ -59,3 +60,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/account/addresses");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/account/addresses");

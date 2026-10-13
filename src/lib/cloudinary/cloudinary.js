@@ -1,3 +1,4 @@
+﻿import { logger } from "@/lib/serverLogger";
 import { v2 as cloudinary } from "cloudinary";
 import { validateUploadEnv } from "@/lib/env";
 
@@ -63,7 +64,7 @@ export const uploadImageToCloudinary = async (
       url: image.secure_url,
     };
   } catch (error) {
-    console.error("Cloudinary Upload Error:", error);
+    logger.error("Cloudinary Upload Error:", error);
 
     const message = error?.error?.message || error.message;
     const uploadError = new Error(`Cloudinary file upload failed: ${message}`);
@@ -86,7 +87,7 @@ export const deleteCloudinaryFile = async (publicId) => {
 
     return response;
   } catch (error) {
-    console.error("Cloudinary Delete Error:", error);
+    logger.error("Cloudinary Delete Error:", error);
 
     throw new Error(`Cloudinary file deletion failed: ${error.message}`);
   }

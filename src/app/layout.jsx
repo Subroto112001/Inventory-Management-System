@@ -1,4 +1,5 @@
 import "./globals.css";
+import ClientErrorDiagnostics from "@/Component/ClientErrorDiagnostics";
 import {
   getStoreSettings,
   normalizeTheme,
@@ -24,6 +25,7 @@ export default async function RootLayout({ children }) {
         className="min-h-screen antialiased"
         style={themeStyleVars(settings)}
       >
+        <ClientErrorDiagnostics />
         <div data-store-name={theme.storeName}>{children}</div>
       </body>
     </html>

@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Order from "@/lib/models/Order";
@@ -7,7 +8,7 @@ import { hasAnyPermission, PERMISSIONS } from "@/lib/authorization";
 import connectMongoDB from "@/lib/databse/mongodb";
 import { getStoreSettings } from "@/lib/storeSettings";
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   const user = await getAuthenticatedUser(request);
   if (!user)
     return NextResponse.json(
@@ -108,3 +109,5 @@ export async function GET(request, { params }) {
   }
   return NextResponse.json({ success: true, invoice });
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/orders/[id]/invoice");

@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -5,7 +6,7 @@ import Supplier from "@/lib/models/Supplier";
 import PurchaseOrder from "@/lib/models/PurchaseOrder";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.SUPPLIERS_READ);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -24,7 +25,7 @@ export async function GET(request, { params }) {
   return NextResponse.json({ success: true, supplier });
 }
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.SUPPLIERS_UPDATE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -75,7 +76,7 @@ export async function PATCH(request, { params }) {
   return NextResponse.json({ success: true, supplier });
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.SUPPLIERS_UPDATE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -102,3 +103,7 @@ export async function DELETE(request, { params }) {
     );
   return NextResponse.json({ success: true, message: "Supplier deleted" });
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/suppliers/[id]");
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/suppliers/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/suppliers/[id]");

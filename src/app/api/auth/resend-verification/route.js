@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
@@ -12,7 +14,7 @@ const GENERIC_RESPONSE = {
   retryAfter: 60,
 };
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const rateKey = `resend-verification:${ip}`;
   const limit = checkRateLimit(rateKey, { limit: 5, windowMs: 15 * 60 * 1000 });
@@ -78,12 +80,14 @@ export async function POST(request) {
           $set: { emailVerificationOtpAttempts: 0 },
         },
       );
-      console.error("Verification OTP email could not be sent:", error?.message);
+      logger.error("Verification OTP email could not be sent:", error);
       return NextResponse.json({ success: false, message: "Unable to send the verification code. Please try again." }, { status: 503 });
     }
     return NextResponse.json(GENERIC_RESPONSE);
   } catch (error) {
-    console.error("Resend verification OTP error:", error?.message);
+    logger.error("Resend verification OTP error:", error);
     return NextResponse.json({ success: false, message: "Unable to send the verification code. Please try again." }, { status: 500 });
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/auth/resend-verification");

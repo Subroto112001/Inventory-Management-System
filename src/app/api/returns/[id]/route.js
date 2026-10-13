@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -13,7 +14,7 @@ const transitions = {
   Completed: [],
 };
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.RETURNS_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -69,3 +70,5 @@ export async function PATCH(request, { params }) {
   }
   return NextResponse.json({ success: true, return: updated });
 }
+
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/returns/[id]");

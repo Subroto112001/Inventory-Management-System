@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
@@ -12,7 +13,7 @@ const MANUAL_MOVEMENT_TYPES = new Set([
   "PURCHASE",
 ]);
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.INVENTORY_ADJUST);
   if (!access.ok) return access.response;
 
@@ -90,3 +91,5 @@ export async function POST(request) {
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/inventory/adjust");

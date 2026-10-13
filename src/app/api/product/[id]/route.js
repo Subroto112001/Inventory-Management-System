@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -47,7 +49,7 @@ function serializePublicProduct(product) {
   };
 }
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   try {
     const publicRead = new URL(request.url).searchParams.get("public") === "1";
     if (!publicRead) {
@@ -164,7 +166,7 @@ export async function GET(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Fetch Product API Error:", error);
+    logger.error("Fetch Product API Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
@@ -172,7 +174,7 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   try {
     const access = await requirePermission(
       request,
@@ -298,7 +300,7 @@ export async function PUT(request, { params }) {
       if (!file.type?.startsWith("image/") || file.size > 5 * 1024 * 1024) return NextResponse.json({ message: file.size > 5 * 1024 * 1024 ? "Each image must be 5 MB or smaller." : "Only image files are allowed." }, { status: 400 });
     }
 
-    // SKU পরিবর্তন হলে, অন্য প্রোডাক্টের সাথে duplicate কিনা চেক
+    // SKU à¦ªà¦°à¦¿à¦¬à¦°à§à¦¤à¦¨ à¦¹à¦²à§‡, à¦…à¦¨à§à¦¯ à¦ªà§à¦°à§‹à¦¡à¦¾à¦•à§à¦Ÿà§‡à¦° à¦¸à¦¾à¦¥à§‡ duplicate à¦•à¦¿à¦¨à¦¾ à¦šà§‡à¦•
     const normalizedSKU = productSKU.toUpperCase();
     if (normalizedSKU !== existingProduct.productSKU) {
       const skuTaken = await Product.findOne({
@@ -363,8 +365,8 @@ export async function PUT(request, { params }) {
     }
     if (paymentOption !== undefined) existingProduct.paymentOption = paymentOption;
     if ([returnEligible, returnWindowDays, returnConditions, returnInstructions].some((value) => value !== undefined)) existingProduct.returnPolicy = { eligible: returnEligible === undefined || returnEligible === "" ? undefined : returnEligible === true || returnEligible === "true", windowDays: parsedReturnWindow, conditions: String(returnConditions || "").trim(), instructions: String(returnInstructions || "").trim() };
-    // note: currentStock ইচ্ছাকৃতভাবে এখানে টাচ করা হয়নি —
-    // এটা initialStock এডিট করলে বদলানো উচিত না, বরং stock adjustment API দিয়ে বদলানো উচিত
+    // note: currentStock à¦‡à¦šà§à¦›à¦¾à¦•à§ƒà¦¤à¦­à¦¾à¦¬à§‡ à¦à¦–à¦¾à¦¨à§‡ à¦Ÿà¦¾à¦š à¦•à¦°à¦¾ à¦¹à¦¯à¦¼à¦¨à¦¿ â€”
+    // à¦à¦Ÿà¦¾ initialStock à¦à¦¡à¦¿à¦Ÿ à¦•à¦°à¦²à§‡ à¦¬à¦¦à¦²à¦¾à¦¨à§‹ à¦‰à¦šà¦¿à¦¤ à¦¨à¦¾, à¦¬à¦°à¦‚ stock adjustment API à¦¦à¦¿à¦¯à¦¼à§‡ à¦¬à¦¦à¦²à¦¾à¦¨à§‹ à¦‰à¦šà¦¿à¦¤
 
     const categorySession = await mongoose.startSession();
     try {
@@ -424,7 +426,7 @@ export async function PUT(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Update Product API Error:", error);
+    logger.error("Update Product API Error:", error);
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((val) => val.message);
       return NextResponse.json(
@@ -445,7 +447,7 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   try {
     const access = await requirePermission(
       request,
@@ -477,10 +479,14 @@ export async function DELETE(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Delete Product API Error:", error);
+    logger.error("Delete Product API Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/product/[id]");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/product/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/product/[id]");

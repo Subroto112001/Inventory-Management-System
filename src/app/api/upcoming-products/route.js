@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
@@ -10,7 +12,7 @@ import { PERMISSIONS, requirePermission } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+async function GETHandler(request) {
   const publicRead = new URL(request.url).searchParams.get("public") === "1";
   if (!publicRead) {
     const access = await requirePermission(request, PERMISSIONS.UPCOMING_PRODUCTS_MANAGE);
@@ -31,7 +33,7 @@ export async function GET(request) {
   })) });
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const access = await requirePermission(request, PERMISSIONS.UPCOMING_PRODUCTS_MANAGE);
   if (!access.ok) return access.response;
   try {
@@ -111,7 +113,10 @@ export async function POST(request) {
   } catch (error) {
     if (error.code === 11000) return NextResponse.json({ success: false, message: "That SKU is already in use." }, { status: 409 });
     if (error.name === "ValidationError" || error.name === "CastError") return NextResponse.json({ success: false, message: error.message }, { status: 400 });
-    console.error("Create upcoming product failed", error);
+    logger.error("Create upcoming product failed", error);
     return NextResponse.json({ success: false, message: "Unable to create upcoming product." }, { status: 500 });
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/upcoming-products");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/upcoming-products");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
@@ -5,6 +7,7 @@ import connectMongoDB from "@/lib/databse/mongodb";
 import Brand from "@/lib/models/Brand";
 import Product from "@/lib/models/Product";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
+import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +15,7 @@ export const dynamic = "force-dynamic";
  * GET /api/brand/:id
  * Fetch a single brand
  */
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   try {
     await connectMongoDB();
 
@@ -55,7 +58,7 @@ export async function GET(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("GET /api/brand/[id] error:", error);
+    logger.error("GET /api/brand/[id] error:", error);
 
     return NextResponse.json(
       {
@@ -71,7 +74,7 @@ export async function GET(request, { params }) {
  * PUT /api/brand/:id
  * Update a brand
  */
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   try {
     await connectMongoDB();
 
@@ -103,7 +106,12 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const body = await request.json();
+    const contentType = request.headers.get("content-type") || "";
+    const isFormData = contentType.includes("multipart/form-data");
+    const formData = isFormData ? await request.formData() : null;
+    const body = formData
+      ? Object.fromEntries([...formData.entries()].filter(([key]) => key !== "logo"))
+      : await request.json();
 
     const {
       brandName,
@@ -177,7 +185,12 @@ export async function PUT(request, { params }) {
       updateData.description = description?.trim() || undefined;
     }
 
-    if (logo !== undefined) {
+    if (formData?.get("logo")?.size > 0) {
+      const uploadedLogo = await uploadImageToCloudinary(formData.get("logo"), "brands");
+      if (uploadedLogo) updateData.logo = { public_id: uploadedLogo.publicId, url: uploadedLogo.url };
+    } else if (body.removeLogo === "true") {
+      // Removed with $unset below.
+    } else if (logo !== undefined) {
       updateData.logo =
         logo && typeof logo === "object"
           ? {
@@ -221,9 +234,12 @@ export async function PUT(request, { params }) {
 
     updateData.updatedBy = user._id || user.id;
 
+    const update = { $set: updateData };
+    if (body.removeLogo === "true") update.$unset = { logo: 1 };
+
     const updatedBrand = await Brand.findByIdAndUpdate(
       id,
-      { $set: updateData },
+      update,
       {
         new: true,
         runValidators: true,
@@ -242,7 +258,7 @@ export async function PUT(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("PUT /api/brand/[id] error:", error);
+    logger.error("PUT /api/brand/[id] error:", error);
 
     if (error?.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => ({
@@ -288,7 +304,7 @@ export async function PUT(request, { params }) {
  * DELETE /api/brand/:id
  * Delete a brand
  */
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   try {
     await connectMongoDB();
 
@@ -319,7 +335,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Prevent deleting a brand that is already assigned to products
+    // Keep product references valid: refuse deletion while any product uses this brand.
     const productCount = await Product.countDocuments({
       brand: id,
     });
@@ -346,7 +362,7 @@ export async function DELETE(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("DELETE /api/brand/[id] error:", error);
+    logger.error("DELETE /api/brand/[id] error:", error);
 
     return NextResponse.json(
       {
@@ -357,3 +373,7 @@ export async function DELETE(request, { params }) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/brand/[id]");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/brand/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/brand/[id]");

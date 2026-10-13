@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -11,7 +13,7 @@ import { recordAuditLog } from "@/lib/auditLog";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.CATEGORIES_READ);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -22,12 +24,12 @@ export async function GET(request, { params }) {
     if (!category || await Category.collection.findOne({ _id: category._id, parentCategory: { $type: "objectId" } })) return NextResponse.json({ success: false, message: "Category not found." }, { status: 404 });
     return NextResponse.json({ success: true, category: { id: category._id.toString(), categoryName: category.categoryName, categoryCode: category.categoryCode, description: category.description || "", image: category.image || null, isActive: category.isActive } });
   } catch (error) {
-    console.error("Fetch Category API Error:", error);
+    logger.error("Fetch Category API Error:", error);
     return NextResponse.json({ success: false, message: "Unable to load Category." }, { status: 500 });
   }
 }
 
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.CATEGORIES_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -62,14 +64,14 @@ export async function PUT(request, { params }) {
     await recordAuditLog({ actor: access.user._id, action: "CATEGORY_UPDATED", resource: "Category", resourceId: category._id, metadata: { categoryName, categoryCode } });
     return NextResponse.json({ success: true, message: "Category updated successfully.", category: { id: category._id.toString(), categoryName, categoryCode, description, image, isActive: category.isActive } });
   } catch (error) {
-    console.error("Update Category API Error:", error);
+    logger.error("Update Category API Error:", error);
     if (error.code === 11000) return NextResponse.json({ success: false, message: "That Category name or code is already in use." }, { status: 409 });
     if (error.name === "ValidationError") return NextResponse.json({ success: false, message: Object.values(error.errors).map((item) => item.message).join(" ") }, { status: 400 });
     return NextResponse.json({ success: false, message: "Unable to update Category." }, { status: 500 });
   }
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.CATEGORIES_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -97,7 +99,7 @@ export async function DELETE(request, { params }) {
     });
     return NextResponse.json({ success: true, message: `Category and ${childIds.length} Subcategory(ies) deleted. ${affectedProductCount} product(s) were preserved without category assignments.`, affectedProductCount });
   } catch (error) {
-    console.error("Delete Category API Error:", error);
+    logger.error("Delete Category API Error:", error);
     if (error.statusCode === 404) return NextResponse.json({ success: false, message: error.message }, { status: 404 });
     // For standalone MongoDB deployments, preserve products first, then remove
     // subcategories, then Category. Each later step only removes dangling refs.
@@ -112,10 +114,10 @@ export async function DELETE(request, { params }) {
         await Product.updateMany(filter, { $unset: { category: "", subcategory: "" } });
         await Subcategory.deleteMany({ category: category._id });
         await Category.deleteOne({ _id: category._id });
-        try { await recordAuditLog({ actor: access.user._id, action: "CATEGORY_DELETED", resource: "Category", resourceId: category._id, metadata: { categoryName: category.categoryName, deletedSubcategoryIds: childIds.map(String), affectedProductCount, mode: "ordered-fallback" } }); } catch (auditError) { console.error("Category deletion audit failed:", auditError); }
+        try { await recordAuditLog({ actor: access.user._id, action: "CATEGORY_DELETED", resource: "Category", resourceId: category._id, metadata: { categoryName: category.categoryName, deletedSubcategoryIds: childIds.map(String), affectedProductCount, mode: "ordered-fallback" } }); } catch (auditError) { logger.error("Category deletion audit failed:", auditError); }
         return NextResponse.json({ success: true, message: `Category and ${childIds.length} Subcategory(ies) deleted. ${affectedProductCount} product(s) were preserved without category assignments.`, affectedProductCount });
       } catch (fallbackError) {
-        console.error("Ordered Category deletion failed:", fallbackError);
+        logger.error("Ordered Category deletion failed:", fallbackError);
         return NextResponse.json({ success: false, message: "Category deletion is incomplete. Products were not deleted; review the Category and Subcategory records before retrying." }, { status: 503 });
       }
     }
@@ -124,3 +126,7 @@ export async function DELETE(request, { params }) {
     await session?.endSession();
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/category/[id]");
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/category/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/category/[id]");

@@ -1,10 +1,11 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
 import Product from "@/lib/models/Product";
 import { PERMISSIONS, requirePermission } from "@/lib/authorization";
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.UPCOMING_PRODUCTS_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -37,7 +38,7 @@ export async function PATCH(request, { params }) {
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   const access = await requirePermission(request, PERMISSIONS.UPCOMING_PRODUCTS_MANAGE);
   if (!access.ok) return access.response;
   const { id } = await params;
@@ -46,3 +47,6 @@ export async function DELETE(request, { params }) {
   const product = await Product.findOneAndUpdate({ _id: id, lifecycle: "scheduled" }, { $set: { lifecycle: "inactive", isActive: false } });
   return NextResponse.json({ success: !!product, message: product ? "Product archived." : "Scheduled product not found." }, { status: product ? 200 : 404 });
 }
+
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/upcoming-products/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/upcoming-products/[id]");

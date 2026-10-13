@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -8,7 +10,7 @@ import { calculateTax, getTaxSettings } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const user = await getAuthenticatedUser(request);
   if (!user) return NextResponse.json({ success: false, message: "Authentication required." }, { status: 401 });
   if (!isCustomer(user)) return NextResponse.json({ success: false, message: "Customer account required." }, { status: 403 });
@@ -73,7 +75,9 @@ export async function POST(request) {
     }
     if (error.message === "PREORDER_UNAVAILABLE") return NextResponse.json({ success: false, message: "Pre-order availability changed. Please refresh and try again." }, { status: 409 });
     if (/transaction|replica set|mongos/i.test(error.message || "")) return NextResponse.json({ success: false, message: "Pre-order creation requires MongoDB transaction support." }, { status: 503 });
-    console.error("Pre-order creation failed", error);
+    logger.error("Pre-order creation failed", error);
     return NextResponse.json({ success: false, message: "Unable to place pre-order." }, { status: 500 });
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/preorders");

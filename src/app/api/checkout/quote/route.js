@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -10,7 +12,7 @@ import { calculatePayableTotal, calculateShipping, roundMoney } from "@/lib/chec
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const user = await getAuthenticatedUser(request);
   if (!user)
     return NextResponse.json({ message: "Authentication required" }, { status: 401 });
@@ -104,7 +106,9 @@ export async function POST(request) {
       paymentMethods: ["Cash"],
     });
   } catch (error) {
-    console.error("Checkout quote error", error);
+    logger.error("Checkout quote error", error);
     return NextResponse.json({ message: "Unable to calculate checkout totals" }, { status: 500 });
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/checkout/quote");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -35,7 +37,7 @@ const serializePublicProduct = (product) => ({
   isActive: product.isActive,
 });
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const { searchParams } = new URL(request.url);
     const adminRequest = searchParams.get("admin") === "1";
@@ -83,7 +85,7 @@ export async function GET(request) {
 
     return NextResponse.json({ success: true, items, total: items.length });
   } catch (error) {
-    console.error("Exclusive products fetch error:", error);
+    logger.error("Exclusive products fetch error:", error);
     return NextResponse.json(
       { success: false, message: "Unable to load exclusive products" },
       { status: 500 },
@@ -91,7 +93,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -158,7 +160,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Create exclusive product error:", error);
+    logger.error("Create exclusive product error:", error);
     if (error.code === 11000) {
       return NextResponse.json(
         { success: false, message: "This product is already listed as featured" },
@@ -175,7 +177,7 @@ export async function POST(request) {
   }
 }
 
-export async function PATCH(request) {
+async function PATCHHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -287,7 +289,7 @@ export async function PATCH(request) {
       },
     });
   } catch (error) {
-    console.error("Update exclusive product error:", error);
+    logger.error("Update exclusive product error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -298,7 +300,7 @@ export async function PATCH(request) {
   }
 }
 
-export async function DELETE(request) {
+async function DELETEHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -344,10 +346,15 @@ export async function DELETE(request) {
         : "Exclusive product not found",
     });
   } catch (error) {
-    console.error("Delete exclusive product error:", error);
+    logger.error("Delete exclusive product error:", error);
     return NextResponse.json(
       { success: false, message: "Unable to remove exclusive product" },
       { status: 500 },
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/homepage/exclusive-products");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/homepage/exclusive-products");
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/homepage/exclusive-products");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/homepage/exclusive-products");

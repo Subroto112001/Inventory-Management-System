@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -25,7 +26,7 @@ async function loadAccess(request, id) {
   return { user, order };
 }
 
-export async function GET(request, { params }) {
+async function GETHandler(request, { params }) {
   const { id } = await params;
   const access = await loadAccess(request, id);
   if (access.response) return access.response;
@@ -37,7 +38,7 @@ export async function GET(request, { params }) {
   return NextResponse.json({ success: true, order: access.order });
 }
 
-export async function PATCH(request, { params }) {
+async function PATCHHandler(request, { params }) {
   const { id } = await params;
   const access = await loadAccess(request, id);
   if (access.response) return access.response;
@@ -118,3 +119,6 @@ export async function PATCH(request, { params }) {
     order: updatedOrder,
   });
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/orders/[id]");
+export const PATCH = withApiErrorHandling(PATCHHandler, "PATCH /api/orders/[id]");

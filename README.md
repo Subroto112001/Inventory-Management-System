@@ -29,6 +29,14 @@ The application rejects missing or short secrets and does not use a fallback key
 
 The existing `MONGODB_URI` and `MONGODB_DB` variables are also required for database access.
 
+## Error reporting
+
+The application follows Next.js `NODE_ENV` behavior: `npm run dev` enables development diagnostics, while `next build` and `next start` use production behavior. Development enables browser request diagnostics and dismissible error details; production keeps technical errors in server logs and returns safe messages for API failures. Do not set `NODE_ENV` manually in application code or expose diagnostic flags and server secrets through `NEXT_PUBLIC_*` variables.
+
+API responses include an `x-request-id` header. Error JSON responses also include `requestId` and a stable `error.code`; use that ID to find the matching structured server log entry. A valid incoming `x-request-id` (8 to 64 letters, digits, dots, underscores, or hyphens) is retained; other values are replaced. Production deployments should forward structured stdout/stderr logs to the hosting platform's private log service and set an appropriate retention/access policy.
+
+Validation and authentication errors keep their endpoint-specific response messages and status codes. Unexpected API failures return a generic message and do not include server stacks or database details.
+
 Product image uploads require a Cloudinary account. Add the server-only credentials to `.env.local`:
 
 ```env

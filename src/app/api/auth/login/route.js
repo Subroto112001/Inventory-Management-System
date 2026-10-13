@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import User from "@/lib/models/User";
@@ -9,7 +11,7 @@ import {
   recordRateLimitFailure,
 } from "@/lib/rateLimit";
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     // 1. Parse request body
     const body = await request.json();
@@ -129,14 +131,9 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    // 🔴 Show actual error in terminal
-    console.error("=================================");
-    console.error("LOGIN API ERROR");
-    console.error("Message:", error?.message);
-    console.error("Stack:", error?.stack);
-    console.error("=================================");
+    logger.error("Login API failed", error);
 
-    // 🔴 Send error to frontend during development
+    // ðŸ”´ Send error to frontend during development
     return NextResponse.json(
       {
         success: false,
@@ -146,3 +143,5 @@ export async function POST(request) {
     );
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/auth/login");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -8,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // PUT: Update a customer
-export async function PUT(request, { params }) {
+async function PUTHandler(request, { params }) {
   try {
     const access = await requirePermission(
       request,
@@ -121,7 +123,7 @@ export async function PUT(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Update Customer API Error:", error);
+    logger.error("Update Customer API Error:", error);
 
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((err) => err.message);
@@ -146,7 +148,7 @@ export async function PUT(request, { params }) {
 }
 
 // DELETE: Remove a customer
-export async function DELETE(request, { params }) {
+async function DELETEHandler(request, { params }) {
   try {
     const access = await requirePermission(
       request,
@@ -187,7 +189,7 @@ export async function DELETE(request, { params }) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Delete Customer API Error:", error);
+    logger.error("Delete Customer API Error:", error);
 
     return NextResponse.json(
       {
@@ -198,3 +200,6 @@ export async function DELETE(request, { params }) {
     );
   }
 }
+
+export const PUT = withApiErrorHandling(PUTHandler, "PUT /api/customer/[id]");
+export const DELETE = withApiErrorHandling(DELETEHandler, "DELETE /api/customer/[id]");

@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/databse/mongodb";
 import NewsletterSubscriber from "@/lib/models/NewsletterSubscriber";
@@ -8,7 +10,7 @@ export const revalidate = 0;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const forwardedIp = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const ipKey = `newsletter:ip:${forwardedIp}`;
   const ipRate = checkRateLimit(ipKey, { limit: 8, windowMs: 60 * 60 * 1000 });
@@ -45,7 +47,9 @@ export async function POST(request) {
     }
     return NextResponse.json({ success: true, alreadySubscribed: false, message: "You are subscribed to special offer updates." }, { status: 201 });
   } catch (error) {
-    console.error("Newsletter subscription error:", error);
+    logger.error("Newsletter subscription error:", error);
     return NextResponse.json({ success: false, message: "Unable to subscribe right now. Please try again later." }, { status: 500 });
   }
 }
+
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/newsletter/subscribe");

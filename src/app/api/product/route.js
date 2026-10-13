@@ -1,3 +1,5 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -51,7 +53,7 @@ function serializePublicProduct(product) {
 // =========================
 // GET PRODUCTS
 // =========================
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const { searchParams } = new URL(request.url);
     const publicRead = searchParams.get("public") === "1";
@@ -283,7 +285,7 @@ export async function GET(request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Fetch Products API Error:", error);
+    logger.error("Fetch Products API Error:", error);
 
     return NextResponse.json(
       {
@@ -297,7 +299,7 @@ export async function GET(request) {
 // =========================
 // POST PRODUCT
 // =========================
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     // -------------------------
     // Authentication
@@ -339,7 +341,7 @@ export async function POST(request) {
     const initialStock = formData.get("initialStock");
     const lowStockAlert = formData.get("lowStockAlert");
 
-    // Category (required) — the selected category's _id
+    // Category (required) â€” the selected category's _id
     const categoryId = formData.get("category")?.toString().trim();
     const subcategoryId = formData.get("subcategory")?.toString().trim() || "";
 
@@ -610,7 +612,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Add Product API Error:", error);
+    logger.error("Add Product API Error:", error);
 
     // Mongoose validation error
     if (error.name === "ValidationError") {
@@ -659,3 +661,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/product");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/product");

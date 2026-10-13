@@ -1,3 +1,4 @@
+﻿import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectMongoDB from "@/lib/databse/mongodb";
@@ -9,7 +10,7 @@ import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+async function GETHandler(request) {
   const user = await getAuthenticatedUser(request);
   if (!user)
     return NextResponse.json(
@@ -65,7 +66,7 @@ export async function GET(request) {
   });
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   const user = await getAuthenticatedUser(request);
   if (!user)
     return NextResponse.json(
@@ -152,3 +153,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/returns");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/returns");

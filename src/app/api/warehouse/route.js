@@ -1,10 +1,12 @@
+﻿import { logger } from "@/lib/serverLogger";
+import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 // Adjust the import paths based on your project's directory structure
 import Warehouse from "@/lib/models/Warehouse";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import connectMongoDB from "@/lib/databse/mongodb";
 
-export async function GET(request) {
+async function GETHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -27,7 +29,7 @@ export async function GET(request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Error fetching warehouses:", error);
+    logger.error("Error fetching warehouses:", error);
     return NextResponse.json(
       {
         success: false,
@@ -38,7 +40,7 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+async function POSTHandler(request) {
   try {
     const access = await requirePermission(
       request,
@@ -107,7 +109,7 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Error creating warehouse:", error);
+    logger.error("Error creating warehouse:", error);
 
     // Handle Mongoose Validation Errors gracefully for the frontend
     if (error.name === "ValidationError") {
@@ -128,3 +130,6 @@ export async function POST(request) {
     );
   }
 }
+
+export const GET = withApiErrorHandling(GETHandler, "GET /api/warehouse");
+export const POST = withApiErrorHandling(POSTHandler, "POST /api/warehouse");

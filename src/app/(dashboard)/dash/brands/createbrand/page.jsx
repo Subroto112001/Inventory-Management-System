@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   MdArrowBack,
   MdBusiness,
@@ -36,8 +36,11 @@ const INITIAL_FORM = {
 
 const MAX_LOGO_SIZE = 5 * 1024 * 1024;
 
-const CreateBrandPage = () => {
+export const BrandFormPage = () => {
   const router = useRouter();
+  const params = useParams();
+  const brandId = params?.id;
+  const isEditing = Boolean(brandId);
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState(INITIAL_FORM);
@@ -51,6 +54,31 @@ const CreateBrandPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loadingBrand, setLoadingBrand] = useState(isEditing);
+
+  useEffect(() => {
+    if (!brandId) return;
+    let cancelled = false;
+
+    const loadBrand = async () => {
+      try {
+        const response = await fetch(`/api/brand/${brandId}`, { cache: "no-store", credentials: "include" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.message || "Failed to load brand.");
+        if (cancelled) return;
+        const brand = data.brand;
+        setForm(Object.fromEntries(Object.keys(INITIAL_FORM).map((key) => [key, brand[key] ?? INITIAL_FORM[key]])));
+        setLogoPreview(brand.logo?.url || "");
+      } catch (error) {
+        if (!cancelled) setSubmitError(error?.message || "Failed to load brand.");
+      } finally {
+        if (!cancelled) setLoadingBrand(false);
+      }
+    };
+
+    loadBrand();
+    return () => { cancelled = true; };
+  }, [brandId]);
 
   // ------------------------------------------------------------
   // Completion
@@ -487,36 +515,8 @@ const CreateBrandPage = () => {
 
       formData.append("brandName", form.brandName.trim());
 
-      if (form.brandCode.trim()) {
-        formData.append("brandCode", form.brandCode.trim().toUpperCase());
-      }
-
-      if (form.description.trim()) {
-        formData.append("description", form.description.trim());
-      }
-
-      if (form.contactPerson.trim()) {
-        formData.append("contactPerson", form.contactPerson.trim());
-      }
-
-      if (form.email.trim()) {
-        formData.append("email", form.email.trim().toLowerCase());
-      }
-
-      if (form.phoneNumber.trim()) {
-        formData.append("phoneNumber", form.phoneNumber.trim());
-      }
-
-      if (form.website.trim()) {
-        formData.append("website", form.website.trim());
-      }
-
-      if (form.address.trim()) {
-        formData.append("address", form.address.trim());
-      }
-
-      if (form.district.trim()) {
-        formData.append("district", form.district.trim());
+      for (const key of ["brandCode", "description", "contactPerson", "email", "phoneNumber", "website", "address", "district"]) {
+        formData.append(key, form[key].trim());
       }
 
       formData.append("country", form.country.trim());
@@ -525,9 +525,10 @@ const CreateBrandPage = () => {
       if (logoFile) {
         formData.append("logo", logoFile);
       }
+      if (isEditing && !logoFile && !logoPreview) formData.append("removeLogo", "true");
 
-      const response = await fetch("/api/brand", {
-        method: "POST",
+      const response = await fetch(isEditing ? `/api/brand/${brandId}` : "/api/brand", {
+        method: isEditing ? "PUT" : "POST",
         body: formData,
         credentials: "include",
         cache: "no-store",
@@ -548,14 +549,14 @@ const CreateBrandPage = () => {
       }
 
       setSuccessMessage(
-        data?.message || "Brand has been created successfully.",
+        data?.message || (isEditing ? "Brand has been updated successfully." : "Brand has been created successfully."),
       );
 
       setTimeout(() => {
         router.push("/dash/brands");
       }, 1000);
     } catch (error) {
-      console.error("Create brand error:", error);
+      console.error(isEditing ? "Update brand error:" : "Create brand error:", error);
 
       setSubmitError(
         error?.message || "Something went wrong while creating the brand.",
@@ -590,6 +591,10 @@ const CreateBrandPage = () => {
   // UI
   // ------------------------------------------------------------
 
+  if (loadingBrand) {
+    return <div className="p-6 text-sm text-gray-500">Loading brand details…</div>;
+  }
+
   return (
     <div className="min-h-screen bg-[var(--theme-background)] px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1500px]">
@@ -608,7 +613,7 @@ const CreateBrandPage = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                  Create Brand
+                  {isEditing ? "Edit Brand" : "Create Brand"}
                 </h1>
 
                 <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
@@ -647,7 +652,7 @@ const CreateBrandPage = () => {
               ) : (
                 <>
                   <MdSave size={19} />
-                  Create Brand
+                  {isEditing ? "Edit Brand" : "Create Brand"}
                 </>
               )}
             </button>
@@ -1331,7 +1336,7 @@ const CreateBrandPage = () => {
               {/* Checklist */}
               <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 className="font-semibold text-slate-900">
-                  Before You Create
+                  {isEditing ? "Before You Save" : "Before You Create"}
                 </h2>
 
                 <div className="mt-4 space-y-3">
@@ -1394,7 +1399,7 @@ const CreateBrandPage = () => {
               ) : (
                 <>
                   <MdSave size={19} />
-                  Create Brand
+                  {isEditing ? "Save Changes" : "Create Brand"}
                 </>
               )}
             </button>
@@ -1459,4 +1464,4 @@ const ChecklistItem = ({ completed, text, optional = false }) => {
   );
 };
 
-export default CreateBrandPage;
+export default BrandFormPage;
