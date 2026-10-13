@@ -9,6 +9,7 @@ import Product from "@/lib/models/Product";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 import { recordAuditLog } from "@/lib/auditLog";
+import { allocateEntityCode } from "@/lib/entityCodeServer";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -49,11 +50,10 @@ async function PUTHandler(request, { params }) {
     const form = multipart ? await request.formData() : null;
     const body = form ? Object.fromEntries(form.entries()) : await request.json();
     const subcategoryName = String(body.subcategoryName ?? body.categoryName ?? "").trim();
-    const subcategoryCode = String(body.subcategoryCode ?? body.categoryCode ?? "").trim().toUpperCase();
     const categoryId = String(body.category ?? body.parentCategory ?? "").trim();
     const description = String(body.description || "").trim();
-    if (!subcategoryName || !subcategoryCode || !categoryId) return NextResponse.json({ success: false, message: "Subcategory name, code, and Category are required." }, { status: 400 });
-    if (subcategoryName.length > 100 || subcategoryCode.length > 30 || description.length > 500) return NextResponse.json({ success: false, message: "Subcategory name, code, or description exceeds its allowed length." }, { status: 400 });
+    if (!subcategoryName || !categoryId) return NextResponse.json({ success: false, message: "Subcategory name and Category are required." }, { status: 400 });
+    if (subcategoryName.length > 100 || description.length > 500) return NextResponse.json({ success: false, message: "Subcategory name or description exceeds its allowed length." }, { status: 400 });
     if (!mongoose.isValidObjectId(categoryId)) return NextResponse.json({ success: false, message: "Select a valid Category." }, { status: 400 });
     await connectMongoDB();
     const doc = await Subcategory.findById(id);
@@ -62,8 +62,6 @@ async function PUTHandler(request, { params }) {
     if (!category) return NextResponse.json({ success: false, message: "The selected Category does not exist or is inactive." }, { status: 400 });
     const duplicate = await Subcategory.findOne({ _id: { $ne: id }, category: category._id, subcategoryName: { $regex: `^${subcategoryName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } }).select("_id");
     if (duplicate) return NextResponse.json({ success: false, message: "A Subcategory with this name already exists in that Category." }, { status: 409 });
-    const duplicateCode = await Promise.all([Category.exists({ categoryCode: subcategoryCode }), Subcategory.exists({ _id: { $ne: id }, subcategoryCode })]);
-    if (duplicateCode.some(Boolean)) return NextResponse.json({ success: false, message: "A Category or Subcategory with this code already exists." }, { status: 409 });
     let image = doc.image;
     if (body.removeImage === "true" || body.removeImage === true) image = { public_id: null, url: null };
     const file = form?.get("image");
@@ -76,7 +74,7 @@ async function PUTHandler(request, { params }) {
     const assigned = await Product.find({ subcategory: doc._id }).select("_id").lean();
     const assignedIds = assigned.map((item) => item._id);
     doc.subcategoryName = subcategoryName;
-    doc.subcategoryCode = subcategoryCode;
+    if (!doc.subcategoryCode) doc.subcategoryCode = await allocateEntityCode("subcategory", subcategoryName, Subcategory);
     doc.category = category._id;
     doc.description = description;
     doc.image = image;

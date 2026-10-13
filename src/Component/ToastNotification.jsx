@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { MdCheckCircle, MdClose, MdErrorOutline, MdInfoOutline, MdWarning } from "react-icons/md";
 
@@ -12,11 +12,8 @@ const iconByType = {
 };
 
 export default function ToastNotification({ toast, onClose }) {
-  const [mounted, setMounted] = useState(false);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-
-  useEffect(() => setMounted(true), []);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => {
     if (!toast?.message) return undefined;
     const timeout = toast.type === "error" ? 7000 : 4500;
@@ -24,7 +21,7 @@ export default function ToastNotification({ toast, onClose }) {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  if (!mounted || !toast?.message) return null;
+  if (typeof document === "undefined" || !toast?.message) return null;
   const type = toast.type || "info";
   const Icon = iconByType[type] || MdInfoOutline;
   const styles = {

@@ -8,6 +8,7 @@ import Brand from "@/lib/models/Brand";
 import Product from "@/lib/models/Product";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
+import { allocateEntityCode } from "@/lib/entityCodeServer";
 
 export const dynamic = "force-dynamic";
 
@@ -115,7 +116,6 @@ async function PUTHandler(request, { params }) {
 
     const {
       brandName,
-      brandCode,
       description,
       logo,
       contactPerson,
@@ -149,36 +149,14 @@ async function PUTHandler(request, { params }) {
       }
     }
 
-    // Check duplicate brand code
-    if (brandCode?.trim()) {
-      const normalizedBrandCode = brandCode.trim().toUpperCase();
-
-      const duplicateCode = await Brand.findOne({
-        _id: { $ne: id },
-        brandCode: normalizedBrandCode,
-      });
-
-      if (duplicateCode) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "A brand with this code already exists",
-          },
-          { status: 409 },
-        );
-      }
-    }
-
     const updateData = {};
 
     if (brandName !== undefined) {
       updateData.brandName = brandName.trim();
     }
 
-    if (brandCode !== undefined) {
-      updateData.brandCode = brandCode?.trim()
-        ? brandCode.trim().toUpperCase()
-        : undefined;
+    if (!existingBrand.brandCode) {
+      updateData.brandCode = await allocateEntityCode("brand", brandName || existingBrand.brandName, Brand);
     }
 
     if (description !== undefined) {

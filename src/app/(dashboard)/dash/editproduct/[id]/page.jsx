@@ -10,7 +10,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   MdQrCodeScanner,
-  MdAutoFixHigh,
   MdCameraAlt,
   MdClose,
 } from "react-icons/md";
@@ -321,25 +320,15 @@ const EditProductPage = () => {
     setGallery(next);
   };
 
-  const handleGenerateSKU = () => {
-    const randomSKU = `PRD-${Math.floor(100000000 + Math.random() * 900000000)}`;
-    setFormData((prevData) => ({
-      ...prevData,
-      productSKU: randomSKU,
-    }));
-  };
-
   const handleScanSuccess = (decodedText) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      productSKU: decodedText,
-    }));
+    const matches = decodedText.trim().toUpperCase() === String(formData.productSKU || "").trim().toUpperCase();
+    setToast({ type: matches ? "success" : "error", message: matches ? "Scanned code matches this product." : "Product codes are permanent; the scanned value does not match." });
     setIsScannerOpen(false);
   };
 
   const input_fields = [
     { label: "Product Name", name: "productName", type: "text" },
-    { label: "Product SKU", name: "productSKU", type: "text" },
+    { label: "Permanent Product Code", name: "productSKU", type: "text" },
     { label: "Price", name: "price", type: "number" },
     { label: "Brand Name", name: "brandName", type: "text" },
     { label: "Unit", name: "unit", type: "text" },
@@ -515,7 +504,7 @@ const EditProductPage = () => {
                     htmlFor={item.name}
                     className="text-gray-700 font-medium text-sm"
                   >
-                    {item.label} (Scan or Generate)
+                    {item.label} (Scan to verify)
                   </label>
                   <div className="flex flex-wrap sm:flex-nowrap gap-2">
                     <div className="relative flex-1 w-full">
@@ -528,9 +517,9 @@ const EditProductPage = () => {
                         name={item.name}
                         type="text"
                         value={formData[item.name]}
-                        onChange={handleChange}
+                        readOnly
                         className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-transparent transition-all bg-gray-50"
-                        placeholder="Type, scan or generate..."
+                        placeholder="Permanent code"
                       />
                     </div>
 
@@ -545,19 +534,6 @@ const EditProductPage = () => {
                       <span className="hidden sm:inline">Camera</span>
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={handleGenerateSKU}
-                      className="flex items-center justify-center gap-1 px-3 py-2 bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] border border-[var(--theme-primary)]/20 rounded-md hover:bg-[var(--theme-primary)]/20 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
-                      aria-label="Auto Generate SKU"
-                      title="Auto Generate SKU"
-                    >
-                      <MdAutoFixHigh
-                        className="text-[18px]"
-                        aria-hidden="true"
-                      />
-                      <span className="hidden sm:inline">Generate</span>
-                    </button>
                   </div>
                 </div>
               );

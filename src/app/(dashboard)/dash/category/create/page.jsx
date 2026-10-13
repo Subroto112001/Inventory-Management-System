@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { previewEntityCode } from "@/lib/entityCode";
 import {
   MdArrowBack,
   MdCategory,
@@ -52,10 +53,7 @@ export default function CreateCategoryPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value, ...(name === "categoryName" ? { categoryCode: previewEntityCode("category", value) } : {}) }));
 
     if (message.text) {
       setMessage({
@@ -68,22 +66,6 @@ export default function CreateCategoryPage() {
   // =====================================================
   // CATEGORY CODE
   // =====================================================
-
-  const handleCategoryCodeChange = (e) => {
-    const value = e.target.value.toUpperCase().replace(/\s/g, "");
-
-    setFormData((prev) => ({
-      ...prev,
-      categoryCode: value,
-    }));
-
-    if (message.text) {
-      setMessage({
-        type: "",
-        text: "",
-      });
-    }
-  };
 
   // =====================================================
   // IMAGE SELECT
@@ -397,12 +379,13 @@ export default function CreateCategoryPage() {
                     name="categoryCode"
                     type="text"
                     value={formData.categoryCode}
-                    onChange={handleCategoryCodeChange}
-                    placeholder="e.g. ELEC"
+                    readOnly
+                    placeholder="Code will be generated automatically"
                     maxLength={30}
                     disabled={loading}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium uppercase tracking-wide text-gray-900 outline-none transition placeholder:normal-case placeholder:tracking-normal placeholder:text-gray-400 focus:border-[var(--theme-primary)] focus:bg-white focus:ring-4 focus:ring-[var(--theme-primary)]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-medium uppercase tracking-wide text-gray-700 outline-none"
                   />
+                  <p className="mt-1 text-xs text-gray-500">Auto-generated preview; the permanent sequence is assigned when saved.</p>
 
                   <p className="mt-1.5 text-xs text-gray-400">
                     Use a unique code for this category.

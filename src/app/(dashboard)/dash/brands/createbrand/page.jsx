@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { previewEntityCode } from "@/lib/entityCode";
 import {
   MdArrowBack,
   MdBusiness,
@@ -145,27 +146,14 @@ export const BrandFormPage = () => {
   // Brand name + automatic brand code
   // ------------------------------------------------------------
 
-  const generateBrandCode = (value) => {
-    return value
-      .trim()
-      .replace(/[^a-zA-Z0-9]+/g, "")
-      .slice(0, 10)
-      .toUpperCase();
-  };
-
   const handleBrandNameChange = (e) => {
     const value = e.target.value;
 
     setForm((prev) => {
-      const previousGeneratedCode = generateBrandCode(prev.brandName);
-
-      const shouldUpdateCode =
-        !prev.brandCode || prev.brandCode === previousGeneratedCode;
-
       return {
         ...prev,
         brandName: value,
-        brandCode: shouldUpdateCode ? generateBrandCode(value) : prev.brandCode,
+        brandCode: isEditing ? prev.brandCode : previewEntityCode("brand", value),
       };
     });
 
@@ -773,18 +761,10 @@ export const BrandFormPage = () => {
                       type="text"
                       name="brandCode"
                       value={form.brandCode}
-                      onChange={(e) =>
-                        handleChange({
-                          target: {
-                            name: "brandCode",
-                            value: e.target.value.toUpperCase(),
-                          },
-                        })
-                      }
-                      onBlur={handleBlur}
+                      readOnly
                       maxLength={30}
-                      placeholder="e.g. SAM"
-                      className={`${inputClass("brandCode")} uppercase`}
+                      placeholder="Code will be generated automatically"
+                      className={`${inputClass("brandCode")} bg-gray-100 uppercase`}
                     />
 
                     <div className="mt-1.5 flex justify-between">
@@ -794,7 +774,7 @@ export const BrandFormPage = () => {
                         </p>
                       ) : (
                         <p className="text-[11px] text-slate-400">
-                          Automatically suggested from brand name
+                          {isEditing ? "Permanent code" : "Preview; final sequence assigned on save"}
                         </p>
                       )}
 

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "audit:product-skus": "node scripts/audit-product-skus.mjs",
+    "migrate:entity-codes": "node scripts/backfill-entity-codes.mjs",
     "migrate:legacy-subcategories": "node scripts/migrate-legacy-subcategories.mjs",
     "migrate:product-sku-index": "node scripts/migrate-product-sku-index.mjs"
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 export default function ConfirmationModal({
@@ -15,13 +15,10 @@ export default function ConfirmationModal({
   children,
   allowBackdropClose = true,
 }) {
-  const [mounted, setMounted] = useState(false);
   const cancelRef = useRef(null);
   const dialogRef = useRef(null);
   const onCancelRef = useRef(onCancel);
-  onCancelRef.current = onCancel;
-
-  useEffect(() => setMounted(true), []);
+  useEffect(() => { onCancelRef.current = onCancel; }, [onCancel]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -57,7 +54,7 @@ export default function ConfirmationModal({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, loading]);
 
-  if (!open || !mounted) return null;
+  if (!open || typeof document === "undefined") return null;
 
   return createPortal(
     <div

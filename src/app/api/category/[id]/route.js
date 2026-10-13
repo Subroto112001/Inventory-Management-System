@@ -1,4 +1,4 @@
-﻿import { logger } from "@/lib/serverLogger";
+import { logger } from "@/lib/serverLogger";
 import { withApiErrorHandling } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
@@ -9,6 +9,7 @@ import Product from "@/lib/models/Product";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
 import { recordAuditLog } from "@/lib/auditLog";
+import { allocateEntityCode } from "@/lib/entityCodeServer";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -39,14 +40,13 @@ async function PUTHandler(request, { params }) {
     const form = multipart ? await request.formData() : null;
     const body = form ? Object.fromEntries(form.entries()) : await request.json();
     const categoryName = String(body.categoryName || "").trim();
-    const categoryCode = String(body.categoryCode || "").trim().toUpperCase();
     const description = String(body.description || "").trim();
-    if (!categoryName || !categoryCode) return NextResponse.json({ success: false, message: "Category name and code are required." }, { status: 400 });
-    if (categoryName.length > 100 || categoryCode.length > 30 || description.length > 500) return NextResponse.json({ success: false, message: "Category name, code, or description exceeds its allowed length." }, { status: 400 });
+    if (!categoryName) return NextResponse.json({ success: false, message: "Category name is required." }, { status: 400 });
+    if (categoryName.length > 100 || description.length > 500) return NextResponse.json({ success: false, message: "Category name or description exceeds its allowed length." }, { status: 400 });
     await connectMongoDB();
     const category = await Category.findById(id);
     if (!category || await Category.collection.findOne({ _id: category?._id, parentCategory: { $type: "objectId" } })) return NextResponse.json({ success: false, message: "Category not found." }, { status: 404 });
-    const duplicate = await Category.findOne({ _id: { $ne: id }, $or: [{ categoryCode }, { categoryName: { $regex: `^${categoryName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } }] }).select("_id");
+    const duplicate = await Category.findOne({ _id: { $ne: id }, categoryName: { $regex: `^${categoryName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } }).select("_id");
     if (duplicate) return NextResponse.json({ success: false, message: "A Category with this name or code already exists." }, { status: 409 });
     let image = category.image;
     if (body.removeImage === "true" || body.removeImage === true) image = { public_id: null, url: null };
@@ -57,12 +57,12 @@ async function PUTHandler(request, { params }) {
       image = { public_id: uploaded.publicId, url: uploaded.url };
     }
     category.categoryName = categoryName;
-    category.categoryCode = categoryCode;
+    if (!category.categoryCode) category.categoryCode = await allocateEntityCode("category", categoryName, Category);
     category.description = description;
     category.image = image;
     await category.save();
-    await recordAuditLog({ actor: access.user._id, action: "CATEGORY_UPDATED", resource: "Category", resourceId: category._id, metadata: { categoryName, categoryCode } });
-    return NextResponse.json({ success: true, message: "Category updated successfully.", category: { id: category._id.toString(), categoryName, categoryCode, description, image, isActive: category.isActive } });
+    await recordAuditLog({ actor: access.user._id, action: "CATEGORY_UPDATED", resource: "Category", resourceId: category._id, metadata: { categoryName, categoryCode: category.categoryCode } });
+    return NextResponse.json({ success: true, message: "Category updated successfully.", category: { id: category._id.toString(), categoryName, categoryCode: category.categoryCode, description, image, isActive: category.isActive } });
   } catch (error) {
     logger.error("Update Category API Error:", error);
     if (error.code === 11000) return NextResponse.json({ success: false, message: "That Category name or code is already in use." }, { status: 409 });

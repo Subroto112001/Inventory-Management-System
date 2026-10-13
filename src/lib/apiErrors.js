@@ -51,6 +51,9 @@ function classifyError(error) {
   if (error instanceof AppError) {
     return { status: error.status, code: error.code, message: error.message, details: error.details };
   }
+  if (error?.status === 400 || error?.statusCode === 400 || error?.status === 422 || error?.statusCode === 422) {
+    return { status: 400, code: "VALIDATION_ERROR", message: error?.message || "Please check the submitted information." };
+  }
   if (/MongoServerSelectionError|MongooseServerSelectionError|querySrv|buffering timed out/i.test(`${error?.name} ${error?.message}`)) {
     return { status: 503, code: "DATABASE_UNAVAILABLE", message: "Service is temporarily unavailable. Please try again shortly." };
   }

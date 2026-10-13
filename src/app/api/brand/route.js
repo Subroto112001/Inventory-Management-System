@@ -5,6 +5,7 @@ import connectMongoDB from "@/lib/databse/mongodb";
 import Brand from "@/lib/models/Brand";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
+import { createWithGeneratedCode } from "@/lib/entityCodeServer";
 
 export const dynamic = "force-dynamic";
 
@@ -107,7 +108,6 @@ async function POSTHandler(request) {
     const formData = await request.formData();
 
     const brandName = formData.get("brandName");
-    const brandCode = formData.get("brandCode");
     const description = formData.get("description");
     const contactPerson = formData.get("contactPerson");
     const email = formData.get("email");
@@ -163,25 +163,7 @@ async function POSTHandler(request) {
     // Duplicate brand code
     // ---------------------------------------------------------
 
-    const normalizedBrandCode = brandCode?.trim()
-      ? brandCode.trim().toUpperCase()
-      : undefined;
-
-    if (normalizedBrandCode) {
-      const existingBrandCode = await Brand.findOne({
-        brandCode: normalizedBrandCode,
-      });
-
-      if (existingBrandCode) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "A brand with this code already exists",
-          },
-          { status: 409 },
-        );
-      }
-    }
+    // Codes are allocated on the server; never trust the form preview.
 
     // ---------------------------------------------------------
     // Logo upload
@@ -209,10 +191,8 @@ async function POSTHandler(request) {
     // Create Brand
     // ---------------------------------------------------------
 
-    const brand = await Brand.create({
+    const brand = await createWithGeneratedCode({ entity: "brand", Model: Brand, name: brandName.trim(), data: {
       brandName: brandName.trim(),
-
-      brandCode: normalizedBrandCode,
 
       description: description?.trim() || undefined,
 
@@ -235,7 +215,7 @@ async function POSTHandler(request) {
       status: status === "Inactive" ? "Inactive" : "Active",
 
       createdBy: user._id || user.id,
-    });
+    } });
 
     // ---------------------------------------------------------
     // Populate created brand

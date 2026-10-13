@@ -7,6 +7,7 @@ import Subcategory from "@/lib/models/Subcategory";
 import Product from "@/lib/models/Product";
 import { requirePermission, PERMISSIONS } from "@/lib/authorization";
 import { uploadImageToCloudinary } from "@/lib/cloudinary/cloudinary";
+import { createWithGeneratedCode } from "@/lib/entityCodeServer";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -110,18 +111,17 @@ async function POSTHandler(request) {
     if (recordType(request.url) === "subcategory") return NextResponse.json({ success: false, message: "Create Subcategories through /api/subcategory." }, { status: 400 });
     const formData = await request.formData();
     const categoryName = String(formData.get("categoryName") || "").trim();
-    const categoryCode = String(formData.get("categoryCode") || "").trim().toUpperCase();
     const description = String(formData.get("description") || "").trim();
     if (formData.get("parentCategory")) return NextResponse.json({ success: false, message: "Create subcategories from Subcategory Management." }, { status: 400 });
-    if (!categoryName || !categoryCode) return NextResponse.json({ success: false, message: "Category name and category code are required." }, { status: 400 });
-    if (categoryName.length > 100 || categoryCode.length > 30 || description.length > 500) return NextResponse.json({ success: false, message: "Category name, code, or description exceeds its allowed length." }, { status: 400 });
+    if (!categoryName) return NextResponse.json({ success: false, message: "Category name is required." }, { status: 400 });
+    if (categoryName.length > 100 || description.length > 500) return NextResponse.json({ success: false, message: "Category name or description exceeds its allowed length." }, { status: 400 });
     const image = formData.get("image");
     if (image && typeof image !== "string" && image.size > 0 && (!/^(image\/(jpeg|png|webp))$/.test(image.type) || image.size > 5 * 1024 * 1024)) return NextResponse.json({ success: false, message: "Choose a JPG, PNG, or WEBP image no larger than 5 MB." }, { status: 400 });
     await connectMongoDB();
-    const duplicate = await Category.findOne({ $or: [{ categoryCode }, { categoryName: { $regex: `^${escapeRegex(categoryName)}$`, $options: "i" } }] }).select("_id");
+    const duplicate = await Category.findOne({ categoryName: { $regex: `^${escapeRegex(categoryName)}$`, $options: "i" } }).select("_id");
     if (duplicate) return NextResponse.json({ success: false, message: "A Category with this name or code already exists." }, { status: 409 });
     const uploaded = image && typeof image !== "string" && image.size > 0 ? await uploadImageToCloudinary(image, "categories") : null;
-    const category = await Category.create({ categoryName, categoryCode, description, image: uploaded ? { public_id: uploaded.publicId, url: uploaded.url } : { public_id: null, url: null }, products: [], createdBy: access.user._id, isActive: true });
+    const category = await createWithGeneratedCode({ entity: "category", Model: Category, name: categoryName, data: { categoryName, description, image: uploaded ? { public_id: uploaded.publicId, url: uploaded.url } : { public_id: null, url: null }, products: [], createdBy: access.user._id, isActive: true } });
     return NextResponse.json({ success: true, message: "Category created successfully.", category: { id: category._id.toString(), categoryName: category.categoryName, categoryCode: category.categoryCode, description: category.description, image: category.image, productCount: 0, subcategoryCount: 0, isActive: category.isActive, createdAt: category.createdAt, updatedAt: category.updatedAt } }, { status: 201 });
   } catch (error) {
     logger.error("Create Category API Error:", error);

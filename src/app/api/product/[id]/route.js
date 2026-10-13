@@ -17,7 +17,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 function serializePublicProduct(product) {
-  const imageRecords = Array.isArray(product.images) && product.images.length ? product.images : (product.image?.url ? [product.image] : []);
+  const imageRecords = Array.isArray(product.images) && product.images.length ? [...product.images] : (product.image?.url ? [product.image] : []);
+  if (product.image?.url) {
+    const mainIndex = imageRecords.findIndex((image) => image.url === product.image.url && (image.public_id || "") === (product.image.public_id || ""));
+    if (mainIndex > 0) imageRecords.unshift(imageRecords.splice(mainIndex, 1)[0]);
+    else if (mainIndex < 0) imageRecords.unshift(product.image);
+  }
   return {
     id: product._id.toString(),
     name: product.productName,
@@ -303,22 +308,15 @@ async function PUTHandler(request, { params }) {
     // SKU à¦ªà¦°à¦¿à¦¬à¦°à§à¦¤à¦¨ à¦¹à¦²à§‡, à¦…à¦¨à§à¦¯ à¦ªà§à¦°à§‹à¦¡à¦¾à¦•à§à¦Ÿà§‡à¦° à¦¸à¦¾à¦¥à§‡ duplicate à¦•à¦¿à¦¨à¦¾ à¦šà§‡à¦•
     const normalizedSKU = productSKU.toUpperCase();
     if (normalizedSKU !== existingProduct.productSKU) {
-      const skuTaken = await Product.findOne({
-        productSKU: normalizedSKU,
-        _id: { $ne: id },
-      });
-      if (skuTaken) {
-        return NextResponse.json(
-          { message: "A product with this SKU already exists!" },
-          { status: 409 },
-        );
-      }
+      return NextResponse.json(
+        { message: "Product SKU is permanent and cannot be changed." },
+        { status: 400 },
+      );
     }
 
     const previousCategoryId = existingProduct.category?.toString() || "";
     const previousSubcategoryId = existingProduct.subcategory?.toString() || "";
     existingProduct.productName = productName;
-    existingProduct.productSKU = normalizedSKU;
     existingProduct.category = selectedCategory?._id || null;
     existingProduct.subcategory = selectedSubcategory?._id || null;
     existingProduct.price = Number(price);
